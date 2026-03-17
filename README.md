@@ -1,46 +1,137 @@
-# Getting Started with Create React App
+# Nursing Care Web
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend web client for creating nursing care requests and inspecting client-side request logs.
+
+## Overview
+
+This app provides a simple UI to submit a care request with:
+
+- `residentId` (string, expected GUID)
+- `description` (string)
+
+On submit, it sends a `POST` request to the backend API endpoint configured through Vite environment variables.
+
+## Tech Stack
+
+- React 19
+- TypeScript
+- Axios
+- Vite
+
+## Project Structure
+
+```text
+src/
+  api/
+    careRequests.ts      # API contract + createCareRequest call
+    httpClient.ts        # Axios instance (base URL + headers + timeout)
+    interceptors.ts      # Axios request/response interceptors
+  config/
+    env.ts               # Reads VITE_API_BASE_URL from environment
+  App.tsx                # Main form UI + submit logic
+  index.tsx              # App bootstrap + interceptor initialization
+```
+
+## Prerequisites
+
+- Node.js 18+
+- npm 9+
+
+## Getting Started
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Start development server:
+
+```bash
+npm start
+```
+
+3. Open:
+
+- `http://localhost:3000`
 
 ## Available Scripts
 
-In the project directory, you can run:
+- `npm start` - run Vite development server
+- `npm run build` - build the production bundle
+- `npm run preview` - preview the built app
+- `npm test` - run Vitest
 
-### `npm start`
+## Environment Configuration
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Copy `.env.example` to a local env file and adjust values as needed.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Key settings:
 
-### `npm test`
+- `VITE_API_BASE_URL=https://10.0.0.33:5050/api`
+- `VITE_API_PROXY_TARGET=https://10.0.0.33:5050`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## API Contract
 
-### `npm run build`
+Defined in `src/api/careRequests.ts`:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Request type
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```ts
+interface CreateCareRequestRequest {
+  residentId: string;
+  description: string;
+}
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Endpoint call
 
-### `npm run eject`
+- Method: `POST`
+- URL: `${VITE_API_BASE_URL}/care-requests`
+- Headers:
+  - `Content-Type: application/json`
+  - `X-Correlation-ID`
+  - `X-Client-App: nursing-care-web`
+  - `X-Client-Platform: web`
+- Body: JSON payload matching `CreateCareRequestRequest`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Success behavior
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- Expects JSON response
+- UI displays: `Created CareRequest with ID: <id>`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Error behavior
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- Normalizes backend error payloads into a user-facing message
+- UI displays error text in red
 
-## Learn More
+## Request Flow
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. User fills `Resident ID` and `Description` in `App.tsx`.
+2. `handleSubmit()` calls `createCareRequest()`.
+3. Axios request interceptors add correlation and client headers.
+4. API returns success JSON or an error payload.
+5. UI renders success or failure message.
+6. Client logs are shown in the page.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Logging
+
+The web client logs:
+
+- UI lifecycle events
+- request started/completed/failed events
+- correlation IDs from the backend
+
+Logs are stored in `localStorage` and displayed in the UI for debugging.
+
+## Troubleshooting
+
+- If submit fails with network errors, confirm the backend is running on `https://<lan-ip>:5050`.
+- If CORS errors appear, enable CORS on the backend for `http://localhost:3000`.
+- If HTTPS errors appear, trust the local backend certificate on the machine.
+
+## Suggested Next Improvements
+
+- Add input validation for `residentId` and `description`.
+- Replace the default CRA-era tests with Vitest coverage for the form and API errors.
+- Move more inline styles into shared components or CSS modules if the UI grows.
