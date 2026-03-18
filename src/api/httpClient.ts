@@ -8,3 +8,10 @@ export const httpClient = axios.create({
   },
   timeout: 10000,
 });
+
+declare module "axios" {
+  export interface InternalAxiosRequestConfig<D = any> {
+    _retry?: boolean;
+    skipAuthRefresh?: boolean;
+  }
+}

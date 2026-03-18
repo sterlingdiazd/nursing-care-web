@@ -1,13 +1,25 @@
 import { httpClient } from "./httpClient";
 import { logClientEvent } from "../logging/clientLogger";
 
-// This interface represents the payload your API expects
 export interface CreateCareRequestRequest {
   residentId: string;
   description: string;
 }
 
-// This function calls the ASP.NET API endpoint
+export interface CareRequest {
+  id: string;
+  residentId: string;
+  description: string;
+  status: "Pending" | "Approved" | "Rejected" | "Completed";
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  approvedAtUtc: string | null;
+  rejectedAtUtc: string | null;
+  completedAtUtc: string | null;
+}
+
+export type CareRequestTransitionAction = "approve" | "reject" | "complete";
+
 export async function createCareRequest(request: CreateCareRequestRequest) {
   try {
     logClientEvent("web.ui", "Create care request submitted", {
@@ -46,4 +58,22 @@ export async function createCareRequest(request: CreateCareRequestRequest) {
 
     throw new Error("API error: " + errorMessage);
   }
+}
+
+export async function getCareRequests() {
+  const response = await httpClient.get<CareRequest[]>("/care-requests");
+  return response.data;
+}
+
+export async function getCareRequestById(id: string) {
+  const response = await httpClient.get<CareRequest>(`/care-requests/${id}`);
+  return response.data;
+}
+
+export async function transitionCareRequest(
+  id: string,
+  action: CareRequestTransitionAction,
+) {
+  const response = await httpClient.post<CareRequest>(`/care-requests/${id}/${action}`);
+  return response.data;
 }

@@ -1,0 +1,105 @@
+import React, { useState } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Link,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+
+import { validateEmail } from "../api/auth";
+import AuthScene from "../components/layout/AuthScene";
+import { useAuth } from "../context/AuthContext";
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const { login, isLoading } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const isEmailValid = validateEmail(email.trim());
+  const canSubmit = email.trim().length > 0 && password.length > 0 && isEmailValid && !isLoading;
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setError(null);
+
+    if (!canSubmit) {
+      setError("Enter a valid email address and password to continue.");
+      return;
+    }
+
+    try {
+      await login({ email: email.trim(), password });
+      navigate("/home");
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "Unable to sign in.");
+    }
+  };
+
+  return (
+    <AuthScene
+      eyebrow="Secure Access"
+      title="Sign in to the care workspace."
+      subtitle="Use your approved NursingCare account to manage requests, review status transitions, and continue where you left off."
+      asideTitle="Session behavior"
+      asideBody="The web client restores your last active session and refreshes access tokens automatically when the backend allows it."
+      form={
+        <Box component="form" onSubmit={handleSubmit}>
+          <Stack spacing={2.25}>
+            {error && <Alert severity="error">{error}</Alert>}
+
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="name@facility.org"
+              disabled={isLoading}
+              error={email.length > 0 && !isEmailValid}
+              helperText={
+                email.length > 0 && !isEmailValid
+                  ? "Use a valid email format."
+                  : "Enter the email connected to your NursingCare account."
+              }
+            />
+
+            <TextField
+              fullWidth
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              disabled={isLoading}
+              helperText="Passwords are validated against the backend."
+            />
+
+            <Button type="submit" variant="contained" size="large" disabled={!canSubmit}>
+              {isLoading ? (
+                <>
+                  <CircularProgress size={18} sx={{ mr: 1, color: "inherit" }} />
+                  Signing In
+                </>
+              ) : (
+                "Sign In"
+              )}
+            </Button>
+
+            <Typography color="text.secondary" sx={{ textAlign: "center" }}>
+              New here?{" "}
+              <Link component={RouterLink} to="/register" underline="hover" sx={{ fontWeight: 700 }}>
+                Create an account
+              </Link>
+            </Typography>
+          </Stack>
+        </Box>
+      }
+    />
+  );
+}
