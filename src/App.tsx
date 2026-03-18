@@ -1,114 +1,233 @@
-import { useEffect, useState } from "react";
-import { createCareRequest } from "./api/careRequests";
-import { clearClientLogs, logClientEvent, useClientLogs } from "./logging/clientLogger";
+import { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { logClientEvent } from "./logging/clientLogger";
 
-function App() {
-  const [residentId, setResidentId] = useState("");
-  const [description, setDescription] = useState("");
-  const [result, setResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const logs = useClientLogs();
+// Pages
+import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./pages/LoginPage";
+import HomePage from "./pages/HomePage";
+import CareRequestPage from "./pages/CareRequestPage";
+import CareRequestsListPage from "./pages/CareRequestsListPage";
+import CareRequestDetailPage from "./pages/CareRequestDetailPage";
+
+// Create Material-UI theme
+const theme = createTheme({
+  palette: {
+    mode: "light",
+    primary: {
+      main: "#1f4b6e",
+      light: "#46769b",
+      dark: "#102d43",
+    },
+    secondary: {
+      main: "#b7803c",
+      light: "#d2a66c",
+      dark: "#7f5724",
+    },
+    text: {
+      primary: "#173042",
+      secondary: "#5f7280",
+    },
+    background: {
+      default: "#f4f2ec",
+      paper: "#fffdf8",
+    },
+    success: {
+      main: "#2c7a64",
+    },
+    info: {
+      main: "#3b6c8d",
+    },
+    warning: {
+      main: "#c18a42",
+    },
+    error: {
+      main: "#b74f4d",
+    },
+  },
+  typography: {
+    fontFamily:
+      '"Avenir Next", "Segoe UI Variable Text", "Segoe UI", "Helvetica Neue", sans-serif',
+    h1: {
+      fontFamily: '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif',
+      fontWeight: 700,
+      letterSpacing: "-0.04em",
+      lineHeight: 1.02,
+      fontSize: "clamp(3rem, 8vw, 5.4rem)",
+    },
+    h2: {
+      fontFamily: '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif',
+      fontWeight: 700,
+      letterSpacing: "-0.035em",
+      lineHeight: 1.08,
+    },
+    h3: {
+      fontFamily: '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif',
+      fontWeight: 700,
+      letterSpacing: "-0.035em",
+    },
+    h4: {
+      fontFamily: '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif',
+      fontWeight: 700,
+      letterSpacing: "-0.03em",
+    },
+    h5: {
+      fontWeight: 700,
+      letterSpacing: "-0.02em",
+    },
+    overline: {
+      fontWeight: 700,
+    },
+    button: {
+      fontWeight: 700,
+      textTransform: "none",
+    },
+  },
+  shape: {
+    borderRadius: 4,
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        ":root": {
+          "--app-ink": "#173042",
+          "--app-muted": "#60707a",
+          "--app-surface": "#fffdf8",
+          "--app-line": "rgba(23, 48, 66, 0.08)",
+          "--app-gold": "#b7803c",
+        },
+        body: {
+          background:
+            "radial-gradient(circle at top left, rgba(40, 98, 131, 0.16), transparent 24%), linear-gradient(180deg, #f7f4ee 0%, #edf2f4 100%)",
+          color: "#173042",
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: "none",
+          border: "1px solid rgba(23, 48, 66, 0.08)",
+          boxShadow: "0 18px 42px rgba(21, 34, 48, 0.08)",
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 2.5 * 4,
+          paddingInline: 20,
+          paddingBlock: 10,
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 3 * 4,
+          boxShadow: "0 18px 36px rgba(15, 23, 42, 0.06)",
+          border: "1px solid rgba(23, 48, 66, 0.08)",
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 2 * 4,
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          "& .MuiOutlinedInput-root": {
+            borderRadius: 2.5 * 4,
+            backgroundColor: "rgba(255,255,255,0.72)",
+          },
+        },
+      },
+    },
+  },
+});
+
+// Protected Route Component
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+// App Routes
+function AppRoutes() {
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     logClientEvent("web.ui", "Web app loaded");
   }, []);
 
-  async function handleSubmit() {
-    setResult(null);
-    setError(null);
-
-    try {
-      const response = await createCareRequest({
-        residentId: residentId,
-        description: description,
-      });
-
-      logClientEvent("web.ui", "Create care request succeeded", {
-        residentId,
-        createdId: response.id,
-      });
-      setResult("Created CareRequest with ID: " + response.id);
-    } catch (err: any) {
-      logClientEvent(
-        "web.ui",
-        "Create care request surfaced an error to the UI",
-        { residentId, message: err.message ?? "Unknown error" },
-        "error",
-      );
-      setError(err.message ?? "Unknown error");
-    }
-  }
-
   return (
-    <div style={{ padding: 40 }}>
-      <h1>NursingCare — Create Care Request</h1>
+    <Routes>
+      {/* Public Routes */}
+      <Route
+        path="/register"
+        element={isAuthenticated ? <Navigate to="/home" replace /> : <RegisterPage />}
+      />
+      <Route
+        path="/login"
+        element={isAuthenticated ? <Navigate to="/home" replace /> : <LoginPage />}
+      />
 
-      <div style={{ marginBottom: 20 }}>
-        <label>Resident ID</label>
-        <br />
-        <input
-          style={{ width: 400 }}
-          value={residentId}
-          onChange={(e) => setResidentId(e.target.value)}
-          placeholder="Paste a GUID here"
-        />
-      </div>
+      {/* Protected Routes */}
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/care-request"
+        element={
+          <ProtectedRoute>
+            <CareRequestPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/care-requests"
+        element={
+          <ProtectedRoute>
+            <CareRequestsListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/care-requests/:id"
+        element={
+          <ProtectedRoute>
+            <CareRequestDetailPage />
+          </ProtectedRoute>
+        }
+      />
 
-      <div style={{ marginBottom: 20 }}>
-        <label>Description</label>
-        <br />
-        <textarea
-          style={{ width: 400, height: 100 }}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Describe the care request"
-        />
-      </div>
-
-      <button onClick={handleSubmit}>Create Care Request</button>
-
-      {result && <div style={{ marginTop: 20, color: "green" }}>{result}</div>}
-
-      {error && <div style={{ marginTop: 20, color: "red" }}>{error}</div>}
-
-      <details style={{ marginTop: 32, maxWidth: 800 }}>
-        <summary style={{ cursor: "pointer", fontWeight: 700 }}>
-          Client Logs ({logs.length})
-        </summary>
-        <button
-          onClick={() => clearClientLogs()}
-          style={{ marginTop: 12, marginBottom: 12 }}
-        >
-          Clear Logs
-        </button>
-        <div
-          style={{
-            border: "1px solid #d1d5db",
-            borderRadius: 8,
-            padding: 12,
-            backgroundColor: "#f8fafc",
-            maxHeight: 320,
-            overflow: "auto",
-            fontFamily: "monospace",
-            fontSize: 12,
-          }}
-        >
-          {logs.map((log) => (
-            <div key={log.id} style={{ marginBottom: 12 }}>
-              <div>
-                [{log.timestamp}] {log.level.toUpperCase()} {log.source}: {log.message}
-              </div>
-              {log.data && (
-                <pre style={{ whiteSpace: "pre-wrap", margin: "4px 0 0 0" }}>
-                  {JSON.stringify(log.data, null, 2)}
-                </pre>
-              )}
-            </div>
-          ))}
-        </div>
-      </details>
-    </div>
+      {/* Root and catch-all */}
+      <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
+      <Route path="*" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
+    </Routes>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </Router>
+    </ThemeProvider>
+  );
+}
