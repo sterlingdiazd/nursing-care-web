@@ -23,6 +23,12 @@ export default defineConfig(({ mode }) => {
       outDir: "dist",
       sourcemap: true,
     },
+    test: {
+      environment: "happy-dom",
+      globals: true,
+      setupFiles: "./src/setupTests.ts",
+      css: false,
+    },
     env: {
       apiUrl: `${apiProxyTarget}/api`,
     },

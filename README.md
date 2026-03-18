@@ -66,10 +66,20 @@ npm start
 
 Copy `.env.example` to a local env file and adjust values as needed.
 
+Shared cross-project source of truth:
+
+- [Environment Matrix](https://github.com/sterlingdiazd/NursingCare/blob/main/ENVIRONMENT_MATRIX.md)
+
 Key settings:
 
 - `VITE_API_BASE_URL=https://10.0.0.33:5050/api`
 - `VITE_API_PROXY_TARGET=https://10.0.0.33:5050`
+
+Environment mapping:
+
+- `local` and `docker`: point to `https://<lan-ip>:5050`
+- `staging`: point to `https://api-staging.<your-domain>`
+- `production`: point to `https://api.<your-domain>`
 
 ## API Contract
 

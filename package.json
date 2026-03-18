@@ -38,8 +38,11 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
     "@types/node": "^18.19.130",
     "@vitejs/plugin-react": "^4.2.0",
+    "happy-dom": "^20.8.4",
+    "jsdom": "^27.0.1",
     "typescript": "^4.9.5",
     "vite": "^6.4.1",
     "vitest": "^1.0.0"
