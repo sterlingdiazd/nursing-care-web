@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   CircularProgress,
+  Divider,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -16,7 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import { validateEmail, validatePassword } from "../api/auth";
+import { getGoogleOAuthStartUrl, validateEmail, validatePassword } from "../api/auth";
 import AuthScene from "../components/layout/AuthScene";
 import { useAuth } from "../context/AuthContext";
 import { RegisterRequest, UserProfileType } from "../types/auth";
@@ -71,6 +72,12 @@ export default function RegisterPage() {
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "Unable to register.");
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    setError(null);
+    setSuccessMessage(null);
+    window.location.assign(getGoogleOAuthStartUrl());
   };
 
   return (
@@ -161,6 +168,22 @@ export default function RegisterPage() {
                 "Create Account"
               )}
             </Button>
+
+            <Divider>or</Divider>
+
+            <Button
+              type="button"
+              variant="outlined"
+              size="large"
+              disabled={isLoading}
+              onClick={handleGoogleSignIn}
+            >
+              Continue with Google
+            </Button>
+
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>
+              Google sign-in creates an immediately active client account.
+            </Typography>
 
             <Typography color="text.secondary" sx={{ textAlign: "center" }}>
               Already have access?{" "}
