@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { AuthContextType, RegisterRequest, LoginRequest, UserProfileType } from "../types/auth";
+import {
+  AuthContextType,
+  AuthResponse,
+  RegisterRequest,
+  LoginRequest,
+  UserProfileType,
+} from "../types/auth";
 import { registerUser, loginUser } from "../api/auth";
 import { logClientEvent } from "../logging/clientLogger";
 import {
@@ -53,6 +59,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe;
   }, []);
 
+  const resolveProfileType = (response: AuthResponse, fallbackProfileType?: UserProfileType | null) => {
+    if (response.roles.includes("Nurse")) {
+      return UserProfileType.Nurse;
+    }
+
+    return fallbackProfileType ?? UserProfileType.Client;
+  };
+
+  const applyAuthResponse = (response: AuthResponse, fallbackProfileType?: UserProfileType | null) => {
+    const detectedProfileType = resolveProfileType(response, fallbackProfileType);
+
+    setToken(response.token);
+    setEmail(response.email);
+    setRoles(response.roles);
+    setProfileType(detectedProfileType);
+    setIsAuthenticated(Boolean(response.token));
+
+    saveAuthSession({
+      token: response.token,
+      refreshToken: response.refreshToken,
+      expiresAtUtc: response.expiresAtUtc,
+      email: response.email,
+      roles: response.roles,
+      profileType: detectedProfileType,
+    });
+  };
+
   const register = async (data: RegisterRequest) => {
     setIsLoading(true);
     setError(null);
@@ -66,20 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (response.token) {
         // Client registration - token returned, user is active
-        setToken(response.token);
-        setEmail(response.email);
-        setRoles(response.roles);
-        setProfileType(data.profileType);
-        setIsAuthenticated(true);
-
-        saveAuthSession({
-          token: response.token,
-          refreshToken: response.refreshToken,
-          expiresAtUtc: response.expiresAtUtc,
-          email: response.email,
-          roles: response.roles,
-          profileType: data.profileType,
-        });
+        applyAuthResponse(response, data.profileType);
 
         logClientEvent("web.auth", "Client registration successful", {
           email: response.email,
@@ -111,26 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const response = await loginUser(data.email, data.password);
-
-      setToken(response.token);
-      setEmail(response.email);
-      setRoles(response.roles);
-      setIsAuthenticated(true);
-
-      // Determine profile type from roles
-      const detectedProfileType = response.roles.includes("Nurse")
-        ? UserProfileType.Nurse
-        : UserProfileType.Client;
-      setProfileType(detectedProfileType);
-
-      saveAuthSession({
-        token: response.token,
-        refreshToken: response.refreshToken,
-        expiresAtUtc: response.expiresAtUtc,
-        email: response.email,
-        roles: response.roles,
-        profileType: detectedProfileType,
-      });
+      applyAuthResponse(response);
 
       logClientEvent("web.auth", "Login successful", { email: response.email });
     } catch (err) {
@@ -141,6 +142,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const completeOAuthLogin = (response: AuthResponse) => {
+    setError(null);
+    applyAuthResponse(response);
+
+    logClientEvent("web.auth", "Google OAuth login successful", {
+      email: response.email,
+      roles: response.roles,
+    });
   };
 
   const logout = () => {
@@ -170,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     error,
     register,
     login,
+    completeOAuthLogin,
     logout,
     clearError,
   };

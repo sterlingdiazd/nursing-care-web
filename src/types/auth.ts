@@ -37,6 +37,7 @@ export interface AuthContextType {
   error: string | null;
   register: (data: RegisterRequest) => Promise<void>;
   login: (data: LoginRequest) => Promise<void>;
+  completeOAuthLogin: (response: AuthResponse) => void;
   logout: () => void;
   clearError: () => void;
 }

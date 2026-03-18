@@ -1,6 +1,7 @@
 import { httpClient } from "./httpClient";
 import { AuthResponse, RegisterRequest, LoginRequest, UserProfileType } from "../types/auth";
 import { logClientEvent } from "../logging/clientLogger";
+import { API_BASE_URL } from "../config/env";
 
 /**
  * Register a new user (Client or Nurse)
@@ -115,6 +116,10 @@ export async function refreshAuthToken(refreshToken: string): Promise<AuthRespon
   );
 
   return response.data;
+}
+
+export function getGoogleOAuthStartUrl(): string {
+  return `${API_BASE_URL.replace(/\/$/, "")}/auth/google/start`;
 }
 
 /**
