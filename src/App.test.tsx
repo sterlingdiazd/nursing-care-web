@@ -18,12 +18,14 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("./api/careRequests", () => ({
   createCareRequest: vi.fn(),
+  getCareRequests: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("./context/AuthContext", () => ({
   useAuth: () => ({
     isAuthenticated: true,
     token: "token",
+    userId: "11111111-1111-1111-1111-111111111111",
     email: "care@example.com",
     roles: ["Client"],
     profileType: 0,
@@ -50,7 +52,7 @@ describe("HomePage", () => {
   it("routes to the care request workspace from the primary action button", () => {
     renderWithTheme(<HomePage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Open Request Board" }));
+    fireEvent.click(screen.getByRole("button", { name: "Abrir cola de solicitudes" }));
 
     expect(navigate).toHaveBeenCalledWith("/care-requests");
   });
@@ -61,45 +63,32 @@ describe("CareRequestPage", () => {
     vi.clearAllMocks();
   });
 
-  it("blocks invalid resident ids before submitting", async () => {
-    renderWithTheme(<CareRequestPage />);
-
-    fireEvent.change(screen.getByLabelText("Resident ID"), {
-      target: { value: "invalid-guid" },
-    });
-    fireEvent.change(screen.getByLabelText("Description"), {
-      target: { value: "Resident needs support with a medication reminder." },
-    });
-
-    expect(
-      screen.getByText("Enter a valid GUID in 8-4-4-4-12 format."),
-    ).toBeInTheDocument();
-    expect(createCareRequest).not.toHaveBeenCalled();
-  });
-
   it("submits valid care requests and shows success feedback", async () => {
     vi.mocked(createCareRequest).mockResolvedValue({ id: "created-id-123" });
 
     renderWithTheme(<CareRequestPage />);
 
-    fireEvent.change(screen.getByLabelText("Resident ID"), {
-      target: { value: "550e8400-e29b-41d4-a716-446655440010" },
-    });
-    fireEvent.change(screen.getByLabelText("Description"), {
+    fireEvent.change(screen.getByLabelText("Descripcion de la solicitud"), {
       target: { value: "Resident needs a morning wellness visit and medication support." },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Create Care Request" }));
+    fireEvent.click(screen.getByRole("button", { name: "Crear solicitud" }));
 
     await waitFor(() => {
-      expect(createCareRequest).toHaveBeenCalledWith({
-        residentId: "550e8400-e29b-41d4-a716-446655440010",
-        description: "Resident needs a morning wellness visit and medication support.",
-      });
+      expect(createCareRequest).toHaveBeenCalledWith(
+        {
+          careRequestDescription: "Resident needs a morning wellness visit and medication support.",
+          careRequestType: "domicilio_24h",
+          unit: 1,
+          distanceFactor: "local",
+          complexityLevel: "estandar",
+        },
+        expect.any(String),
+      );
     });
 
     expect(
-      await screen.findByText("Care Request created successfully with ID created-id-123."),
+      await screen.findByText("Solicitud creada correctamente con el ID created-id-123."),
     ).toBeInTheDocument();
   });
 });

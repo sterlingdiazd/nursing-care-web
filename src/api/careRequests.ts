@@ -1,15 +1,36 @@
+import { AxiosHeaders } from "axios";
 import { httpClient } from "./httpClient";
 import { logClientEvent } from "../logging/clientLogger";
 
 export interface CreateCareRequestRequest {
-  residentId: string;
-  description: string;
+  careRequestDescription: string;
+  careRequestType: string;
+  unit?: number;
+  nurseId?: string;
+  suggestedNurse?: string;
+  assignedNurse?: string;
+  price?: number;
+  clientBasePriceOverride?: number;
+  distanceFactor?: string;
+  complexityLevel?: string;
+  medicalSuppliesCost?: number;
+  serviceDate?: string; // YYYY-MM-DD
 }
 
 export interface CareRequest {
   id: string;
-  residentId: string;
-  description: string;
+  userID: string;
+  careRequestDescription: string;
+  careRequestType?: string;
+  unit?: number;
+  unitType?: string;
+  price?: number;
+  total?: number;
+  distanceFactor?: string | null;
+  complexityLevel?: string | null;
+  clientBasePrice?: number | null;
+  medicalSuppliesCost?: number | null;
+  serviceDate?: string | null;
   status: "Pending" | "Approved" | "Rejected" | "Completed";
   createdAtUtc: string;
   updatedAtUtc: string;
@@ -20,14 +41,20 @@ export interface CareRequest {
 
 export type CareRequestTransitionAction = "approve" | "reject" | "complete";
 
-export async function createCareRequest(request: CreateCareRequestRequest) {
+export async function createCareRequest(
+  request: CreateCareRequestRequest,
+  correlationId?: string,
+) {
   try {
     logClientEvent("web.ui", "Create care request submitted", {
-      residentId: request.residentId,
-      descriptionLength: request.description.length,
+      correlationId,
+      descriptionLength: request.careRequestDescription.length,
     });
 
-    const response = await httpClient.post("/care-requests", request);
+    const headers = correlationId
+      ? new AxiosHeaders({ "X-Correlation-ID": correlationId })
+      : undefined;
+    const response = await httpClient.post("/care-requests", request, { headers });
     return response.data;
   } catch (error: any) {
     // Log full error details to console for debugging
@@ -50,7 +77,7 @@ export async function createCareRequest(request: CreateCareRequestRequest) {
       "web.ui",
       "Create care request failed",
       {
-        residentId: request.residentId,
+        correlationId,
         errorMessage,
       },
       "error",

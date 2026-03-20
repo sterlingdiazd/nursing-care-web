@@ -63,11 +63,11 @@ export default function AuthScene({
                   NursingCare
                 </Typography>
                 <Typography variant="h1" sx={{ mt: 2, maxWidth: 620 }}>
-                  Care operations with a calmer, clearer workflow.
+                  Operaciones de cuidado con un flujo mas claro y sereno.
                 </Typography>
                 <Typography sx={{ mt: 2.5, maxWidth: 580, lineHeight: 1.85, color: "#d4e6ea" }}>
-                  A professional workspace for request intake, review, and lifecycle coordination
-                  across administrators, nurses, and clients.
+                  Un espacio profesional para captura, revision y coordinacion del ciclo de vida
+                  entre administracion, enfermeria y clientes.
                 </Typography>
               </Box>
 
@@ -79,10 +79,10 @@ export default function AuthScene({
                 }}
               >
                 {[
-                  ["Live queue", "Requests move from intake to approval and completion in one place."],
-                  ["Role-aware access", "Actions surface only when the current session is allowed to perform them."],
-                  ["Persistent session", "Login state and refresh handling keep the workspace resilient."],
-                  ["Audit-friendly flow", "Operational timestamps stay visible from creation through closeout."],
+                  ["Cola en vivo", "Las solicitudes avanzan de la captura a la aprobacion y al cierre en un solo lugar."],
+                  ["Acceso por rol", "Las acciones solo aparecen cuando la sesion actual tiene permiso para ejecutarlas."],
+                  ["Sesion persistente", "El estado de inicio de sesion y los refresh tokens mantienen el espacio estable."],
+                  ["Flujo auditable", "Las marcas de tiempo se mantienen visibles desde la creacion hasta el cierre."],
                 ].map(([cardTitle, cardBody]) => (
                   <Paper
                     key={cardTitle}

@@ -22,9 +22,9 @@ interface WorkspaceShellProps {
 }
 
 const navigationItems = [
-  { label: "Overview", path: "/home" },
-  { label: "Request Board", path: "/care-requests" },
-  { label: "New Request", path: "/care-request" },
+  { label: "Resumen", path: "/home" },
+  { label: "Cola", path: "/care-requests" },
+  { label: "Nueva solicitud", path: "/care-request" },
 ];
 
 function getActivePath(pathname: string) {
@@ -85,10 +85,10 @@ export default function WorkspaceShell({
                   NursingCare
                 </Typography>
                 <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: "#fffef8" }}>
-                  Operations Console
+                  Consola operativa
                 </Typography>
                 <Typography sx={{ mt: 1, color: "rgba(232, 241, 247, 0.76)", lineHeight: 1.7 }}>
-                  Manage intake, clinical review, and completion from one focused workspace.
+                  Gestiona captura, revision clinica y cierre desde un solo espacio de trabajo.
                 </Typography>
               </Box>
 
@@ -126,7 +126,7 @@ export default function WorkspaceShell({
 
               <Stack spacing={1}>
                 <Chip
-                  label={email ?? "No email loaded"}
+                  label={email ?? "Sin correo cargado"}
                   sx={{
                     justifyContent: "flex-start",
                     bgcolor: "rgba(255,255,255,0.08)",
@@ -136,7 +136,7 @@ export default function WorkspaceShell({
                   }}
                 />
                 <Chip
-                  label={roles.join(", ") || "User"}
+                  label={roles.join(", ") || "Usuario"}
                   sx={{
                     justifyContent: "flex-start",
                     bgcolor: "rgba(255,255,255,0.08)",
@@ -162,7 +162,7 @@ export default function WorkspaceShell({
                   },
                 }}
               >
-                Sign Out
+                Cerrar sesion
               </Button>
             </Stack>
           </Paper>
@@ -190,7 +190,7 @@ export default function WorkspaceShell({
                     variant="overline"
                     sx={{ color: "secondary.main", letterSpacing: "0.16em" }}
                   >
-                    Current Section
+                    Seccion actual
                   </Typography>
                   <Chip
                     label={activeItem.label}

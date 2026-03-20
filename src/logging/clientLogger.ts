@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 
 export interface ClientLogEntry {
   id: string;
+  correlationId: string;
   timestamp: string;
   level: "info" | "error";
   source: string;
@@ -45,6 +46,10 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+export function createCorrelationId() {
+  return createId();
+}
+
 function sanitizeData(data: unknown): unknown {
   if (!data || typeof data !== "object") {
     return data;
@@ -69,19 +74,36 @@ function sanitizeData(data: unknown): unknown {
   );
 }
 
+function extractCorrelationId(data: unknown) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return undefined;
+  }
+
+  const candidate = (data as { correlationId?: unknown }).correlationId;
+  return typeof candidate === "string" && candidate.trim().length > 0
+    ? candidate
+    : undefined;
+}
+
 export function logClientEvent(
   source: string,
   message: string,
   data?: unknown,
   level: "info" | "error" = "info",
 ) {
+  const sanitizedData = sanitizeData(data);
+  const correlationId = extractCorrelationId(sanitizedData) ?? createCorrelationId();
   const entry: ClientLogEntry = {
     id: createId(),
+    correlationId,
     timestamp: new Date().toISOString(),
     level,
     source,
     message,
-    data: sanitizeData(data),
+    data:
+      sanitizedData && typeof sanitizedData === "object" && !Array.isArray(sanitizedData)
+        ? { correlationId, ...(sanitizedData as Record<string, unknown>) }
+        : sanitizedData,
   };
 
   entries = [entry, ...entries].slice(0, MAX_ENTRIES);
@@ -95,10 +117,6 @@ export function logClientEvent(
 export function clearClientLogs() {
   entries = [];
   emit();
-}
-
-export function createCorrelationId() {
-  return createId();
 }
 
 export function useClientLogs() {

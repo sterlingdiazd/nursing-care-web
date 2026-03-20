@@ -140,11 +140,11 @@ export function validatePassword(password: string): {
   if (password.length < 6) {
     return {
       isValid: false,
-      message: "Password must be at least 6 characters",
+      message: "La contrasena debe tener al menos 6 caracteres",
     };
   }
   return {
     isValid: true,
-    message: "Password is strong",
+    message: "Contrasena valida",
   };
 }

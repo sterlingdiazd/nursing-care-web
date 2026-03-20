@@ -23,6 +23,7 @@ export interface AuthResponse {
   token: string;
   refreshToken: string;
   expiresAtUtc: string | null;
+  userId: string;
   email: string;
   roles: string[];
 }
@@ -30,6 +31,7 @@ export interface AuthResponse {
 export interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
+  userId: string | null;
   email: string | null;
   roles: string[];
   profileType: UserProfileType | null;
@@ -43,6 +45,7 @@ export interface AuthContextType {
 }
 
 export interface User {
+  userId: string;
   email: string;
   roles: string[];
 }

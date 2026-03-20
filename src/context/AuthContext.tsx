@@ -11,15 +11,29 @@ import { logClientEvent } from "../logging/clientLogger";
 import {
   clearAuthSession,
   getAuthSession,
+  resolveUserIdFromToken,
   saveAuthSession,
   subscribeToAuthSession,
 } from "../auth/sessionStorage";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function resolveResponseUserId(response: AuthResponse) {
+  if (response.userId?.trim().length) {
+    return response.userId;
+  }
+
+  if (response.token?.trim().length) {
+    return resolveUserIdFromToken(response.token);
+  }
+
+  return getAuthSession()?.userId ?? null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [profileType, setProfileType] = useState<UserProfileType | null>(null);
@@ -31,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (!session) {
       setToken(null);
+      setUserId(null);
       setEmail(null);
       setRoles([]);
       setProfileType(null);
@@ -39,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setToken(session.token);
+    setUserId(session.userId);
     setEmail(session.email);
     setRoles(session.roles);
     setProfileType(session.profileType);
@@ -69,8 +85,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const applyAuthResponse = (response: AuthResponse, fallbackProfileType?: UserProfileType | null) => {
     const detectedProfileType = resolveProfileType(response, fallbackProfileType);
+    const resolvedUserId = resolveResponseUserId(response);
+
+    if (!resolvedUserId) {
+      throw new Error("No fue posible resolver el identificador del usuario autenticado.");
+    }
 
     setToken(response.token);
+    setUserId(resolvedUserId);
     setEmail(response.email);
     setRoles(response.roles);
     setProfileType(detectedProfileType);
@@ -80,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token: response.token,
       refreshToken: response.refreshToken,
       expiresAtUtc: response.expiresAtUtc,
+      userId: resolvedUserId,
       email: response.email,
       roles: response.roles,
       profileType: detectedProfileType,
@@ -107,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         // Nurse registration - no token, account pending approval
         setEmail(data.email);
+        setUserId(resolveResponseUserId(response));
         setProfileType(data.profileType);
         setRoles(response.roles);
         setIsAuthenticated(false);
@@ -156,6 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setToken(null);
+    setUserId(null);
     setEmail(null);
     setRoles([]);
     setProfileType(null);
@@ -174,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     isAuthenticated,
     token,
+    userId,
     email,
     roles,
     profileType,
