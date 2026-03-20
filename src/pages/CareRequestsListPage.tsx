@@ -27,6 +27,19 @@ function getStatusStyles(status: CareRequest["status"]) {
   }
 }
 
+function getStatusLabel(status: CareRequest["status"]) {
+  switch (status) {
+    case "Approved":
+      return "Aprobada";
+    case "Rejected":
+      return "Rechazada";
+    case "Completed":
+      return "Completada";
+    default:
+      return "Pendiente";
+  }
+}
+
 export default function CareRequestsListPage() {
   const navigate = useNavigate();
   const { roles } = useAuth();
@@ -42,7 +55,7 @@ export default function CareRequestsListPage() {
       const response = await getCareRequests();
       setCareRequests(response);
     } catch (nextError: any) {
-      setError(nextError.message ?? "Unable to load care requests.");
+      setError(nextError.message ?? "No fue posible cargar las solicitudes.");
     } finally {
       setIsLoading(false);
     }
@@ -63,17 +76,17 @@ export default function CareRequestsListPage() {
 
   return (
     <WorkspaceShell
-      eyebrow="Request Board"
-      title="Monitor intake, review, and completion from one queue."
-      description="The board keeps request status legible at a glance, while detail pages hold the deeper operational context and transition actions."
+      eyebrow="Cola de solicitudes"
+      title="Supervisa captura, revision y cierre desde una sola cola."
+      description="La cola permite leer el estado de cada solicitud de un vistazo, mientras el detalle concentra contexto y acciones."
       actions={
         <>
           <Button variant="outlined" onClick={loadCareRequests} disabled={isLoading}>
-            Refresh Queue
+            Actualizar cola
           </Button>
           {(roles.includes("Nurse") || roles.includes("Admin")) && (
             <Button variant="contained" onClick={() => navigate("/care-request")}>
-              New Request
+              Nueva solicitud
             </Button>
           )}
         </>
@@ -88,10 +101,10 @@ export default function CareRequestsListPage() {
           }}
         >
           {[
-            ["Total requests", String(summary.total)],
-            ["Pending review", String(summary.pending)],
-            ["Approved", String(summary.approved)],
-            ["Completed", String(summary.completed)],
+            ["Solicitudes totales", String(summary.total)],
+            ["Pendientes de revision", String(summary.pending)],
+            ["Aprobadas", String(summary.approved)],
+            ["Completadas", String(summary.completed)],
           ].map(([label, value]) => (
             <Paper key={label} sx={{ p: 3, borderRadius: 2.5 }}>
               <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
@@ -110,14 +123,15 @@ export default function CareRequestsListPage() {
           <Stack spacing={1.5}>
             {careRequests.length === 0 && !isLoading ? (
               <Box sx={{ p: 3 }}>
-                <Typography variant="h6">No care requests yet</Typography>
+                <Typography variant="h6">Todavia no hay solicitudes</Typography>
                 <Typography color="text.secondary" sx={{ mt: 1 }}>
-                  Create the first request to begin the lifecycle flow.
+                  Crea la primera solicitud para iniciar el flujo operativo.
                 </Typography>
               </Box>
             ) : (
               careRequests.map((careRequest) => {
                 const statusStyles = getStatusStyles(careRequest.status);
+                const statusLabel = getStatusLabel(careRequest.status);
 
                 return (
                   <Paper
@@ -143,10 +157,10 @@ export default function CareRequestsListPage() {
                           sx={{ mb: 1.1 }}
                         >
                           <Typography variant="h5" sx={{ maxWidth: 640 }}>
-                            {careRequest.description}
+                            {careRequest.careRequestDescription}
                           </Typography>
                           <Chip
-                            label={careRequest.status}
+                            label={statusLabel}
                             sx={{
                               bgcolor: statusStyles.bg,
                               color: statusStyles.color,
@@ -155,10 +169,10 @@ export default function CareRequestsListPage() {
                           />
                         </Stack>
                         <Typography color="text.secondary">
-                          Resident {careRequest.residentId}
+                          Usuario {careRequest.userID}
                         </Typography>
                         <Typography color="text.secondary" sx={{ mt: 0.8 }}>
-                          Created {new Date(careRequest.createdAtUtc).toLocaleString()}
+                          Creada {new Date(careRequest.createdAtUtc).toLocaleString()}
                         </Typography>
                       </Box>
 
@@ -167,7 +181,7 @@ export default function CareRequestsListPage() {
                           variant="outlined"
                           onClick={() => navigate(`/care-requests/${careRequest.id}`)}
                         >
-                          Review Detail
+                          Ver detalle
                         </Button>
                       </Stack>
                     </Stack>

@@ -17,8 +17,8 @@ const logout = vi.fn();
 const listResponse = [
   {
     id: "request-1",
-    residentId: "11111111-1111-1111-1111-111111111111",
-    description: "Morning medication support",
+    userID: "11111111-1111-1111-1111-111111111111",
+    careRequestDescription: "Morning medication support",
     status: "Pending" as const,
     createdAtUtc: "2026-03-18T10:00:00Z",
     updatedAtUtc: "2026-03-18T10:00:00Z",
@@ -28,8 +28,8 @@ const listResponse = [
   },
   {
     id: "request-2",
-    residentId: "22222222-2222-2222-2222-222222222222",
-    description: "Post-visit follow-up",
+    userID: "22222222-2222-2222-2222-222222222222",
+    careRequestDescription: "Post-visit follow-up",
     status: "Completed" as const,
     createdAtUtc: "2026-03-18T11:00:00Z",
     updatedAtUtc: "2026-03-18T12:00:00Z",
@@ -55,6 +55,7 @@ vi.mock("../context/AuthContext", () => ({
   useAuth: () => ({
     isAuthenticated: true,
     token: "token",
+    userId: "11111111-1111-1111-1111-111111111111",
     email: "admin@example.com",
     roles: ["Admin"],
     profileType: 1,
@@ -85,9 +86,9 @@ describe("Care request pages", () => {
 
     expect(await screen.findByText("Morning medication support")).toBeInTheDocument();
     expect(screen.getByText("Post-visit follow-up")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "Review Detail" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "Ver detalle" })).toHaveLength(2);
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Review Detail" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Ver detalle" })[0]);
     expect(navigate).toHaveBeenCalledWith("/care-requests/request-1");
   });
 
@@ -102,15 +103,15 @@ describe("Care request pages", () => {
 
     renderWithTheme(<CareRequestDetailPage />);
 
-    expect(await screen.findByRole("button", { name: "Approve Request" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Aprobar solicitud" })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Approve Request" }));
+    fireEvent.click(screen.getByRole("button", { name: "Aprobar solicitud" }));
 
     await waitFor(() => {
       expect(transitionCareRequest).toHaveBeenCalledWith("request-1", "approve");
     });
 
-    expect(await screen.findByRole("button", { name: "Mark As Completed" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Approve Request" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Marcar como completada" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Aprobar solicitud" })).not.toBeInTheDocument();
   });
 });

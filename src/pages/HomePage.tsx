@@ -19,7 +19,7 @@ export default function HomePage() {
 
   const canCreateRequest = roles.includes("Nurse") || roles.includes("Admin");
   const profileLabel =
-    profileType === UserProfileType.Nurse ? "Nurse profile" : "Client profile";
+    profileType === UserProfileType.Nurse ? "Perfil de enfermeria" : "Perfil de cliente";
 
   const openBoard = () => {
     logClientEvent("web.ui", "Home quick action opened care request board", {
@@ -31,16 +31,16 @@ export default function HomePage() {
 
   return (
     <WorkspaceShell
-      eyebrow="Operations Overview"
-      title="A cleaner workspace for care intake and coordination."
-      description="The web experience now centers around a structured operations console: overview, live request board, intake, and detailed review with role-based transitions."
+      eyebrow="Resumen operativo"
+      title="Un espacio claro para coordinar solicitudes y seguimiento."
+      description="La experiencia web se organiza como una consola operativa con resumen, cola en vivo, captura de solicitudes y revision detallada segun el rol."
       actions={
         <>
           <Button variant="outlined" onClick={() => navigate("/care-request")}>
-            Open Intake
+            Abrir formulario
           </Button>
           <Button variant="contained" onClick={openBoard}>
-            Open Request Board
+            Abrir cola de solicitudes
           </Button>
         </>
       }
@@ -77,17 +77,17 @@ export default function HomePage() {
             />
             <Stack spacing={2.5} sx={{ position: "relative" }}>
               <Typography variant="overline" sx={{ letterSpacing: "0.2em", color: "#bde0dd" }}>
-                Daily Command View
+                Vista diaria
               </Typography>
               <Typography variant="h3" sx={{ color: "#fffef8", maxWidth: 640 }}>
                 {canCreateRequest
-                  ? "Move requests from intake to action without losing the operational thread."
-                  : "Review the current request flow with a professional, role-aware view."}
+                  ? "Mueve las solicitudes desde la captura hasta la accion sin perder el hilo operativo."
+                  : "Revisa el flujo actual de solicitudes con una vista profesional y consciente del rol."}
               </Typography>
               <Typography sx={{ maxWidth: 620, color: "rgba(235,244,247,0.8)", lineHeight: 1.8 }}>
-                Use the board to review status, then open individual requests for lifecycle
-                transitions, timestamps, and detail context. Intake remains available when you need
-                to add new work.
+                Usa la cola para revisar estados y luego abre solicitudes individuales para ver
+                transiciones, marcas de tiempo y contexto operativo. El formulario sigue
+                disponible cuando necesites registrar trabajo nuevo.
               </Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
                 <Chip
@@ -95,11 +95,11 @@ export default function HomePage() {
                   sx={{ bgcolor: "rgba(255,255,255,0.14)", color: "#fffef8", borderRadius: 2 }}
                 />
                 <Chip
-                  label={roles.join(", ") || "User"}
+                  label={roles.join(", ") || "Usuario"}
                   sx={{ bgcolor: "rgba(255,255,255,0.14)", color: "#d8ecec", borderRadius: 2 }}
                 />
                 <Chip
-                  label={email ?? "No email loaded"}
+                  label={email ?? "Sin correo cargado"}
                   sx={{ bgcolor: "rgba(255,255,255,0.14)", color: "#d8ecec", borderRadius: 2 }}
                 />
               </Stack>
@@ -115,16 +115,16 @@ export default function HomePage() {
           >
             {[
               {
-                title: "Structured navigation",
-                body: "Overview, queue, and intake now sit inside one consistent shell with stable context.",
+                title: "Navegacion estructurada",
+                body: "Resumen, cola y formulario viven ahora dentro de una misma interfaz consistente.",
               },
               {
-                title: "Role-led workflow",
-                body: "Admins can approve or reject pending requests, while nurses and admins can complete approved work.",
+                title: "Flujo guiado por roles",
+                body: "Los administradores aprueban o rechazan solicitudes pendientes, mientras enfermeria y administracion completan trabajo aprobado.",
               },
               {
-                title: "Session resilience",
-                body: "Stored sessions restore automatically and refresh flows keep the workspace usable during longer reviews.",
+                title: "Sesion resiliente",
+                body: "Las sesiones guardadas se restauran automaticamente y los refresh tokens sostienen revisiones largas.",
               },
             ].map((item) => (
               <Paper key={item.title} sx={{ p: 3, borderRadius: 2.5 }}>
@@ -142,33 +142,33 @@ export default function HomePage() {
         <Stack spacing={3}>
           <Paper sx={{ p: 3, borderRadius: 2.5 }}>
             <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-              Readiness
+              Estado
             </Typography>
             <Typography variant="h5" sx={{ mt: 1.1, mb: 2 }}>
-              Current workspace health
+              Salud actual del espacio
             </Typography>
             <Stack spacing={1.25}>
               <Alert severity="success" variant="outlined">
-                Auth state restores from local storage
+                La autenticacion se restaura desde almacenamiento local
               </Alert>
               <Alert severity="success" variant="outlined">
-                Protected requests send Bearer tokens automatically
+                Las solicitudes protegidas envian el Bearer token automaticamente
               </Alert>
               <Alert severity="info" variant="outlined">
-                Queue and detail screens reflect lifecycle transitions directly
+                La cola y el detalle reflejan directamente las transiciones del ciclo de vida
               </Alert>
             </Stack>
           </Paper>
 
           <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }}>
             <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
-              Recommended Flow
+              Flujo recomendado
             </Typography>
             <Stack spacing={1.4} sx={{ mt: 2 }}>
               {[
-                "Open the request board to review the live queue.",
-                "Use intake when a nurse or admin needs to create a new request.",
-                "Open a request detail page to approve, reject, or complete it based on role.",
+                "Abre la cola para revisar las solicitudes en vivo.",
+                "Usa el formulario cuando enfermeria o administracion necesiten crear una nueva solicitud.",
+                "Abre el detalle de una solicitud para aprobarla, rechazarla o completarla segun el rol.",
               ].map((step) => (
                 <Box key={step} sx={{ display: "flex", gap: 1.25 }}>
                   <Box

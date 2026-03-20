@@ -23,6 +23,7 @@ describe("sessionStorage helpers", () => {
       token: "access-token",
       refreshToken: "refresh-token",
       expiresAtUtc: "2026-03-18T18:00:00Z",
+      userId: "11111111-1111-1111-1111-111111111111",
       email: "care@example.com",
       roles: ["Admin"],
       profileType: UserProfileType.Nurse,
@@ -32,6 +33,7 @@ describe("sessionStorage helpers", () => {
       token: "access-token",
       refreshToken: "refresh-token",
       expiresAtUtc: "2026-03-18T18:00:00Z",
+      userId: "11111111-1111-1111-1111-111111111111",
       email: "care@example.com",
       roles: ["Admin"],
       profileType: UserProfileType.Nurse,
@@ -46,6 +48,7 @@ describe("sessionStorage helpers", () => {
       token: "access-token",
       refreshToken: "refresh-token",
       expiresAtUtc: null,
+      userId: "11111111-1111-1111-1111-111111111111",
       email: "care@example.com",
       roles: ["Nurse"],
       profileType: UserProfileType.Nurse,
@@ -57,11 +60,46 @@ describe("sessionStorage helpers", () => {
       token: "second-token",
       refreshToken: "second-refresh-token",
       expiresAtUtc: null,
+      userId: "11111111-1111-1111-1111-111111111111",
       email: "care@example.com",
       roles: ["Nurse"],
       profileType: UserProfileType.Nurse,
     });
 
     expect(listener).toHaveBeenCalledTimes(2);
+  });
+
+  it("hydrates a legacy session by deriving userId from the jwt", () => {
+    const tokenPayload = {
+      "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier":
+        "22222222-2222-2222-2222-222222222222",
+    };
+    const token = [
+      "header",
+      btoa(JSON.stringify(tokenPayload)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
+      "signature",
+    ].join(".");
+
+    window.localStorage.setItem(
+      "authSession",
+      JSON.stringify({
+        token,
+        refreshToken: "refresh-token",
+        expiresAtUtc: null,
+        email: "legacy@example.com",
+        roles: ["Admin"],
+        profileType: UserProfileType.Nurse,
+      }),
+    );
+
+    expect(getAuthSession()).toEqual({
+      token,
+      refreshToken: "refresh-token",
+      expiresAtUtc: null,
+      userId: "22222222-2222-2222-2222-222222222222",
+      email: "legacy@example.com",
+      roles: ["Admin"],
+      profileType: UserProfileType.Nurse,
+    });
   });
 });

@@ -33,6 +33,19 @@ function getStatusStyles(status: CareRequest["status"]) {
   }
 }
 
+function getStatusLabel(status: CareRequest["status"]) {
+  switch (status) {
+    case "Approved":
+      return "Aprobada";
+    case "Rejected":
+      return "Rechazada";
+    case "Completed":
+      return "Completada";
+    default:
+      return "Pendiente";
+  }
+}
+
 export default function CareRequestDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -54,7 +67,7 @@ export default function CareRequestDetailPage() {
       const response = await getCareRequestById(id);
       setCareRequest(response);
     } catch (nextError: any) {
-      setError(nextError.message ?? "Unable to load care request.");
+      setError(nextError.message ?? "No fue posible cargar la solicitud.");
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +89,7 @@ export default function CareRequestDetailPage() {
       const updated = await transitionCareRequest(id, action);
       setCareRequest(updated);
     } catch (nextError: any) {
-      setError(nextError.message ?? "Unable to update care request.");
+      setError(nextError.message ?? "No fue posible actualizar la solicitud.");
     } finally {
       setIsActing(false);
     }
@@ -86,19 +99,20 @@ export default function CareRequestDetailPage() {
   const canComplete =
     (roles.includes("Admin") || roles.includes("Nurse")) && careRequest?.status === "Approved";
   const statusStyles = careRequest ? getStatusStyles(careRequest.status) : null;
+  const statusLabel = careRequest ? getStatusLabel(careRequest.status) : "";
 
   return (
     <WorkspaceShell
-      eyebrow="Request Detail"
-      title={careRequest?.description ?? "Review request status and lifecycle detail."}
-      description="Use this view to inspect key identifiers, audit timestamps, and the exact transition actions available to the current role."
+      eyebrow="Detalle de solicitud"
+      title={careRequest?.careRequestDescription ?? "Revisa el estado y el detalle del ciclo de vida de la solicitud."}
+      description="Usa esta vista para inspeccionar identificadores, marcas de tiempo y las acciones disponibles segun el rol actual."
       actions={
         <>
           <Button variant="outlined" onClick={() => navigate("/care-requests")}>
-            Back To Queue
+            Volver a la cola
           </Button>
           <Button variant="outlined" onClick={loadCareRequest} disabled={isLoading || isActing}>
-            Refresh
+            Actualizar
           </Button>
         </>
       }
@@ -123,7 +137,7 @@ export default function CareRequestDetailPage() {
                 >
                   {statusStyles && (
                     <Chip
-                      label={careRequest.status}
+                      label={statusLabel}
                       sx={{
                         bgcolor: statusStyles.bg,
                         color: statusStyles.color,
@@ -132,7 +146,7 @@ export default function CareRequestDetailPage() {
                     />
                   )}
                   <Typography color="text.secondary">
-                    Request ID {careRequest.id}
+                    ID de solicitud {careRequest.id}
                   </Typography>
                 </Stack>
 
@@ -146,10 +160,10 @@ export default function CareRequestDetailPage() {
                   }}
                 >
                   {[
-                    ["Resident ID", careRequest.residentId],
-                    ["Created", new Date(careRequest.createdAtUtc).toLocaleString()],
-                    ["Updated", new Date(careRequest.updatedAtUtc).toLocaleString()],
-                    ["Current status", careRequest.status],
+                    ["ID de usuario", careRequest.userID],
+                    ["Creada", new Date(careRequest.createdAtUtc).toLocaleString()],
+                    ["Actualizada", new Date(careRequest.updatedAtUtc).toLocaleString()],
+                    ["Estado actual", statusLabel],
                   ].map(([label, value]) => (
                     <Paper
                       key={label}
@@ -168,18 +182,18 @@ export default function CareRequestDetailPage() {
             <Stack spacing={3}>
               <Paper sx={{ p: 3, borderRadius: 2.5 }}>
                 <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                  Transition History
+                  Historial de transiciones
                 </Typography>
                 <Stack spacing={1.3} sx={{ mt: 2 }}>
                   {[
-                    ["Approved", careRequest.approvedAtUtc],
-                    ["Rejected", careRequest.rejectedAtUtc],
-                    ["Completed", careRequest.completedAtUtc],
+                    ["Aprobada", careRequest.approvedAtUtc],
+                    ["Rechazada", careRequest.rejectedAtUtc],
+                    ["Completada", careRequest.completedAtUtc],
                   ].map(([label, value]) => (
                     <Box key={label} sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
                       <Typography sx={{ fontWeight: 700 }}>{label}</Typography>
                       <Typography color="text.secondary">
-                        {value ? new Date(value).toLocaleString() : "Not recorded"}
+                        {value ? new Date(value).toLocaleString() : "Sin registro"}
                       </Typography>
                     </Box>
                   ))}
@@ -188,7 +202,7 @@ export default function CareRequestDetailPage() {
 
               <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }}>
                 <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
-                  Available Actions
+                  Acciones disponibles
                 </Typography>
                 <Stack spacing={1.25} sx={{ mt: 2 }}>
                   {canApproveOrReject && (
@@ -199,7 +213,7 @@ export default function CareRequestDetailPage() {
                         onClick={() => runAction("approve")}
                         disabled={isActing}
                       >
-                        Approve Request
+                        Aprobar solicitud
                       </Button>
                       <Button
                         variant="outlined"
@@ -207,7 +221,7 @@ export default function CareRequestDetailPage() {
                         onClick={() => runAction("reject")}
                         disabled={isActing}
                       >
-                        Reject Request
+                        Rechazar solicitud
                       </Button>
                     </>
                   )}
@@ -218,14 +232,13 @@ export default function CareRequestDetailPage() {
                       onClick={() => runAction("complete")}
                       disabled={isActing}
                     >
-                      Mark As Completed
+                      Marcar como completada
                     </Button>
                   )}
 
                   {!canApproveOrReject && !canComplete && (
                     <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                      No transition actions are currently available for this request and role
-                      combination.
+                      No hay transiciones disponibles para esta combinacion de solicitud y rol.
                     </Typography>
                   )}
                 </Stack>

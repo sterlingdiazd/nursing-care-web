@@ -32,7 +32,7 @@ export default function LoginPage() {
     setError(null);
 
     if (!canSubmit) {
-      setError("Enter a valid email address and password to continue.");
+      setError("Ingresa un correo valido y tu contrasena para continuar.");
       return;
     }
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
       await login({ email: email.trim(), password });
       navigate("/home");
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Unable to sign in.");
+      setError(nextError instanceof Error ? nextError.message : "No fue posible iniciar sesion.");
     }
   };
 
@@ -80,7 +80,7 @@ export default function LoginPage() {
       .filter(Boolean);
 
     if (!token || !refreshToken || !emailFromRedirect || roles.length === 0) {
-      setError("Google sign-in completed but the session payload was incomplete.");
+      setError("El inicio de sesion con Google finalizo, pero la sesion recibida estaba incompleta.");
       clearHash();
       return;
     }
@@ -89,6 +89,7 @@ export default function LoginPage() {
       token,
       refreshToken,
       expiresAtUtc: params.get("expiresAtUtc"),
+      userId: params.get("userId") ?? "",
       email: emailFromRedirect,
       roles,
     };
@@ -105,11 +106,11 @@ export default function LoginPage() {
 
   return (
     <AuthScene
-      eyebrow="Secure Access"
-      title="Sign in to the care workspace."
-      subtitle="Use your approved NursingCare account to manage requests, review status transitions, and continue where you left off."
-      asideTitle="Session behavior"
-      asideBody="The web client restores your last active session and refreshes access tokens automatically when the backend allows it."
+      eyebrow="Acceso seguro"
+      title="Inicia sesion en el espacio de NursingCare."
+      subtitle="Usa tu cuenta aprobada para gestionar solicitudes, revisar transiciones y continuar donde lo dejaste."
+      asideTitle="Comportamiento de la sesion"
+      asideBody="El cliente web restaura la ultima sesion activa y renueva el token automaticamente cuando el backend lo permite."
       form={
         <Box component="form" onSubmit={handleSubmit}>
           <Stack spacing={2.25}>
@@ -121,38 +122,38 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="name@facility.org"
+              placeholder="nombre@centro.org"
               disabled={isLoading}
               error={email.length > 0 && !isEmailValid}
               helperText={
                 email.length > 0 && !isEmailValid
                   ? "Use a valid email format."
-                  : "Enter the email connected to your NursingCare account."
+                  : "Ingresa el correo asociado a tu cuenta de NursingCare."
               }
             />
 
             <TextField
               fullWidth
-              label="Password"
+              label="Contrasena"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               disabled={isLoading}
-              helperText="Passwords are validated against the backend."
+              helperText="La contrasena se valida contra el backend."
             />
 
             <Button type="submit" variant="contained" size="large" disabled={!canSubmit}>
               {isLoading ? (
                 <>
                   <CircularProgress size={18} sx={{ mr: 1, color: "inherit" }} />
-                  Signing In
+                  Iniciando sesion
                 </>
               ) : (
-                "Sign In"
+                "Iniciar sesion"
               )}
             </Button>
 
-            <Divider>or</Divider>
+            <Divider>o</Divider>
 
             <Button
               type="button"
@@ -161,13 +162,13 @@ export default function LoginPage() {
               disabled={isLoading}
               onClick={handleGoogleSignIn}
             >
-              Sign in with Google
+              Continuar con Google
             </Button>
 
             <Typography color="text.secondary" sx={{ textAlign: "center" }}>
-              New here?{" "}
+              ¿Aun no tienes cuenta?{" "}
               <Link component={RouterLink} to="/register" underline="hover" sx={{ fontWeight: 700 }}>
-                Create an account
+                Crear cuenta
               </Link>
             </Typography>
           </Stack>

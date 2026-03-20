@@ -50,7 +50,7 @@ export default function RegisterPage() {
     setSuccessMessage(null);
 
     if (!canSubmit) {
-      setError("Complete the required fields and resolve the validation notes before submitting.");
+      setError("Completa los campos requeridos y corrige las validaciones antes de enviar.");
       return;
     }
 
@@ -65,12 +65,12 @@ export default function RegisterPage() {
       await register(payload);
       setSuccessMessage(
         profileType === UserProfileType.Nurse
-          ? "Registration submitted. Nurse accounts stay pending until an administrator activates access."
-          : "Registration complete. Your account is ready to sign in."
+          ? "Registro enviado. Las cuentas de enfermeria permanecen pendientes hasta que administracion active el acceso."
+          : "Registro completado. Tu cuenta ya puede iniciar sesion."
       );
       navigate("/login");
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "Unable to register.");
+      setError(nextError instanceof Error ? nextError.message : "No fue posible registrarte.");
     }
   };
 
@@ -82,11 +82,11 @@ export default function RegisterPage() {
 
   return (
     <AuthScene
-      eyebrow="Create Access"
-      title="Register your NursingCare account."
-      subtitle="Choose the role that matches how you’ll use the workspace. Client accounts activate immediately; nurse accounts wait for admin approval."
-      asideTitle="Approval flow"
-      asideBody="Nurse registrations are intentionally staged behind administrative activation so clinical access is reviewed before login is allowed."
+      eyebrow="Crear acceso"
+      title="Registra tu cuenta de NursingCare."
+      subtitle="Elige el rol que corresponde a tu uso del sistema. Las cuentas de cliente se activan de inmediato; las de enfermeria esperan aprobacion administrativa."
+      asideTitle="Flujo de aprobacion"
+      asideBody="Las cuentas de enfermeria requieren activacion administrativa para revisar el acceso clinico antes de permitir el inicio de sesion."
       form={
         <Box component="form" onSubmit={handleSubmit}>
           <Stack spacing={2.25}>
@@ -99,30 +99,30 @@ export default function RegisterPage() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="name@facility.org"
+              placeholder="nombre@centro.org"
               disabled={isLoading}
               error={email.length > 0 && !isEmailValid}
               helperText={
                 email.length > 0 && !isEmailValid
                   ? "Use a valid email format."
-                  : "This becomes your username for future sign-ins."
+                  : "Este correo sera tu usuario para futuros inicios de sesion."
               }
             />
 
             <TextField
               fullWidth
-              label="Password"
+              label="Contrasena"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               disabled={isLoading}
               error={password.length > 0 && !passwordValidation.isValid}
-              helperText={password.length > 0 ? passwordValidation.message : "Minimum 6 characters"}
+              helperText={password.length > 0 ? passwordValidation.message : "Minimo 6 caracteres"}
             />
 
             <TextField
               fullWidth
-              label="Confirm password"
+              label="Confirmar contrasena"
               type="password"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
@@ -130,13 +130,13 @@ export default function RegisterPage() {
               error={confirmPassword.length > 0 && !passwordsMatch}
               helperText={
                 confirmPassword.length > 0 && !passwordsMatch
-                  ? "Passwords must match."
-                  : "Repeat the password exactly."
+                  ? "Las contrasenas deben coincidir."
+                  : "Repite la contrasena exactamente igual."
               }
             />
 
             <FormControl>
-              <FormLabel sx={{ mb: 1, color: "text.primary" }}>Register as</FormLabel>
+              <FormLabel sx={{ mb: 1, color: "text.primary" }}>Registrarse como</FormLabel>
               <RadioGroup
                 value={String(profileType)}
                 onChange={(event) =>
@@ -146,14 +146,14 @@ export default function RegisterPage() {
                 <PaperOption
                   value={String(UserProfileType.Client)}
                   control={<Radio />}
-                  label="Client"
-                  description="Immediate access after registration."
+                  label="Cliente"
+                  description="Acceso inmediato despues del registro."
                 />
                 <PaperOption
                   value={String(UserProfileType.Nurse)}
                   control={<Radio />}
-                  label="Nurse"
-                  description="Requires administrator approval before login."
+                  label="Enfermeria"
+                  description="Requiere aprobacion administrativa antes de iniciar sesion."
                 />
               </RadioGroup>
             </FormControl>
@@ -162,14 +162,14 @@ export default function RegisterPage() {
               {isLoading ? (
                 <>
                   <CircularProgress size={18} sx={{ mr: 1, color: "inherit" }} />
-                  Creating Account
+                  Creando cuenta
                 </>
               ) : (
-                "Create Account"
+                "Crear cuenta"
               )}
             </Button>
 
-            <Divider>or</Divider>
+            <Divider>o</Divider>
 
             <Button
               type="button"
@@ -178,17 +178,17 @@ export default function RegisterPage() {
               disabled={isLoading}
               onClick={handleGoogleSignIn}
             >
-              Continue with Google
+              Continuar con Google
             </Button>
 
             <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>
-              Google sign-in creates an immediately active client account.
+              El acceso con Google crea una cuenta de cliente activa inmediatamente.
             </Typography>
 
             <Typography color="text.secondary" sx={{ textAlign: "center" }}>
-              Already have access?{" "}
+              ¿Ya tienes acceso?{" "}
               <Link component={RouterLink} to="/login" underline="hover" sx={{ fontWeight: 700 }}>
-                Sign in here
+                Inicia sesion aqui
               </Link>
             </Typography>
           </Stack>

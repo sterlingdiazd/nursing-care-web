@@ -7,7 +7,11 @@ let refreshPromise: Promise<string | null> | null = null;
 
 httpClient.interceptors.request.use(
   (config) => {
-    const correlationId = createCorrelationId();
+    const configuredCorrelationId =
+      typeof config.headers?.["X-Correlation-ID"] === "string"
+        ? config.headers["X-Correlation-ID"]
+        : undefined;
+    const correlationId = configuredCorrelationId ?? createCorrelationId();
     const requestUrl = new URL(config.url ?? "", config.baseURL).toString();
     const session = getAuthSession();
     const storedToken = session?.token ?? null;
@@ -72,6 +76,7 @@ httpClient.interceptors.response.use(
               token: response.token,
               refreshToken: response.refreshToken,
               expiresAtUtc: response.expiresAtUtc,
+              userId: response.userId,
               email: response.email,
               roles: response.roles,
               profileType: session.profileType,
