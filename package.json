@@ -18,9 +18,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "vite",
+    "start": "node scripts/release-port.mjs 3000 && vite --port 3000 --strictPort",
     "build": "vite build",
-    "preview": "vite preview",
+    "preview": "node scripts/release-port.mjs 4173 && vite preview --port 4173 --strictPort",
     "test": "vitest"
   },
   "eslintConfig": {
