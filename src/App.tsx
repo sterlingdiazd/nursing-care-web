@@ -186,6 +186,28 @@ function OperationalRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function CareRequestCreateRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, profileType, requiresAdminReview, requiresProfileCompletion, roles } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiresProfileCompletion) {
+    return <Navigate to="/register" replace />;
+  }
+
+  if (requiresAdminReview && profileType === UserProfileType.Nurse) {
+    return <Navigate to="/home" replace />;
+  }
+
+  if (!roles.includes("Client") && !roles.includes("Admin")) {
+    return <Navigate to="/care-requests" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, requiresProfileCompletion, roles } = useAuth();
 
@@ -240,9 +262,9 @@ function AppRoutes() {
       <Route
         path="/care-request"
         element={
-          <OperationalRoute>
+          <CareRequestCreateRoute>
             <CareRequestPage />
-          </OperationalRoute>
+          </CareRequestCreateRoute>
         }
       />
       <Route

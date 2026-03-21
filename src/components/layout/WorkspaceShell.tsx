@@ -24,7 +24,6 @@ interface WorkspaceShellProps {
 const baseNavigationItems = [
   { label: "Resumen", path: "/home" },
   { label: "Cola", path: "/care-requests" },
-  { label: "Nueva solicitud", path: "/care-request" },
 ];
 
 function getActivePath(pathname: string) {
@@ -53,9 +52,15 @@ export default function WorkspaceShell({
   const navigate = useNavigate();
   const location = useLocation();
   const { email, logout, roles } = useAuth();
-  const navigationItems = roles.includes("Admin")
-    ? [...baseNavigationItems, { label: "Perfiles de enfermeria", path: "/admin/nurse-profiles" }]
-    : baseNavigationItems;
+  const navigationItems = [
+    ...baseNavigationItems,
+    ...(roles.includes("Client") || roles.includes("Admin")
+      ? [{ label: "Nueva solicitud", path: "/care-request" }]
+      : []),
+    ...(roles.includes("Admin")
+      ? [{ label: "Perfiles de enfermeria", path: "/admin/nurse-profiles" }]
+      : []),
+  ];
   const activePath = getActivePath(location.pathname);
   const activeItem =
     navigationItems.find((item) => item.path === activePath) ?? navigationItems[0];

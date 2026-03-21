@@ -74,6 +74,8 @@ export default function CareRequestPage() {
   const navigate = useNavigate();
   const { userId } = useAuth();
   const [careRequestDescription, setCareRequestDescription] = useState("");
+  const [suggestedNurse, setSuggestedNurse] = useState("");
+  const [careRequestDate, setCareRequestDate] = useState("");
   const [careRequestType, setCareRequestType] = useState<string>("domicilio_24h");
   const [unit, setUnit] = useState<number>(1);
   const [distanceFactor, setDistanceFactor] = useState<string>("local");
@@ -174,6 +176,8 @@ export default function CareRequestPage() {
           careRequestDescription: trimmedDescription,
           careRequestType,
           unit,
+          ...(suggestedNurse.trim() ? { suggestedNurse: suggestedNurse.trim() } : {}),
+          ...(careRequestDate ? { careRequestDate } : {}),
           ...(typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
             ? { clientBasePriceOverride }
             : {}),
@@ -199,6 +203,8 @@ export default function CareRequestPage() {
         message: `Solicitud creada correctamente con el ID ${response.id}.`,
       });
       setCareRequestDescription("");
+      setSuggestedNurse("");
+      setCareRequestDate("");
       navigate(`/care-requests/${response.id}`);
     } catch (error: any) {
       logClientEvent(
@@ -274,6 +280,27 @@ export default function CareRequestPage() {
                 placeholder="Describe el cuidado requerido, urgencia, detalles clinicos relevantes y cualquier indicacion operativa para la aprobacion."
                 disabled={isLoading}
                 helperText={`${descriptionCount} caracteres`}
+              />
+
+              <TextField
+                fullWidth
+                label="Enfermera sugerida (opcional)"
+                value={suggestedNurse}
+                onChange={(event) => setSuggestedNurse(event.target.value)}
+                placeholder="Nombre de la enfermera que el cliente prefiere"
+                disabled={isLoading}
+                helperText="Administracion decidira si asigna esta sugerencia u otra enfermera."
+              />
+
+              <TextField
+                fullWidth
+                label="Fecha del servicio (opcional)"
+                type="date"
+                value={careRequestDate}
+                onChange={(event) => setCareRequestDate(event.target.value)}
+                disabled={isLoading}
+                InputLabelProps={{ shrink: true }}
+                helperText="Si se indica una fecha futura, la enfermera asignada no podra completar la solicitud antes de ese dia."
               />
 
               <Divider sx={{ my: 2 }} />
@@ -422,6 +449,8 @@ export default function CareRequestPage() {
                   disabled={isLoading}
                   onClick={() => {
                     setCareRequestDescription("");
+                    setSuggestedNurse("");
+                    setCareRequestDate("");
                     setFeedback(null);
                   }}
                 >

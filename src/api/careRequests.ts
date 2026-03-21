@@ -6,15 +6,13 @@ export interface CreateCareRequestRequest {
   careRequestDescription: string;
   careRequestType: string;
   unit?: number;
-  nurseId?: string;
   suggestedNurse?: string;
-  assignedNurse?: string;
   price?: number;
   clientBasePriceOverride?: number;
   distanceFactor?: string;
   complexityLevel?: string;
   medicalSuppliesCost?: number;
-  serviceDate?: string; // YYYY-MM-DD
+  careRequestDate?: string; // YYYY-MM-DD
 }
 
 export interface CareRequest {
@@ -30,7 +28,9 @@ export interface CareRequest {
   complexityLevel?: string | null;
   clientBasePrice?: number | null;
   medicalSuppliesCost?: number | null;
-  serviceDate?: string | null;
+  careRequestDate?: string | null;
+  suggestedNurse?: string | null;
+  assignedNurse?: string | null;
   status: "Pending" | "Approved" | "Rejected" | "Completed";
   createdAtUtc: string;
   updatedAtUtc: string;
@@ -40,6 +40,10 @@ export interface CareRequest {
 }
 
 export type CareRequestTransitionAction = "approve" | "reject" | "complete";
+
+export interface AssignCareRequestNurseRequest {
+  assignedNurse: string;
+}
 
 export async function createCareRequest(
   request: CreateCareRequestRequest,
@@ -102,5 +106,13 @@ export async function transitionCareRequest(
   action: CareRequestTransitionAction,
 ) {
   const response = await httpClient.post<CareRequest>(`/care-requests/${id}/${action}`);
+  return response.data;
+}
+
+export async function assignCareRequestNurse(
+  id: string,
+  request: AssignCareRequestNurseRequest,
+) {
+  const response = await httpClient.put<CareRequest>(`/care-requests/${id}/assignment`, request);
   return response.data;
 }

@@ -17,8 +17,8 @@ export default function HomePage() {
     }
   }, [isAuthenticated, navigate]);
 
-  const canCreateRequest =
-    !requiresAdminReview && (roles.includes("Client") || roles.includes("Nurse") || roles.includes("Admin"));
+  const canOpenBoard = !requiresAdminReview || profileType !== UserProfileType.Nurse;
+  const canCreateRequest = canOpenBoard && (roles.includes("Client") || roles.includes("Admin"));
   const isAdmin = roles.includes("Admin");
   const profileLabel =
     profileType === UserProfileType.Nurse ? "Perfil de enfermeria" : "Perfil de cliente";
@@ -46,7 +46,7 @@ export default function HomePage() {
           <Button variant="outlined" onClick={() => navigate("/care-request")} disabled={!canCreateRequest}>
             Abrir formulario
           </Button>
-          <Button variant="contained" onClick={openBoard} disabled={!canCreateRequest}>
+          <Button variant="contained" onClick={openBoard} disabled={!canOpenBoard}>
             Abrir cola de solicitudes
           </Button>
         </>
@@ -132,7 +132,7 @@ export default function HomePage() {
               },
               {
                 title: "Flujo guiado por roles",
-                body: "Los administradores aprueban o rechazan solicitudes pendientes, mientras enfermeria y administracion completan trabajo aprobado.",
+                body: "Los clientes crean solicitudes, administracion asigna y aprueba, y la enfermeria asignada completa el servicio.",
               },
               {
                 title: "Sesion resiliente",
@@ -184,8 +184,8 @@ export default function HomePage() {
             <Stack spacing={1.4} sx={{ mt: 2 }}>
               {[
                 "Abre la cola para revisar las solicitudes en vivo.",
-                "Usa el formulario cuando enfermeria o administracion necesiten crear una nueva solicitud.",
-                "Abre el detalle de una solicitud para aprobarla, rechazarla o completarla segun el rol.",
+                "Usa el formulario solo desde perfiles de cliente cuando necesites registrar trabajo nuevo.",
+                "Abre el detalle de una solicitud para asignarla, aprobarla, rechazarla o completarla segun el rol.",
               ].map((step) => (
                 <Box key={step} sx={{ display: "flex", gap: 1.25 }}>
                   <Box
