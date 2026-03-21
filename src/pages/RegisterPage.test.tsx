@@ -56,4 +56,14 @@ describe("RegisterPage", () => {
     expect(screen.getByLabelText("Fecha de contratacion")).toBeInTheDocument();
     expect(screen.getByLabelText("Especialidad")).toBeInTheDocument();
   });
+
+  it("shows immediate feedback when a forbidden character is attempted", () => {
+    renderWithTheme(<RegisterPage />);
+
+    fireEvent.change(screen.getByLabelText("Apellido"), {
+      target: { value: "Perez1" },
+    });
+
+    expect(screen.getByText("El apellido solo acepta letras y espacios.")).toBeInTheDocument();
+  });
 });

@@ -26,6 +26,8 @@ import {
 import {
   getExactDigitsFieldError,
   getOptionalDigitsFieldError,
+  getRejectedDigitsOnlyInputError,
+  getRejectedTextOnlyInputError,
   getTextOnlyFieldError,
   sanitizeDigitsOnlyInput,
   sanitizeTextOnlyInput,
@@ -88,6 +90,13 @@ export default function AdminNurseProfilesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [nameInputError, setNameInputError] = useState("");
+  const [lastNameInputError, setLastNameInputError] = useState("");
+  const [identificationNumberInputError, setIdentificationNumberInputError] = useState("");
+  const [phoneInputError, setPhoneInputError] = useState("");
+  const [licenseIdInputError, setLicenseIdInputError] = useState("");
+  const [bankNameInputError, setBankNameInputError] = useState("");
+  const [accountNumberInputError, setAccountNumberInputError] = useState("");
   const nameError = useMemo(() => getTextOnlyFieldError(formState.name, "El nombre"), [formState.name]);
   const lastNameError = useMemo(() => getTextOnlyFieldError(formState.lastName, "El apellido"), [formState.lastName]);
   const identificationNumberError = useMemo(
@@ -107,31 +116,42 @@ export default function AdminNurseProfilesPage() {
     () => getOptionalDigitsFieldError(formState.accountNumber ?? "", "El numero de cuenta"),
     [formState.accountNumber],
   );
+  const displayedNameError = nameInputError || (formState.name.length > 0 ? nameError : "");
+  const displayedLastNameError = lastNameInputError || (formState.lastName.length > 0 ? lastNameError : "");
+  const displayedIdentificationNumberError =
+    identificationNumberInputError
+    || (formState.identificationNumber.length > 0 ? identificationNumberError : "");
+  const displayedPhoneError = phoneInputError || (formState.phone.length > 0 ? phoneError : "");
+  const displayedLicenseIdError =
+    licenseIdInputError || ((formState.licenseId ?? "").length > 0 ? licenseIdError : "");
+  const displayedBankNameError = bankNameInputError || (formState.bankName.length > 0 ? bankNameError : "");
+  const displayedAccountNumberError =
+    accountNumberInputError || ((formState.accountNumber ?? "").length > 0 ? accountNumberError : "");
 
   const canSubmit = useMemo(
     () =>
       !isSaving &&
-      !nameError &&
-      !lastNameError &&
-      !identificationNumberError &&
-      !phoneError &&
+      !displayedNameError &&
+      !displayedLastNameError &&
+      !displayedIdentificationNumberError &&
+      !displayedPhoneError &&
       formState.email.trim().length > 0 &&
       formState.hireDate.trim().length > 0 &&
       formState.specialty.trim().length > 0 &&
-      !licenseIdError &&
-      !bankNameError &&
-      !accountNumberError &&
+      !displayedLicenseIdError &&
+      !displayedBankNameError &&
+      !displayedAccountNumberError &&
       formState.category.trim().length > 0,
     [
-      accountNumberError,
-      bankNameError,
+      displayedAccountNumberError,
+      displayedBankNameError,
+      displayedIdentificationNumberError,
+      displayedLastNameError,
+      displayedLicenseIdError,
+      displayedNameError,
+      displayedPhoneError,
       formState,
-      identificationNumberError,
       isSaving,
-      lastNameError,
-      licenseIdError,
-      nameError,
-      phoneError,
     ],
   );
 
@@ -208,6 +228,30 @@ export default function AdminNurseProfilesPage() {
           return value;
       }
     })();
+
+    switch (field) {
+      case "name":
+        setNameInputError(getRejectedTextOnlyInputError(value, "El nombre"));
+        break;
+      case "lastName":
+        setLastNameInputError(getRejectedTextOnlyInputError(value, "El apellido"));
+        break;
+      case "identificationNumber":
+        setIdentificationNumberInputError(getRejectedDigitsOnlyInputError(value, "La cedula", 11));
+        break;
+      case "phone":
+        setPhoneInputError(getRejectedDigitsOnlyInputError(value, "El telefono", 10));
+        break;
+      case "licenseId":
+        setLicenseIdInputError(getRejectedDigitsOnlyInputError(value, "La licencia"));
+        break;
+      case "bankName":
+        setBankNameInputError(getRejectedTextOnlyInputError(value, "El banco"));
+        break;
+      case "accountNumber":
+        setAccountNumberInputError(getRejectedDigitsOnlyInputError(value, "El numero de cuenta"));
+        break;
+    }
 
     setFormState((current) => ({
       ...current,
@@ -364,28 +408,24 @@ export default function AdminNurseProfilesPage() {
                     value={formState.name}
                     onChange={(event) => handleChange("name", event.target.value)}
                     disabled={isLoadingDetail || isSaving}
-                    error={formState.name.length > 0 && !!nameError}
-                    helperText={formState.name.length > 0 && nameError ? nameError : "Solo letras y espacios."}
+                    error={!!displayedNameError}
+                    helperText={displayedNameError || "Solo letras y espacios."}
                   />
                   <TextField
                     label="Apellido"
                     value={formState.lastName}
                     onChange={(event) => handleChange("lastName", event.target.value)}
                     disabled={isLoadingDetail || isSaving}
-                    error={formState.lastName.length > 0 && !!lastNameError}
-                    helperText={formState.lastName.length > 0 && lastNameError ? lastNameError : "Solo letras y espacios."}
+                    error={!!displayedLastNameError}
+                    helperText={displayedLastNameError || "Solo letras y espacios."}
                   />
                   <TextField
                     label="Cedula"
                     value={formState.identificationNumber}
                     onChange={(event) => handleChange("identificationNumber", event.target.value)}
                     disabled={isLoadingDetail || isSaving}
-                    error={formState.identificationNumber.length > 0 && !!identificationNumberError}
-                    helperText={
-                      formState.identificationNumber.length > 0 && identificationNumberError
-                        ? identificationNumberError
-                        : "Debe tener exactamente 11 digitos."
-                    }
+                    error={!!displayedIdentificationNumberError}
+                    helperText={displayedIdentificationNumberError || "Debe tener exactamente 11 digitos."}
                     inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 11 }}
                   />
                   <TextField
@@ -393,8 +433,8 @@ export default function AdminNurseProfilesPage() {
                     value={formState.phone}
                     onChange={(event) => handleChange("phone", event.target.value)}
                     disabled={isLoadingDetail || isSaving}
-                    error={formState.phone.length > 0 && !!phoneError}
-                    helperText={formState.phone.length > 0 && phoneError ? phoneError : "Debe tener exactamente 10 digitos."}
+                    error={!!displayedPhoneError}
+                    helperText={displayedPhoneError || "Debe tener exactamente 10 digitos."}
                     inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 10 }}
                   />
                   <TextField
@@ -430,8 +470,8 @@ export default function AdminNurseProfilesPage() {
                     value={formState.licenseId ?? ""}
                     onChange={(event) => handleChange("licenseId", event.target.value)}
                     disabled={isLoadingDetail || isSaving}
-                    error={(formState.licenseId ?? "").length > 0 && !!licenseIdError}
-                    helperText={(formState.licenseId ?? "").length > 0 && licenseIdError ? licenseIdError : "Opcional. Solo numeros."}
+                    error={!!displayedLicenseIdError}
+                    helperText={displayedLicenseIdError || "Opcional. Solo numeros."}
                     inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
                   />
                   <TextField
@@ -439,20 +479,16 @@ export default function AdminNurseProfilesPage() {
                     value={formState.bankName}
                     onChange={(event) => handleChange("bankName", event.target.value)}
                     disabled={isLoadingDetail || isSaving}
-                    error={formState.bankName.length > 0 && !!bankNameError}
-                    helperText={formState.bankName.length > 0 && bankNameError ? bankNameError : "Solo letras y espacios."}
+                    error={!!displayedBankNameError}
+                    helperText={displayedBankNameError || "Solo letras y espacios."}
                   />
                   <TextField
                     label="Numero de cuenta"
                     value={formState.accountNumber ?? ""}
                     onChange={(event) => handleChange("accountNumber", event.target.value)}
                     disabled={isLoadingDetail || isSaving}
-                    error={(formState.accountNumber ?? "").length > 0 && !!accountNumberError}
-                    helperText={
-                      (formState.accountNumber ?? "").length > 0 && accountNumberError
-                        ? accountNumberError
-                        : "Opcional. Solo numeros."
-                    }
+                    error={!!displayedAccountNumberError}
+                    helperText={displayedAccountNumberError || "Opcional. Solo numeros."}
                     inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
                   />
                   <TextField

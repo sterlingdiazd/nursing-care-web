@@ -26,6 +26,8 @@ import { RegisterRequest, UserProfileType } from "../types/auth";
 import {
   getExactDigitsFieldError,
   getOptionalDigitsFieldError,
+  getRejectedDigitsOnlyInputError,
+  getRejectedTextOnlyInputError,
   getTextOnlyFieldError,
   sanitizeDigitsOnlyInput,
   sanitizeTextOnlyInput,
@@ -68,6 +70,13 @@ export default function RegisterPage() {
   const [licenseId, setLicenseId] = useState("");
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
+  const [nameInputError, setNameInputError] = useState("");
+  const [lastNameInputError, setLastNameInputError] = useState("");
+  const [identificationNumberInputError, setIdentificationNumberInputError] = useState("");
+  const [phoneInputError, setPhoneInputError] = useState("");
+  const [licenseIdInputError, setLicenseIdInputError] = useState("");
+  const [bankNameInputError, setBankNameInputError] = useState("");
+  const [accountNumberInputError, setAccountNumberInputError] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const isProfileCompletionMode = isAuthenticated && requiresProfileCompletion;
@@ -90,12 +99,21 @@ export default function RegisterPage() {
     () => getOptionalDigitsFieldError(accountNumber, "El numero de cuenta"),
     [accountNumber],
   );
+  const displayedNameError = nameInputError || (name.length > 0 ? nameError : "");
+  const displayedLastNameError = lastNameInputError || (lastName.length > 0 ? lastNameError : "");
+  const displayedIdentificationNumberError =
+    identificationNumberInputError || (identificationNumber.length > 0 ? identificationNumberError : "");
+  const displayedPhoneError = phoneInputError || (phone.length > 0 ? phoneError : "");
+  const displayedLicenseIdError = licenseIdInputError || (licenseId.length > 0 ? licenseIdError : "");
+  const displayedBankNameError = bankNameInputError || (bankName.length > 0 ? bankNameError : "");
+  const displayedAccountNumberError =
+    accountNumberInputError || (accountNumber.length > 0 ? accountNumberError : "");
   const canSubmit =
     !isLoading &&
-    !nameError &&
-    !lastNameError &&
-    !identificationNumberError &&
-    !phoneError &&
+    !displayedNameError &&
+    !displayedLastNameError &&
+    !displayedIdentificationNumberError &&
+    !displayedPhoneError &&
     isEmailValid &&
     (isProfileCompletionMode ||
       (email.trim().length > 0 &&
@@ -106,9 +124,9 @@ export default function RegisterPage() {
         (!isNurseRegistration ||
           (hireDate.trim().length > 0 &&
             specialty.trim().length > 0 &&
-            !licenseIdError &&
-            !bankNameError &&
-            !accountNumberError))));
+            !displayedLicenseIdError &&
+            !displayedBankNameError &&
+            !displayedAccountNumberError))));
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -185,34 +203,42 @@ export default function RegisterPage() {
               fullWidth
               label="Nombre"
               value={name}
-              onChange={(event) => setName(sanitizeTextOnlyInput(event.target.value))}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                setName(sanitizeTextOnlyInput(nextValue));
+                setNameInputError(getRejectedTextOnlyInputError(nextValue, "El nombre"));
+              }}
               disabled={isLoading}
-              error={name.length > 0 && !!nameError}
-              helperText={name.length > 0 && nameError ? nameError : "Campo obligatorio. Solo letras y espacios."}
+              error={!!displayedNameError}
+              helperText={displayedNameError || "Campo obligatorio. Solo letras y espacios."}
             />
 
             <TextField
               fullWidth
               label="Apellido"
               value={lastName}
-              onChange={(event) => setLastName(sanitizeTextOnlyInput(event.target.value))}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                setLastName(sanitizeTextOnlyInput(nextValue));
+                setLastNameInputError(getRejectedTextOnlyInputError(nextValue, "El apellido"));
+              }}
               disabled={isLoading}
-              error={lastName.length > 0 && !!lastNameError}
-              helperText={lastName.length > 0 && lastNameError ? lastNameError : "Campo obligatorio. Solo letras y espacios."}
+              error={!!displayedLastNameError}
+              helperText={displayedLastNameError || "Campo obligatorio. Solo letras y espacios."}
             />
 
             <TextField
               fullWidth
               label="Cédula"
               value={identificationNumber}
-              onChange={(event) => setIdentificationNumber(sanitizeDigitsOnlyInput(event.target.value, 11))}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                setIdentificationNumber(sanitizeDigitsOnlyInput(nextValue, 11));
+                setIdentificationNumberInputError(getRejectedDigitsOnlyInputError(nextValue, "La cedula", 11));
+              }}
               disabled={isLoading}
-              error={identificationNumber.length > 0 && !!identificationNumberError}
-              helperText={
-                identificationNumber.length > 0 && identificationNumberError
-                  ? identificationNumberError
-                  : "Debe tener exactamente 11 digitos."
-              }
+              error={!!displayedIdentificationNumberError}
+              helperText={displayedIdentificationNumberError || "Debe tener exactamente 11 digitos."}
               inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 11 }}
             />
 
@@ -220,10 +246,14 @@ export default function RegisterPage() {
               fullWidth
               label="Telefono"
               value={phone}
-              onChange={(event) => setPhone(sanitizeDigitsOnlyInput(event.target.value, 10))}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                setPhone(sanitizeDigitsOnlyInput(nextValue, 10));
+                setPhoneInputError(getRejectedDigitsOnlyInputError(nextValue, "El telefono", 10));
+              }}
               disabled={isLoading}
-              error={phone.length > 0 && !!phoneError}
-              helperText={phone.length > 0 && phoneError ? phoneError : "Debe tener exactamente 10 digitos."}
+              error={!!displayedPhoneError}
+              helperText={displayedPhoneError || "Debe tener exactamente 10 digitos."}
               inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 10 }}
             />
 
@@ -365,10 +395,14 @@ export default function RegisterPage() {
                         fullWidth
                         label="Licencia"
                         value={licenseId}
-                        onChange={(event) => setLicenseId(sanitizeDigitsOnlyInput(event.target.value))}
+                        onChange={(event) => {
+                          const nextValue = event.target.value;
+                          setLicenseId(sanitizeDigitsOnlyInput(nextValue));
+                          setLicenseIdInputError(getRejectedDigitsOnlyInputError(nextValue, "La licencia"));
+                        }}
                         disabled={isLoading}
-                        error={licenseId.length > 0 && !!licenseIdError}
-                        helperText={licenseId.length > 0 && licenseIdError ? licenseIdError : "Opcional. Solo numeros."}
+                        error={!!displayedLicenseIdError}
+                        helperText={displayedLicenseIdError || "Opcional. Solo numeros."}
                         inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
                       />
 
@@ -376,28 +410,28 @@ export default function RegisterPage() {
                         fullWidth
                         label="Banco"
                         value={bankName}
-                        onChange={(event) => setBankName(sanitizeTextOnlyInput(event.target.value))}
+                        onChange={(event) => {
+                          const nextValue = event.target.value;
+                          setBankName(sanitizeTextOnlyInput(nextValue));
+                          setBankNameInputError(getRejectedTextOnlyInputError(nextValue, "El banco"));
+                        }}
                         disabled={isLoading}
-                        error={bankName.length > 0 && !!bankNameError}
-                        helperText={
-                          bankName.length > 0 && bankNameError
-                            ? bankNameError
-                            : "Campo obligatorio. Solo letras y espacios."
-                        }
+                        error={!!displayedBankNameError}
+                        helperText={displayedBankNameError || "Campo obligatorio. Solo letras y espacios."}
                       />
 
                       <TextField
                         fullWidth
                         label="Numero de cuenta"
                         value={accountNumber}
-                        onChange={(event) => setAccountNumber(sanitizeDigitsOnlyInput(event.target.value))}
+                        onChange={(event) => {
+                          const nextValue = event.target.value;
+                          setAccountNumber(sanitizeDigitsOnlyInput(nextValue));
+                          setAccountNumberInputError(getRejectedDigitsOnlyInputError(nextValue, "El numero de cuenta"));
+                        }}
                         disabled={isLoading}
-                        error={accountNumber.length > 0 && !!accountNumberError}
-                        helperText={
-                          accountNumber.length > 0 && accountNumberError
-                            ? accountNumberError
-                            : "Opcional. Solo numeros."
-                        }
+                        error={!!displayedAccountNumberError}
+                        helperText={displayedAccountNumberError || "Opcional. Solo numeros."}
                         inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
                       />
                     </Stack>
