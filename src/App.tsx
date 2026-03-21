@@ -11,6 +11,7 @@ import HomePage from "./pages/HomePage";
 import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
 import CareRequestDetailPage from "./pages/CareRequestDetailPage";
+import AdminNurseProfilesPage from "./pages/AdminNurseProfilesPage";
 import { UserProfileType } from "./types/auth";
 
 // Create Material-UI theme
@@ -185,6 +186,24 @@ function OperationalRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, requiresProfileCompletion, roles } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiresProfileCompletion) {
+    return <Navigate to="/register" replace />;
+  }
+
+  if (!roles.includes("Admin")) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 // App Routes
 function AppRoutes() {
   const { isAuthenticated, requiresProfileCompletion } = useAuth();
@@ -240,6 +259,14 @@ function AppRoutes() {
           <OperationalRoute>
             <CareRequestDetailPage />
           </OperationalRoute>
+        }
+      />
+      <Route
+        path="/admin/nurse-profiles"
+        element={
+          <AdminRoute>
+            <AdminNurseProfilesPage />
+          </AdminRoute>
         }
       />
 

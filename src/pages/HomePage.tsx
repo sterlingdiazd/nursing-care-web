@@ -19,6 +19,7 @@ export default function HomePage() {
 
   const canCreateRequest =
     !requiresAdminReview && (roles.includes("Client") || roles.includes("Nurse") || roles.includes("Admin"));
+  const isAdmin = roles.includes("Admin");
   const profileLabel =
     profileType === UserProfileType.Nurse ? "Perfil de enfermeria" : "Perfil de cliente";
 
@@ -37,6 +38,11 @@ export default function HomePage() {
       description="La experiencia web se organiza como una consola operativa con resumen, cola en vivo, captura de solicitudes y revision detallada segun el rol."
       actions={
         <>
+          {isAdmin && (
+            <Button variant="text" onClick={() => navigate("/admin/nurse-profiles")}>
+              Completar perfiles
+            </Button>
+          )}
           <Button variant="outlined" onClick={() => navigate("/care-request")} disabled={!canCreateRequest}>
             Abrir formulario
           </Button>

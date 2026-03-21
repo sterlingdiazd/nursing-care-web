@@ -21,7 +21,7 @@ interface WorkspaceShellProps {
   children: ReactNode;
 }
 
-const navigationItems = [
+const baseNavigationItems = [
   { label: "Resumen", path: "/home" },
   { label: "Cola", path: "/care-requests" },
   { label: "Nueva solicitud", path: "/care-request" },
@@ -34,6 +34,10 @@ function getActivePath(pathname: string) {
 
   if (pathname.startsWith("/care-request")) {
     return "/care-request";
+  }
+
+  if (pathname.startsWith("/admin/nurse-profiles")) {
+    return "/admin/nurse-profiles";
   }
 
   return "/home";
@@ -49,6 +53,9 @@ export default function WorkspaceShell({
   const navigate = useNavigate();
   const location = useLocation();
   const { email, logout, roles } = useAuth();
+  const navigationItems = roles.includes("Admin")
+    ? [...baseNavigationItems, { label: "Perfiles de enfermeria", path: "/admin/nurse-profiles" }]
+    : baseNavigationItems;
   const activePath = getActivePath(location.pathname);
   const activeItem =
     navigationItems.find((item) => item.path === activePath) ?? navigationItems[0];
