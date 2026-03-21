@@ -24,25 +24,43 @@ import { RegisterRequest, UserProfileType } from "../types/auth";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { register, isLoading } = useAuth();
+  const {
+    register,
+    completeProfile,
+    isLoading,
+    email: authEmail,
+    isAuthenticated,
+    requiresProfileCompletion,
+  } = useAuth();
+  const [name, setName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [identificationNumber, setIdentificationNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileType, setProfileType] = useState<UserProfileType>(UserProfileType.Client);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const isProfileCompletionMode = isAuthenticated && requiresProfileCompletion;
+  const effectiveEmail = isProfileCompletionMode ? authEmail ?? "" : email;
 
   const passwordValidation = useMemo(() => validatePassword(password), [password]);
-  const isEmailValid = validateEmail(email.trim());
+  const isEmailValid = validateEmail(effectiveEmail.trim());
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
   const canSubmit =
     !isLoading &&
-    email.trim().length > 0 &&
-    password.length > 0 &&
-    confirmPassword.length > 0 &&
+    name.trim().length > 0 &&
+    lastName.trim().length > 0 &&
+    identificationNumber.trim().length > 0 &&
+    phone.trim().length > 0 &&
     isEmailValid &&
-    passwordValidation.isValid &&
-    passwordsMatch;
+    (isProfileCompletionMode ||
+      (email.trim().length > 0 &&
+        password.length > 0 &&
+        confirmPassword.length > 0 &&
+        passwordValidation.isValid &&
+        passwordsMatch));
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -55,20 +73,35 @@ export default function RegisterPage() {
     }
 
     try {
-      const payload: RegisterRequest = {
-        email: email.trim(),
-        password,
-        confirmPassword,
-        profileType,
-      };
+      if (isProfileCompletionMode) {
+        await completeProfile({
+          name: name.trim(),
+          lastName: lastName.trim(),
+          identificationNumber: identificationNumber.trim(),
+          phone: phone.trim(),
+        });
+        setSuccessMessage("Perfil completado. Ya puedes continuar al panel principal.");
+        navigate("/home");
+      } else {
+        const payload: RegisterRequest = {
+          name: name.trim(),
+          lastName: lastName.trim(),
+          identificationNumber: identificationNumber.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          password,
+          confirmPassword,
+          profileType,
+        };
 
-      await register(payload);
-      setSuccessMessage(
-        profileType === UserProfileType.Nurse
-          ? "Registro enviado. Las cuentas de enfermeria permanecen pendientes hasta que administracion active el acceso."
-          : "Registro completado. Tu cuenta ya puede iniciar sesion."
-      );
-      navigate("/login");
+        await register(payload);
+        setSuccessMessage(
+          profileType === UserProfileType.Nurse
+            ? "Registro enviado. Las cuentas de enfermeria permanecen pendientes hasta que administracion active el acceso."
+            : "Registro completado. Tu cuenta ya puede iniciar sesion."
+        );
+        navigate("/login");
+      }
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "No fue posible registrarte.");
     }
@@ -83,8 +116,10 @@ export default function RegisterPage() {
   return (
     <AuthScene
       eyebrow="Crear acceso"
-      title="Registra tu cuenta de NursingCare."
-      subtitle="Elige el rol que corresponde a tu uso del sistema. Las cuentas de cliente se activan de inmediato; las de enfermeria esperan aprobacion administrativa."
+      title={isProfileCompletionMode ? "Completa tu registro de NursingCare." : "Registra tu cuenta de NursingCare."}
+      subtitle={isProfileCompletionMode
+        ? "Tu cuenta de Google ya fue validada. Completa los datos restantes para habilitar el acceso a la aplicacion."
+        : "Elige el rol que corresponde a tu uso del sistema. Las cuentas de cliente se activan de inmediato; las de enfermeria esperan aprobacion administrativa."}
       asideTitle="Flujo de aprobacion"
       asideBody="Las cuentas de enfermeria requieren activacion administrativa para revisar el acceso clinico antes de permitir el inicio de sesion."
       form={
@@ -95,101 +130,153 @@ export default function RegisterPage() {
 
             <TextField
               fullWidth
+              label="Nombre"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              disabled={isLoading}
+              helperText="Campo obligatorio."
+            />
+
+            <TextField
+              fullWidth
+              label="Apellido"
+              value={lastName}
+              onChange={(event) => setLastName(event.target.value)}
+              disabled={isLoading}
+              helperText="Campo obligatorio."
+            />
+
+            <TextField
+              fullWidth
+              label="Cédula"
+              value={identificationNumber}
+              onChange={(event) => setIdentificationNumber(event.target.value)}
+              disabled={isLoading}
+              helperText="Numero de identificacion obligatorio."
+            />
+
+            <TextField
+              fullWidth
+              label="Telefono"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              disabled={isLoading}
+              helperText="Numero de contacto obligatorio."
+            />
+
+            <TextField
+              fullWidth
               label="Email"
               type="email"
-              value={email}
+              value={effectiveEmail}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="nombre@centro.org"
-              disabled={isLoading}
-              error={email.length > 0 && !isEmailValid}
+              disabled={isLoading || isProfileCompletionMode}
+              error={effectiveEmail.length > 0 && !isEmailValid}
               helperText={
-                email.length > 0 && !isEmailValid
+                effectiveEmail.length > 0 && !isEmailValid
                   ? "Use a valid email format."
-                  : "Este correo sera tu usuario para futuros inicios de sesion."
+                  : isProfileCompletionMode
+                    ? "Este correo proviene de Google y no se puede modificar aqui."
+                    : "Este correo sera tu usuario para futuros inicios de sesion."
               }
             />
 
-            <TextField
-              fullWidth
-              label="Contrasena"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              disabled={isLoading}
-              error={password.length > 0 && !passwordValidation.isValid}
-              helperText={password.length > 0 ? passwordValidation.message : "Minimo 6 caracteres"}
-            />
-
-            <TextField
-              fullWidth
-              label="Confirmar contrasena"
-              type="password"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              disabled={isLoading}
-              error={confirmPassword.length > 0 && !passwordsMatch}
-              helperText={
-                confirmPassword.length > 0 && !passwordsMatch
-                  ? "Las contrasenas deben coincidir."
-                  : "Repite la contrasena exactamente igual."
-              }
-            />
-
-            <FormControl>
-              <FormLabel sx={{ mb: 1, color: "text.primary" }}>Registrarse como</FormLabel>
-              <RadioGroup
-                value={String(profileType)}
-                onChange={(event) =>
-                  setProfileType(Number(event.target.value) as UserProfileType)
-                }
-              >
-                <PaperOption
-                  value={String(UserProfileType.Client)}
-                  control={<Radio />}
-                  label="Cliente"
-                  description="Acceso inmediato despues del registro."
+            {!isProfileCompletionMode && (
+              <>
+                <TextField
+                  fullWidth
+                  label="Contrasena"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  disabled={isLoading}
+                  error={password.length > 0 && !passwordValidation.isValid}
+                  helperText={password.length > 0 ? passwordValidation.message : "Minimo 6 caracteres"}
                 />
-                <PaperOption
-                  value={String(UserProfileType.Nurse)}
-                  control={<Radio />}
-                  label="Enfermeria"
-                  description="Requiere aprobacion administrativa antes de iniciar sesion."
+
+                <TextField
+                  fullWidth
+                  label="Confirmar contrasena"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  disabled={isLoading}
+                  error={confirmPassword.length > 0 && !passwordsMatch}
+                  helperText={
+                    confirmPassword.length > 0 && !passwordsMatch
+                      ? "Las contrasenas deben coincidir."
+                      : "Repite la contrasena exactamente igual."
+                  }
                 />
-              </RadioGroup>
-            </FormControl>
+
+                <FormControl>
+                  <FormLabel sx={{ mb: 1, color: "text.primary" }}>Registrarse como</FormLabel>
+                  <RadioGroup
+                    value={String(profileType)}
+                    onChange={(event) =>
+                      setProfileType(Number(event.target.value) as UserProfileType)
+                    }
+                  >
+                    <PaperOption
+                      value={String(UserProfileType.Client)}
+                      control={<Radio />}
+                      label="Cliente"
+                      description="Acceso inmediato despues del registro."
+                    />
+                    <PaperOption
+                      value={String(UserProfileType.Nurse)}
+                      control={<Radio />}
+                      label="Enfermeria"
+                      description="Requiere aprobacion administrativa antes de iniciar sesion."
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </>
+            )}
 
             <Button type="submit" variant="contained" size="large" disabled={!canSubmit}>
               {isLoading ? (
                 <>
                   <CircularProgress size={18} sx={{ mr: 1, color: "inherit" }} />
-                  Creando cuenta
+                  {isProfileCompletionMode ? "Guardando perfil" : "Creando cuenta"}
                 </>
               ) : (
-                "Crear cuenta"
+                isProfileCompletionMode ? "Completar registro" : "Crear cuenta"
               )}
             </Button>
 
-            <Divider>o</Divider>
+            {!isProfileCompletionMode && (
+              <>
+                <Divider>o</Divider>
 
-            <Button
-              type="button"
-              variant="outlined"
-              size="large"
-              disabled={isLoading}
-              onClick={handleGoogleSignIn}
-            >
-              Continuar con Google
-            </Button>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  size="large"
+                  disabled={isLoading}
+                  onClick={handleGoogleSignIn}
+                >
+                  Continuar con Google
+                </Button>
 
-            <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>
-              El acceso con Google crea una cuenta de cliente activa inmediatamente.
-            </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>
+                  Google te llevara a completar este mismo formulario antes de entrar.
+                </Typography>
+              </>
+            )}
 
             <Typography color="text.secondary" sx={{ textAlign: "center" }}>
-              ¿Ya tienes acceso?{" "}
-              <Link component={RouterLink} to="/login" underline="hover" sx={{ fontWeight: 700 }}>
-                Inicia sesion aqui
-              </Link>
+              {isProfileCompletionMode ? (
+                "Completa estos datos para continuar."
+              ) : (
+                <>
+                  ¿Ya tienes acceso?{" "}
+                  <Link component={RouterLink} to="/login" underline="hover" sx={{ fontWeight: 700 }}>
+                    Inicia sesion aqui
+                  </Link>
+                </>
+              )}
             </Typography>
           </Stack>
         </Box>

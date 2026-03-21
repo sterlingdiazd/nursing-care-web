@@ -12,6 +12,10 @@ import { API_BASE_URL } from "../config/env";
  * @returns AuthResponse with token (or empty for Nurse pending approval)
  */
 export async function registerUser(
+  name: string,
+  lastName: string,
+  identificationNumber: string,
+  phone: string,
   email: string,
   password: string,
   confirmPassword: string,
@@ -20,10 +24,15 @@ export async function registerUser(
   try {
     logClientEvent("web.auth", "User registration submitted", {
       email,
+      identificationNumber,
       profileType: profileType === UserProfileType.Nurse ? "Nurse" : "Client",
     });
 
     const request: RegisterRequest = {
+      name,
+      lastName,
+      identificationNumber,
+      phone,
       email,
       password,
       confirmPassword,
@@ -52,6 +61,7 @@ export async function registerUser(
       "User registration failed",
       {
         email,
+        identificationNumber,
         errorMessage,
       },
       "error"
@@ -59,6 +69,22 @@ export async function registerUser(
 
     throw new Error(errorMessage);
   }
+}
+
+export async function completeProfile(
+  name: string,
+  lastName: string,
+  identificationNumber: string,
+  phone: string
+): Promise<AuthResponse> {
+  const response = await httpClient.post<AuthResponse>("/auth/complete-profile", {
+    name,
+    lastName,
+    identificationNumber,
+    phone,
+  });
+
+  return response.data;
 }
 
 /**

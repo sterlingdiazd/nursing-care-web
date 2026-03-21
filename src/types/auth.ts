@@ -8,6 +8,10 @@ export enum UserProfileType {
 }
 
 export interface RegisterRequest {
+  name: string;
+  lastName: string;
+  identificationNumber: string;
+  phone: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -26,6 +30,7 @@ export interface AuthResponse {
   userId: string;
   email: string;
   roles: string[];
+  requiresProfileCompletion: boolean;
 }
 
 export interface AuthContextType {
@@ -35,9 +40,11 @@ export interface AuthContextType {
   email: string | null;
   roles: string[];
   profileType: UserProfileType | null;
+  requiresProfileCompletion: boolean;
   isLoading: boolean;
   error: string | null;
   register: (data: RegisterRequest) => Promise<void>;
+  completeProfile: (data: Omit<RegisterRequest, "email" | "password" | "confirmPassword" | "profileType">) => Promise<void>;
   login: (data: LoginRequest) => Promise<void>;
   completeOAuthLogin: (response: AuthResponse) => void;
   logout: () => void;

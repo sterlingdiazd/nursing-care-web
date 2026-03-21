@@ -80,6 +80,7 @@ httpClient.interceptors.response.use(
               email: response.email,
               roles: response.roles,
               profileType: session.profileType,
+              requiresProfileCompletion: response.requiresProfileCompletion,
             });
 
             logClientEvent("web.auth", "Access token refreshed");

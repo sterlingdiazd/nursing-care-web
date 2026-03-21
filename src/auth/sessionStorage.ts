@@ -8,6 +8,7 @@ export interface AuthSession {
   email: string;
   roles: string[];
   profileType: UserProfileType | null;
+  requiresProfileCompletion: boolean;
 }
 
 const STORAGE_KEY = "authSession";
@@ -78,6 +79,7 @@ export function getAuthSession(): AuthSession | null {
       email: parsed.email,
       roles: parsed.roles,
       profileType: parsed.profileType ?? null,
+      requiresProfileCompletion: parsed.requiresProfileCompletion ?? false,
     };
 
     if (parsed.userId !== userId) {

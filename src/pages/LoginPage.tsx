@@ -92,11 +92,12 @@ export default function LoginPage() {
       userId: params.get("userId") ?? "",
       email: emailFromRedirect,
       roles,
+      requiresProfileCompletion: params.get("requiresProfileCompletion") === "true",
     };
 
     completeOAuthLogin(response);
     clearHash();
-    navigate("/home", { replace: true });
+    navigate(response.requiresProfileCompletion ? "/register" : "/home", { replace: true });
   }, [completeOAuthLogin, navigate]);
 
   const handleGoogleSignIn = () => {

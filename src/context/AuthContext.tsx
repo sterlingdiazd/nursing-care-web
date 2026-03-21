@@ -6,7 +6,7 @@ import {
   LoginRequest,
   UserProfileType,
 } from "../types/auth";
-import { registerUser, loginUser } from "../api/auth";
+import { completeProfile as completeProfileRequest, registerUser, loginUser } from "../api/auth";
 import { logClientEvent } from "../logging/clientLogger";
 import {
   clearAuthSession,
@@ -37,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [profileType, setProfileType] = useState<UserProfileType | null>(null);
+  const [requiresProfileCompletion, setRequiresProfileCompletion] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setEmail(null);
       setRoles([]);
       setProfileType(null);
+      setRequiresProfileCompletion(false);
       setIsAuthenticated(false);
       return;
     }
@@ -58,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setEmail(session.email);
     setRoles(session.roles);
     setProfileType(session.profileType);
+    setRequiresProfileCompletion(session.requiresProfileCompletion);
     setIsAuthenticated(Boolean(session.token));
   };
 
@@ -96,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setEmail(response.email);
     setRoles(response.roles);
     setProfileType(detectedProfileType);
+    setRequiresProfileCompletion(response.requiresProfileCompletion);
     setIsAuthenticated(Boolean(response.token));
 
     saveAuthSession({
@@ -106,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: response.email,
       roles: response.roles,
       profileType: detectedProfileType,
+      requiresProfileCompletion: response.requiresProfileCompletion,
     });
   };
 
@@ -114,6 +119,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const response = await registerUser(
+        data.name,
+        data.lastName,
+        data.identificationNumber,
+        data.phone,
         data.email,
         data.password,
         data.confirmPassword,
@@ -144,6 +153,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const errorMsg = err instanceof Error ? err.message : "Registration failed";
       setError(errorMsg);
       logClientEvent("web.auth", "Registration error caught in context", {}, "error");
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completeProfile = async (
+    data: Omit<RegisterRequest, "email" | "password" | "confirmPassword" | "profileType">
+  ) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await completeProfileRequest(
+        data.name,
+        data.lastName,
+        data.identificationNumber,
+        data.phone
+      );
+
+      applyAuthResponse(response, UserProfileType.Client);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Profile completion failed";
+      setError(errorMsg);
       throw err;
     } finally {
       setIsLoading(false);
@@ -184,6 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setEmail(null);
     setRoles([]);
     setProfileType(null);
+    setRequiresProfileCompletion(false);
     setIsAuthenticated(false);
     setError(null);
 
@@ -203,9 +236,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email,
     roles,
     profileType,
+    requiresProfileCompletion,
     isLoading,
     error,
     register,
+    completeProfile,
     login,
     completeOAuthLogin,
     logout,

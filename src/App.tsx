@@ -154,13 +154,21 @@ const theme = createTheme({
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  const { isAuthenticated, requiresProfileCompletion } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiresProfileCompletion) {
+    return <Navigate to="/register" replace />;
+  }
+
+  return <>{children}</>;
 }
 
 // App Routes
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, requiresProfileCompletion } = useAuth();
 
   useEffect(() => {
     logClientEvent("web.ui", "Web app loaded");
@@ -171,11 +179,15 @@ function AppRoutes() {
       {/* Public Routes */}
       <Route
         path="/register"
-        element={isAuthenticated ? <Navigate to="/home" replace /> : <RegisterPage />}
+        element={isAuthenticated && !requiresProfileCompletion ? <Navigate to="/home" replace /> : <RegisterPage />}
       />
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to="/home" replace /> : <LoginPage />}
+        element={
+          isAuthenticated
+            ? <Navigate to={requiresProfileCompletion ? "/register" : "/home"} replace />
+            : <LoginPage />
+        }
       />
 
       {/* Protected Routes */}
@@ -213,8 +225,14 @@ function AppRoutes() {
       />
 
       {/* Root and catch-all */}
-      <Route path="/" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
-      <Route path="*" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
+      <Route
+        path="/"
+        element={<Navigate to={isAuthenticated ? (requiresProfileCompletion ? "/register" : "/home") : "/login"} replace />}
+      />
+      <Route
+        path="*"
+        element={<Navigate to={isAuthenticated ? (requiresProfileCompletion ? "/register" : "/home") : "/login"} replace />}
+      />
     </Routes>
   );
 }

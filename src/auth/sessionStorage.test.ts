@@ -27,6 +27,7 @@ describe("sessionStorage helpers", () => {
       email: "care@example.com",
       roles: ["Admin"],
       profileType: UserProfileType.Nurse,
+      requiresProfileCompletion: false,
     });
 
     expect(getAuthSession()).toEqual({
@@ -37,6 +38,7 @@ describe("sessionStorage helpers", () => {
       email: "care@example.com",
       roles: ["Admin"],
       profileType: UserProfileType.Nurse,
+      requiresProfileCompletion: false,
     });
   });
 
@@ -52,6 +54,7 @@ describe("sessionStorage helpers", () => {
       email: "care@example.com",
       roles: ["Nurse"],
       profileType: UserProfileType.Nurse,
+      requiresProfileCompletion: false,
     });
 
     clearAuthSession();
@@ -64,6 +67,7 @@ describe("sessionStorage helpers", () => {
       email: "care@example.com",
       roles: ["Nurse"],
       profileType: UserProfileType.Nurse,
+      requiresProfileCompletion: false,
     });
 
     expect(listener).toHaveBeenCalledTimes(2);
@@ -89,6 +93,7 @@ describe("sessionStorage helpers", () => {
         email: "legacy@example.com",
         roles: ["Admin"],
         profileType: UserProfileType.Nurse,
+        requiresProfileCompletion: false,
       }),
     );
 
@@ -100,6 +105,7 @@ describe("sessionStorage helpers", () => {
       email: "legacy@example.com",
       roles: ["Admin"],
       profileType: UserProfileType.Nurse,
+      requiresProfileCompletion: false,
     });
   });
 });
