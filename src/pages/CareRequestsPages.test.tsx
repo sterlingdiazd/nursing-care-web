@@ -6,10 +6,12 @@ import { vi } from "vitest";
 import CareRequestDetailPage from "./CareRequestDetailPage";
 import CareRequestsListPage from "./CareRequestsListPage";
 import {
+  assignCareRequestNurse,
   getCareRequestById,
   getCareRequests,
   transitionCareRequest,
 } from "../api/careRequests";
+import { getActiveNurseProfiles } from "../api/adminNurseProfiles";
 
 const navigate = vi.fn();
 const logout = vi.fn();
@@ -19,6 +21,8 @@ const listResponse = [
     id: "request-1",
     userID: "11111111-1111-1111-1111-111111111111",
     careRequestDescription: "Morning medication support",
+    suggestedNurse: "Luisa",
+    assignedNurse: null,
     status: "Pending" as const,
     createdAtUtc: "2026-03-18T10:00:00Z",
     updatedAtUtc: "2026-03-18T10:00:00Z",
@@ -46,9 +50,14 @@ vi.mock("react-router-dom", () => ({
 }));
 
 vi.mock("../api/careRequests", () => ({
+  assignCareRequestNurse: vi.fn(),
   getCareRequests: vi.fn(),
   getCareRequestById: vi.fn(),
   transitionCareRequest: vi.fn(),
+}));
+
+vi.mock("../api/adminNurseProfiles", () => ({
+  getActiveNurseProfiles: vi.fn(),
 }));
 
 vi.mock("../context/AuthContext", () => ({
@@ -61,6 +70,7 @@ vi.mock("../context/AuthContext", () => ({
     profileType: 1,
     isLoading: false,
     error: null,
+    requiresAdminReview: false,
     logout,
     register: vi.fn(),
     login: vi.fn(),
@@ -94,14 +104,42 @@ describe("Care request pages", () => {
 
   it("shows admin actions and runs transitions from request detail", async () => {
     vi.mocked(getCareRequestById).mockResolvedValue(listResponse[0]);
+    vi.mocked(getActiveNurseProfiles).mockResolvedValue([
+      {
+        userId: "33333333-3333-3333-3333-333333333333",
+        email: "luisa@example.com",
+        name: "Luisa",
+        lastName: "Martinez",
+        specialty: "Home Care",
+        category: "Senior",
+      },
+    ]);
+    vi.mocked(assignCareRequestNurse).mockResolvedValue({
+      ...listResponse[0],
+      assignedNurse: "33333333-3333-3333-3333-333333333333",
+      updatedAtUtc: "2026-03-18T12:00:00Z",
+    });
     vi.mocked(transitionCareRequest).mockResolvedValue({
       ...listResponse[0],
+      assignedNurse: "33333333-3333-3333-3333-333333333333",
       status: "Approved",
       approvedAtUtc: "2026-03-18T12:30:00Z",
       updatedAtUtc: "2026-03-18T12:30:00Z",
     });
 
     renderWithTheme(<CareRequestDetailPage />);
+
+    expect(await screen.findByLabelText("Enfermera asignada")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Enfermera asignada"), {
+      target: { value: "33333333-3333-3333-3333-333333333333" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Asignar enfermera" }));
+
+    await waitFor(() => {
+      expect(assignCareRequestNurse).toHaveBeenCalledWith("request-1", {
+        assignedNurse: "33333333-3333-3333-3333-333333333333",
+      });
+    });
 
     expect(await screen.findByRole("button", { name: "Aprobar solicitud" })).toBeInTheDocument();
 
@@ -111,7 +149,7 @@ describe("Care request pages", () => {
       expect(transitionCareRequest).toHaveBeenCalledWith("request-1", "approve");
     });
 
-    expect(await screen.findByRole("button", { name: "Marcar como completada" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Marcar como completada" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Aprobar solicitud" })).not.toBeInTheDocument();
   });
 });

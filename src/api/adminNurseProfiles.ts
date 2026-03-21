@@ -10,6 +10,15 @@ export interface PendingNurseProfile {
   createdAtUtc: string;
 }
 
+export interface ActiveNurseProfileSummary {
+  userId: string;
+  email: string;
+  name: string | null;
+  lastName: string | null;
+  specialty: string | null;
+  category: string | null;
+}
+
 export interface NurseProfileAdminRecord {
   userId: string;
   email: string;
@@ -45,6 +54,11 @@ export interface CompleteNurseProfileRequest {
 
 export async function getPendingNurseProfiles() {
   const response = await httpClient.get<PendingNurseProfile[]>("/admin/nurse-profiles/pending");
+  return response.data;
+}
+
+export async function getActiveNurseProfiles() {
+  const response = await httpClient.get<ActiveNurseProfileSummary[]>("/admin/nurse-profiles/active");
   return response.data;
 }
 

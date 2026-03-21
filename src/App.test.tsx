@@ -29,6 +29,8 @@ vi.mock("./context/AuthContext", () => ({
     email: "care@example.com",
     roles: ["Client"],
     profileType: 0,
+    requiresAdminReview: false,
+    requiresProfileCompletion: false,
     isLoading: false,
     error: null,
     logout,

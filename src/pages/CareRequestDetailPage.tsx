@@ -8,15 +8,18 @@ import {
   Divider,
   Paper,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 
 import {
   CareRequest,
   CareRequestTransitionAction,
+  assignCareRequestNurse,
   getCareRequestById,
   transitionCareRequest,
 } from "../api/careRequests";
+import { getActiveNurseProfiles, type ActiveNurseProfileSummary } from "../api/adminNurseProfiles";
 import WorkspaceShell from "../components/layout/WorkspaceShell";
 import { useAuth } from "../context/AuthContext";
 
@@ -49,8 +52,10 @@ function getStatusLabel(status: CareRequest["status"]) {
 export default function CareRequestDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { roles } = useAuth();
+  const { roles, userId } = useAuth();
   const [careRequest, setCareRequest] = useState<CareRequest | null>(null);
+  const [activeNurses, setActiveNurses] = useState<ActiveNurseProfileSummary[]>([]);
+  const [assignedNurseId, setAssignedNurseId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isActing, setIsActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +71,7 @@ export default function CareRequestDetailPage() {
     try {
       const response = await getCareRequestById(id);
       setCareRequest(response);
+      setAssignedNurseId(response.assignedNurse ?? "");
     } catch (nextError: any) {
       setError(nextError.message ?? "No fue posible cargar la solicitud.");
     } finally {
@@ -76,6 +82,17 @@ export default function CareRequestDetailPage() {
   useEffect(() => {
     loadCareRequest();
   }, [id]);
+
+  useEffect(() => {
+    if (!roles.includes("Admin")) {
+      setActiveNurses([]);
+      return;
+    }
+
+    void getActiveNurseProfiles()
+      .then((response) => setActiveNurses(response))
+      .catch(() => setActiveNurses([]));
+  }, [roles]);
 
   const runAction = async (action: CareRequestTransitionAction) => {
     if (!id) {
@@ -95,9 +112,38 @@ export default function CareRequestDetailPage() {
     }
   };
 
+  const runAssignment = async () => {
+    if (!id || !assignedNurseId) {
+      return;
+    }
+
+    setIsActing(true);
+    setError(null);
+
+    try {
+      const updated = await assignCareRequestNurse(id, { assignedNurse: assignedNurseId });
+      setCareRequest(updated);
+      setAssignedNurseId(updated.assignedNurse ?? assignedNurseId);
+    } catch (nextError: any) {
+      setError(nextError.message ?? "No fue posible asignar la enfermera.");
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const assignedNurseRecord =
+    activeNurses.find((nurse) => nurse.userId === (careRequest?.assignedNurse ?? assignedNurseId)) ?? null;
+  const assignedNurseLabel = assignedNurseRecord
+    ? [assignedNurseRecord.name, assignedNurseRecord.lastName].filter(Boolean).join(" ") || assignedNurseRecord.email
+    : careRequest?.assignedNurse ?? "Sin asignar";
+  const canManageAssignment = roles.includes("Admin");
   const canApproveOrReject = roles.includes("Admin") && careRequest?.status === "Pending";
+  const canApprove = canApproveOrReject && Boolean(careRequest?.assignedNurse ?? assignedNurseId);
   const canComplete =
-    (roles.includes("Admin") || roles.includes("Nurse")) && careRequest?.status === "Approved";
+    roles.includes("Nurse") &&
+    Boolean(userId) &&
+    careRequest?.status === "Approved" &&
+    careRequest.assignedNurse === userId;
   const statusStyles = careRequest ? getStatusStyles(careRequest.status) : null;
   const statusLabel = careRequest ? getStatusLabel(careRequest.status) : "";
 
@@ -161,6 +207,9 @@ export default function CareRequestDetailPage() {
                 >
                   {[
                     ["ID de usuario", careRequest.userID],
+                    ["Enfermera asignada", assignedNurseLabel],
+                    ["Enfermera sugerida", careRequest.suggestedNurse ?? "Sin sugerencia"],
+                    ["Fecha del servicio", careRequest.careRequestDate ?? "Sin fecha"],
                     ["Creada", new Date(careRequest.createdAtUtc).toLocaleString()],
                     ["Actualizada", new Date(careRequest.updatedAtUtc).toLocaleString()],
                     ["Estado actual", statusLabel],
@@ -200,6 +249,45 @@ export default function CareRequestDetailPage() {
                 </Stack>
               </Paper>
 
+              {canManageAssignment && (
+                <Paper sx={{ p: 3, borderRadius: 2.5 }}>
+                  <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                    Asignacion de enfermeria
+                  </Typography>
+                  <Stack spacing={1.5} sx={{ mt: 2 }}>
+                    <TextField
+                      select
+                      fullWidth
+                      label="Enfermera asignada"
+                      value={assignedNurseId}
+                      onChange={(event) => setAssignedNurseId(event.target.value)}
+                      SelectProps={{ native: true }}
+                      disabled={isActing}
+                      helperText="Solo administracion puede asignar o reasignar la solicitud."
+                    >
+                      <option value="">Selecciona una enfermera activa</option>
+                      {activeNurses.map((nurse) => {
+                        const label =
+                          [nurse.name, nurse.lastName].filter(Boolean).join(" ") || nurse.email;
+
+                        return (
+                          <option key={nurse.userId} value={nurse.userId}>
+                            {label}
+                          </option>
+                        );
+                      })}
+                    </TextField>
+                    <Button
+                      variant="contained"
+                      onClick={runAssignment}
+                      disabled={isActing || !assignedNurseId}
+                    >
+                      {careRequest?.assignedNurse ? "Reasignar enfermera" : "Asignar enfermera"}
+                    </Button>
+                  </Stack>
+                </Paper>
+              )}
+
               <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }}>
                 <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
                   Acciones disponibles
@@ -211,7 +299,7 @@ export default function CareRequestDetailPage() {
                         variant="contained"
                         color="success"
                         onClick={() => runAction("approve")}
-                        disabled={isActing}
+                        disabled={isActing || !canApprove}
                       >
                         Aprobar solicitud
                       </Button>
@@ -234,6 +322,12 @@ export default function CareRequestDetailPage() {
                     >
                       Marcar como completada
                     </Button>
+                  )}
+
+                  {canApproveOrReject && !canApprove && (
+                    <Alert severity="info" variant="outlined">
+                      Debes asignar una enfermera activa antes de aprobar la solicitud.
+                    </Alert>
                   )}
 
                   {!canApproveOrReject && !canComplete && (
