@@ -23,6 +23,13 @@ import { getGoogleOAuthStartUrl, validateEmail, validatePassword } from "../api/
 import AuthScene from "../components/layout/AuthScene";
 import { useAuth } from "../context/AuthContext";
 import { RegisterRequest, UserProfileType } from "../types/auth";
+import {
+  getExactDigitsFieldError,
+  getOptionalDigitsFieldError,
+  getTextOnlyFieldError,
+  sanitizeDigitsOnlyInput,
+  sanitizeTextOnlyInput,
+} from "../utils/identityValidation";
 
 const nurseSpecialties = [
   "Adult Care",
@@ -70,12 +77,25 @@ export default function RegisterPage() {
   const passwordValidation = useMemo(() => validatePassword(password), [password]);
   const isEmailValid = validateEmail(effectiveEmail.trim());
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+  const nameError = useMemo(() => getTextOnlyFieldError(name, "El nombre"), [name]);
+  const lastNameError = useMemo(() => getTextOnlyFieldError(lastName, "El apellido"), [lastName]);
+  const identificationNumberError = useMemo(
+    () => getExactDigitsFieldError(identificationNumber, "La cedula", 11),
+    [identificationNumber],
+  );
+  const phoneError = useMemo(() => getExactDigitsFieldError(phone, "El telefono", 10), [phone]);
+  const licenseIdError = useMemo(() => getOptionalDigitsFieldError(licenseId, "La licencia"), [licenseId]);
+  const bankNameError = useMemo(() => getTextOnlyFieldError(bankName, "El banco", isNurseRegistration), [bankName, isNurseRegistration]);
+  const accountNumberError = useMemo(
+    () => getOptionalDigitsFieldError(accountNumber, "El numero de cuenta"),
+    [accountNumber],
+  );
   const canSubmit =
     !isLoading &&
-    name.trim().length > 0 &&
-    lastName.trim().length > 0 &&
-    identificationNumber.trim().length > 0 &&
-    phone.trim().length > 0 &&
+    !nameError &&
+    !lastNameError &&
+    !identificationNumberError &&
+    !phoneError &&
     isEmailValid &&
     (isProfileCompletionMode ||
       (email.trim().length > 0 &&
@@ -84,7 +104,11 @@ export default function RegisterPage() {
         passwordValidation.isValid &&
         passwordsMatch &&
         (!isNurseRegistration ||
-          (hireDate.trim().length > 0 && specialty.trim().length > 0 && bankName.trim().length > 0))));
+          (hireDate.trim().length > 0 &&
+            specialty.trim().length > 0 &&
+            !licenseIdError &&
+            !bankNameError &&
+            !accountNumberError))));
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -161,36 +185,46 @@ export default function RegisterPage() {
               fullWidth
               label="Nombre"
               value={name}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event) => setName(sanitizeTextOnlyInput(event.target.value))}
               disabled={isLoading}
-              helperText="Campo obligatorio."
+              error={name.length > 0 && !!nameError}
+              helperText={name.length > 0 && nameError ? nameError : "Campo obligatorio. Solo letras y espacios."}
             />
 
             <TextField
               fullWidth
               label="Apellido"
               value={lastName}
-              onChange={(event) => setLastName(event.target.value)}
+              onChange={(event) => setLastName(sanitizeTextOnlyInput(event.target.value))}
               disabled={isLoading}
-              helperText="Campo obligatorio."
+              error={lastName.length > 0 && !!lastNameError}
+              helperText={lastName.length > 0 && lastNameError ? lastNameError : "Campo obligatorio. Solo letras y espacios."}
             />
 
             <TextField
               fullWidth
               label="Cédula"
               value={identificationNumber}
-              onChange={(event) => setIdentificationNumber(event.target.value)}
+              onChange={(event) => setIdentificationNumber(sanitizeDigitsOnlyInput(event.target.value, 11))}
               disabled={isLoading}
-              helperText="Numero de identificacion obligatorio."
+              error={identificationNumber.length > 0 && !!identificationNumberError}
+              helperText={
+                identificationNumber.length > 0 && identificationNumberError
+                  ? identificationNumberError
+                  : "Debe tener exactamente 11 digitos."
+              }
+              inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 11 }}
             />
 
             <TextField
               fullWidth
               label="Telefono"
               value={phone}
-              onChange={(event) => setPhone(event.target.value)}
+              onChange={(event) => setPhone(sanitizeDigitsOnlyInput(event.target.value, 10))}
               disabled={isLoading}
-              helperText="Numero de contacto obligatorio."
+              error={phone.length > 0 && !!phoneError}
+              helperText={phone.length > 0 && phoneError ? phoneError : "Debe tener exactamente 10 digitos."}
+              inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 10 }}
             />
 
             <TextField
@@ -331,27 +365,40 @@ export default function RegisterPage() {
                         fullWidth
                         label="Licencia"
                         value={licenseId}
-                        onChange={(event) => setLicenseId(event.target.value)}
+                        onChange={(event) => setLicenseId(sanitizeDigitsOnlyInput(event.target.value))}
                         disabled={isLoading}
-                        helperText="Opcional."
+                        error={licenseId.length > 0 && !!licenseIdError}
+                        helperText={licenseId.length > 0 && licenseIdError ? licenseIdError : "Opcional. Solo numeros."}
+                        inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
                       />
 
                       <TextField
                         fullWidth
                         label="Banco"
                         value={bankName}
-                        onChange={(event) => setBankName(event.target.value)}
+                        onChange={(event) => setBankName(sanitizeTextOnlyInput(event.target.value))}
                         disabled={isLoading}
-                        helperText="Campo obligatorio para completar el perfil de enfermeria."
+                        error={bankName.length > 0 && !!bankNameError}
+                        helperText={
+                          bankName.length > 0 && bankNameError
+                            ? bankNameError
+                            : "Campo obligatorio. Solo letras y espacios."
+                        }
                       />
 
                       <TextField
                         fullWidth
                         label="Numero de cuenta"
                         value={accountNumber}
-                        onChange={(event) => setAccountNumber(event.target.value)}
+                        onChange={(event) => setAccountNumber(sanitizeDigitsOnlyInput(event.target.value))}
                         disabled={isLoading}
-                        helperText="Opcional."
+                        error={accountNumber.length > 0 && !!accountNumberError}
+                        helperText={
+                          accountNumber.length > 0 && accountNumberError
+                            ? accountNumberError
+                            : "Opcional. Solo numeros."
+                        }
+                        inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
                       />
                     </Stack>
                   </Paper>
