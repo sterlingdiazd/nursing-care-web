@@ -11,6 +11,7 @@ import {
   FormLabel,
   Link,
   MenuItem,
+  Paper,
   Radio,
   RadioGroup,
   Stack,
@@ -30,6 +31,12 @@ const nurseSpecialties = [
   "Critical Care",
   "Home Care",
 ];
+
+const clientProfileCopy =
+  "Perfil de cliente seleccionado. No hay campos adicionales por completar en esta etapa y el acceso operativo queda disponible cuando termine el registro.";
+
+const nurseProfileCopy =
+  "Perfil de enfermeria seleccionado. Podras iniciar sesion al terminar el registro, pero el panel quedara en revision administrativa hasta que completen tu perfil.";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -255,63 +262,100 @@ export default function RegisterPage() {
                   </RadioGroup>
                 </FormControl>
 
-                {isNurseRegistration && (
-                  <>
-                    <TextField
-                      fullWidth
-                      label="Fecha de contratacion"
-                      type="date"
-                      value={hireDate}
-                      onChange={(event) => setHireDate(event.target.value)}
-                      disabled={isLoading}
-                      InputLabelProps={{ shrink: true }}
-                      helperText="Campo obligatorio para el perfil de enfermeria."
-                    />
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 2.25,
+                    borderRadius: 2.5,
+                    bgcolor:
+                      profileType === UserProfileType.Nurse
+                        ? "rgba(31, 75, 110, 0.04)"
+                        : "rgba(44, 122, 100, 0.06)",
+                  }}
+                >
+                  <Stack spacing={1}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+                      {profileType === UserProfileType.Nurse ? "Perfil de enfermeria" : "Perfil de cliente"}
+                    </Typography>
+                    <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                      {profileType === UserProfileType.Nurse ? nurseProfileCopy : clientProfileCopy}
+                    </Typography>
+                  </Stack>
+                </Paper>
 
-                    <TextField
-                      fullWidth
-                      select
-                      label="Especialidad"
-                      value={specialty}
-                      onChange={(event) => setSpecialty(event.target.value)}
-                      disabled={isLoading}
-                      helperText="Selecciona una especialidad de enfermeria."
-                    >
-                      {nurseSpecialties.map((option) => (
-                        <MenuItem key={option} value={option}>
-                          {option}
+                {isNurseRegistration ? (
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 2.5,
+                      borderRadius: 2.5,
+                      bgcolor: "rgba(247, 244, 238, 0.72)",
+                    }}
+                  >
+                    <Stack spacing={2}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
+                        Datos del perfil de enfermeria
+                      </Typography>
+
+                      <TextField
+                        fullWidth
+                        label="Fecha de contratacion"
+                        type="date"
+                        value={hireDate}
+                        onChange={(event) => setHireDate(event.target.value)}
+                        disabled={isLoading}
+                        InputLabelProps={{ shrink: true }}
+                        helperText="Campo obligatorio para el perfil de enfermeria."
+                      />
+
+                      <TextField
+                        fullWidth
+                        select
+                        label="Especialidad"
+                        value={specialty}
+                        onChange={(event) => setSpecialty(event.target.value)}
+                        disabled={isLoading}
+                        helperText="Selecciona una especialidad de enfermeria."
+                      >
+                        <MenuItem value="">
+                          <em>Selecciona una especialidad</em>
                         </MenuItem>
-                      ))}
-                    </TextField>
+                        {nurseSpecialties.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </TextField>
 
-                    <TextField
-                      fullWidth
-                      label="Licencia"
-                      value={licenseId}
-                      onChange={(event) => setLicenseId(event.target.value)}
-                      disabled={isLoading}
-                      helperText="Opcional."
-                    />
+                      <TextField
+                        fullWidth
+                        label="Licencia"
+                        value={licenseId}
+                        onChange={(event) => setLicenseId(event.target.value)}
+                        disabled={isLoading}
+                        helperText="Opcional."
+                      />
 
-                    <TextField
-                      fullWidth
-                      label="Banco"
-                      value={bankName}
-                      onChange={(event) => setBankName(event.target.value)}
-                      disabled={isLoading}
-                      helperText="Campo obligatorio para completar el perfil de enfermeria."
-                    />
+                      <TextField
+                        fullWidth
+                        label="Banco"
+                        value={bankName}
+                        onChange={(event) => setBankName(event.target.value)}
+                        disabled={isLoading}
+                        helperText="Campo obligatorio para completar el perfil de enfermeria."
+                      />
 
-                    <TextField
-                      fullWidth
-                      label="Numero de cuenta"
-                      value={accountNumber}
-                      onChange={(event) => setAccountNumber(event.target.value)}
-                      disabled={isLoading}
-                      helperText="Opcional."
-                    />
-                  </>
-                )}
+                      <TextField
+                        fullWidth
+                        label="Numero de cuenta"
+                        value={accountNumber}
+                        onChange={(event) => setAccountNumber(event.target.value)}
+                        disabled={isLoading}
+                        helperText="Opcional."
+                      />
+                    </Stack>
+                  </Paper>
+                ) : null}
               </>
             )}
 
