@@ -62,7 +62,7 @@ export default function HomePage() {
         <Stack spacing={3}>
           {requiresAdminReview && profileType === UserProfileType.Nurse && (
             <Alert severity="info" variant="outlined">
-              Tu cuenta de enfermeria ya puede iniciar sesion, pero el acceso operativo sigue en revision administrativa hasta que completen tu perfil.
+              Tu cuenta de enfermeria ya puede iniciar sesion, pero el acceso operativo sigue bloqueado hasta que administracion complete tu perfil.
             </Alert>
           )}
           <Paper
@@ -162,7 +162,7 @@ export default function HomePage() {
             <Stack spacing={1.25}>
               {requiresAdminReview && profileType === UserProfileType.Nurse && (
                 <Alert severity="warning" variant="outlined">
-                  Mientras tu perfil de enfermeria siga en revision, el panel solo muestra estado de cuenta y no habilita acciones clinicas.
+                  Mientras administracion no complete tu perfil de enfermeria, el panel solo muestra estado de cuenta y no habilita acciones clinicas.
                 </Alert>
               )}
               <Alert severity="success" variant="outlined">
@@ -184,7 +184,7 @@ export default function HomePage() {
             <Stack spacing={1.4} sx={{ mt: 2 }}>
               {[
                 "Abre la cola para revisar las solicitudes en vivo.",
-                "Usa el formulario solo desde perfiles de cliente cuando necesites registrar trabajo nuevo.",
+                "Usa el formulario desde perfiles de cliente o administracion cuando necesites registrar trabajo nuevo.",
                 "Abre el detalle de una solicitud para asignarla, aprobarla, rechazarla o completarla segun el rol.",
               ].map((step) => (
                 <Box key={step} sx={{ display: "flex", gap: 1.25 }}>

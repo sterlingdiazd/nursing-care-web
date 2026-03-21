@@ -126,10 +126,10 @@ export default function RegisterPage() {
         await register(payload);
         setSuccessMessage(
           profileType === UserProfileType.Nurse
-            ? "Registro completado. Tu panel mostrara el estado de revision administrativa hasta que completen tu perfil de enfermeria."
-            : "Registro completado. Tu cuenta ya puede iniciar sesion."
+            ? "Registro completado. Tu panel mostrara que administracion debe completar tu perfil de enfermeria antes de habilitar el acceso operativo."
+            : "Registro completado. Tu cuenta ya entro al espacio autenticado."
         );
-        navigate(profileType === UserProfileType.Nurse ? "/home" : "/login");
+        navigate("/home");
       }
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "No fue posible registrarte.");
@@ -148,8 +148,8 @@ export default function RegisterPage() {
       title={isProfileCompletionMode ? "Completa tu registro de NursingCare." : "Registra tu cuenta de NursingCare."}
       subtitle={isProfileCompletionMode
         ? "Tu cuenta de Google ya fue validada. Completa los datos restantes para habilitar el acceso a la aplicacion."
-        : "Elige el rol que corresponde a tu uso del sistema. Las cuentas de cliente se activan de inmediato; las de enfermeria reciben acceso autenticado y permanecen en revision administrativa hasta completar su perfil."}
-      asideTitle="Revision administrativa"
+        : "Elige el rol que corresponde a tu uso del sistema. Las cuentas de cliente entran de inmediato al espacio autenticado; las de enfermeria reciben acceso autenticado, pero las acciones clinicas quedan bloqueadas hasta que administracion complete el perfil."}
+      asideTitle="Complecion administrativa"
       asideBody="La cuenta de enfermeria puede iniciar sesion desde el registro, pero las acciones clinicas quedan bloqueadas hasta que administracion complete el perfil."
       form={
         <Box component="form" onSubmit={handleSubmit}>
@@ -257,7 +257,7 @@ export default function RegisterPage() {
                       value={String(UserProfileType.Nurse)}
                       control={<Radio />}
                       label="Enfermeria"
-                      description="Inicia sesion de inmediato, pero entra en revision administrativa."
+                      description="Inicia sesion de inmediato, pero espera la completacion administrativa del perfil."
                     />
                   </RadioGroup>
                 </FormControl>
