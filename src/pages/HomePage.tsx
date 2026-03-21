@@ -17,7 +17,8 @@ export default function HomePage() {
     }
   }, [isAuthenticated, navigate]);
 
-  const canCreateRequest = roles.includes("Nurse") || roles.includes("Admin");
+  const canCreateRequest =
+    roles.includes("User") || roles.includes("Nurse") || roles.includes("Admin");
   const profileLabel =
     profileType === UserProfileType.Nurse ? "Perfil de enfermeria" : "Perfil de cliente";
 
