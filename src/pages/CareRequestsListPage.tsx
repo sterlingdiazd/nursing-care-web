@@ -84,7 +84,7 @@ export default function CareRequestsListPage() {
           <Button variant="outlined" onClick={loadCareRequests} disabled={isLoading}>
             Actualizar cola
           </Button>
-          {(roles.includes("User") || roles.includes("Nurse") || roles.includes("Admin")) && (
+          {(roles.includes("Client") || roles.includes("Nurse") || roles.includes("Admin")) && (
             <Button variant="contained" onClick={() => navigate("/care-request")}>
               Nueva solicitud
             </Button>

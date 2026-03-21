@@ -9,6 +9,7 @@ export interface AuthSession {
   roles: string[];
   profileType: UserProfileType | null;
   requiresProfileCompletion: boolean;
+  requiresAdminReview: boolean;
 }
 
 const STORAGE_KEY = "authSession";
@@ -80,6 +81,7 @@ export function getAuthSession(): AuthSession | null {
       roles: parsed.roles,
       profileType: parsed.profileType ?? null,
       requiresProfileCompletion: parsed.requiresProfileCompletion ?? false,
+      requiresAdminReview: parsed.requiresAdminReview ?? false,
     };
 
     if (parsed.userId !== userId) {

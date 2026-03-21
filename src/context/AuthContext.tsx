@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<string[]>([]);
   const [profileType, setProfileType] = useState<UserProfileType | null>(null);
   const [requiresProfileCompletion, setRequiresProfileCompletion] = useState(false);
+  const [requiresAdminReview, setRequiresAdminReview] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setRoles([]);
       setProfileType(null);
       setRequiresProfileCompletion(false);
+      setRequiresAdminReview(false);
       setIsAuthenticated(false);
       return;
     }
@@ -61,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles(session.roles);
     setProfileType(session.profileType);
     setRequiresProfileCompletion(session.requiresProfileCompletion);
+    setRequiresAdminReview(session.requiresAdminReview);
     setIsAuthenticated(Boolean(session.token));
   };
 
@@ -100,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles(response.roles);
     setProfileType(detectedProfileType);
     setRequiresProfileCompletion(response.requiresProfileCompletion);
+    setRequiresAdminReview(response.requiresAdminReview);
     setIsAuthenticated(Boolean(response.token));
 
     saveAuthSession({
@@ -111,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       roles: response.roles,
       profileType: detectedProfileType,
       requiresProfileCompletion: response.requiresProfileCompletion,
+      requiresAdminReview: response.requiresAdminReview,
     });
   };
 
@@ -126,29 +131,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data.email,
         data.password,
         data.confirmPassword,
+        data.hireDate ?? null,
+        data.specialty ?? null,
+        data.licenseId ?? null,
+        data.bankName ?? null,
+        data.accountNumber ?? null,
         data.profileType
       );
 
-      if (response.token) {
-        // Client registration - token returned, user is active
-        applyAuthResponse(response, data.profileType);
+      applyAuthResponse(response, data.profileType);
 
-        logClientEvent("web.auth", "Client registration successful", {
-          email: response.email,
-        });
-      } else {
-        // Nurse registration - no token, account pending approval
-        setEmail(data.email);
-        setUserId(resolveResponseUserId(response));
-        setProfileType(data.profileType);
-        setRoles(response.roles);
-        setIsAuthenticated(false);
-        setToken(null);
-
-        logClientEvent("web.auth", "Nurse registration successful - pending approval", {
-          email: data.email,
-        });
-      }
+      logClientEvent("web.auth", "Registration successful", {
+        email: response.email,
+        requiresAdminReview: response.requiresAdminReview,
+      });
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Registration failed";
       setError(errorMsg);
@@ -217,6 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles([]);
     setProfileType(null);
     setRequiresProfileCompletion(false);
+    setRequiresAdminReview(false);
     setIsAuthenticated(false);
     setError(null);
 
@@ -237,6 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     roles,
     profileType,
     requiresProfileCompletion,
+    requiresAdminReview,
     isLoading,
     error,
     register,

@@ -10,6 +10,7 @@ import {
   FormControlLabel,
   FormLabel,
   Link,
+  MenuItem,
   Radio,
   RadioGroup,
   Stack,
@@ -21,6 +22,14 @@ import { getGoogleOAuthStartUrl, validateEmail, validatePassword } from "../api/
 import AuthScene from "../components/layout/AuthScene";
 import { useAuth } from "../context/AuthContext";
 import { RegisterRequest, UserProfileType } from "../types/auth";
+
+const nurseSpecialties = [
+  "Adult Care",
+  "Pediatric Care",
+  "Geriatric Care",
+  "Critical Care",
+  "Home Care",
+];
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -40,9 +49,15 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileType, setProfileType] = useState<UserProfileType>(UserProfileType.Client);
+  const [hireDate, setHireDate] = useState("");
+  const [specialty, setSpecialty] = useState("");
+  const [licenseId, setLicenseId] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const isProfileCompletionMode = isAuthenticated && requiresProfileCompletion;
+  const isNurseRegistration = !isProfileCompletionMode && profileType === UserProfileType.Nurse;
   const effectiveEmail = isProfileCompletionMode ? authEmail ?? "" : email;
 
   const passwordValidation = useMemo(() => validatePassword(password), [password]);
@@ -60,7 +75,9 @@ export default function RegisterPage() {
         password.length > 0 &&
         confirmPassword.length > 0 &&
         passwordValidation.isValid &&
-        passwordsMatch));
+        passwordsMatch &&
+        (!isNurseRegistration ||
+          (hireDate.trim().length > 0 && specialty.trim().length > 0 && bankName.trim().length > 0))));
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -91,16 +108,21 @@ export default function RegisterPage() {
           email: email.trim(),
           password,
           confirmPassword,
+          hireDate: isNurseRegistration ? hireDate : null,
+          specialty: isNurseRegistration ? specialty : null,
+          licenseId: isNurseRegistration ? licenseId : null,
+          bankName: isNurseRegistration ? bankName : null,
+          accountNumber: isNurseRegistration ? accountNumber : null,
           profileType,
         };
 
         await register(payload);
         setSuccessMessage(
           profileType === UserProfileType.Nurse
-            ? "Registro enviado. Las cuentas de enfermeria permanecen pendientes hasta que administracion active el acceso."
+            ? "Registro completado. Tu panel mostrara el estado de revision administrativa hasta que completen tu perfil de enfermeria."
             : "Registro completado. Tu cuenta ya puede iniciar sesion."
         );
-        navigate("/login");
+        navigate(profileType === UserProfileType.Nurse ? "/home" : "/login");
       }
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "No fue posible registrarte.");
@@ -119,9 +141,9 @@ export default function RegisterPage() {
       title={isProfileCompletionMode ? "Completa tu registro de NursingCare." : "Registra tu cuenta de NursingCare."}
       subtitle={isProfileCompletionMode
         ? "Tu cuenta de Google ya fue validada. Completa los datos restantes para habilitar el acceso a la aplicacion."
-        : "Elige el rol que corresponde a tu uso del sistema. Las cuentas de cliente se activan de inmediato; las de enfermeria esperan aprobacion administrativa."}
-      asideTitle="Flujo de aprobacion"
-      asideBody="Las cuentas de enfermeria requieren activacion administrativa para revisar el acceso clinico antes de permitir el inicio de sesion."
+        : "Elige el rol que corresponde a tu uso del sistema. Las cuentas de cliente se activan de inmediato; las de enfermeria reciben acceso autenticado y permanecen en revision administrativa hasta completar su perfil."}
+      asideTitle="Revision administrativa"
+      asideBody="La cuenta de enfermeria puede iniciar sesion desde el registro, pero las acciones clinicas quedan bloqueadas hasta que administracion complete el perfil."
       form={
         <Box component="form" onSubmit={handleSubmit}>
           <Stack spacing={2.25}>
@@ -228,10 +250,68 @@ export default function RegisterPage() {
                       value={String(UserProfileType.Nurse)}
                       control={<Radio />}
                       label="Enfermeria"
-                      description="Requiere aprobacion administrativa antes de iniciar sesion."
+                      description="Inicia sesion de inmediato, pero entra en revision administrativa."
                     />
                   </RadioGroup>
                 </FormControl>
+
+                {isNurseRegistration && (
+                  <>
+                    <TextField
+                      fullWidth
+                      label="Fecha de contratacion"
+                      type="date"
+                      value={hireDate}
+                      onChange={(event) => setHireDate(event.target.value)}
+                      disabled={isLoading}
+                      InputLabelProps={{ shrink: true }}
+                      helperText="Campo obligatorio para el perfil de enfermeria."
+                    />
+
+                    <TextField
+                      fullWidth
+                      select
+                      label="Especialidad"
+                      value={specialty}
+                      onChange={(event) => setSpecialty(event.target.value)}
+                      disabled={isLoading}
+                      helperText="Selecciona una especialidad de enfermeria."
+                    >
+                      {nurseSpecialties.map((option) => (
+                        <MenuItem key={option} value={option}>
+                          {option}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+
+                    <TextField
+                      fullWidth
+                      label="Licencia"
+                      value={licenseId}
+                      onChange={(event) => setLicenseId(event.target.value)}
+                      disabled={isLoading}
+                      helperText="Opcional."
+                    />
+
+                    <TextField
+                      fullWidth
+                      label="Banco"
+                      value={bankName}
+                      onChange={(event) => setBankName(event.target.value)}
+                      disabled={isLoading}
+                      helperText="Campo obligatorio para completar el perfil de enfermeria."
+                    />
+
+                    <TextField
+                      fullWidth
+                      label="Numero de cuenta"
+                      value={accountNumber}
+                      onChange={(event) => setAccountNumber(event.target.value)}
+                      disabled={isLoading}
+                      helperText="Opcional."
+                    />
+                  </>
+                )}
               </>
             )}
 

@@ -93,6 +93,7 @@ export default function LoginPage() {
       email: emailFromRedirect,
       roles,
       requiresProfileCompletion: params.get("requiresProfileCompletion") === "true",
+      requiresAdminReview: params.get("requiresAdminReview") === "true",
     };
 
     completeOAuthLogin(response);

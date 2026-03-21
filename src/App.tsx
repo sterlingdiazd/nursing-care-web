@@ -11,6 +11,7 @@ import HomePage from "./pages/HomePage";
 import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
 import CareRequestDetailPage from "./pages/CareRequestDetailPage";
+import { UserProfileType } from "./types/auth";
 
 // Create Material-UI theme
 const theme = createTheme({
@@ -166,6 +167,24 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function OperationalRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, profileType, requiresAdminReview, requiresProfileCompletion } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiresProfileCompletion) {
+    return <Navigate to="/register" replace />;
+  }
+
+  if (requiresAdminReview && profileType === UserProfileType.Nurse) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 // App Routes
 function AppRoutes() {
   const { isAuthenticated, requiresProfileCompletion } = useAuth();
@@ -202,25 +221,25 @@ function AppRoutes() {
       <Route
         path="/care-request"
         element={
-          <ProtectedRoute>
+          <OperationalRoute>
             <CareRequestPage />
-          </ProtectedRoute>
+          </OperationalRoute>
         }
       />
       <Route
         path="/care-requests"
         element={
-          <ProtectedRoute>
+          <OperationalRoute>
             <CareRequestsListPage />
-          </ProtectedRoute>
+          </OperationalRoute>
         }
       />
       <Route
         path="/care-requests/:id"
         element={
-          <ProtectedRoute>
+          <OperationalRoute>
             <CareRequestDetailPage />
-          </ProtectedRoute>
+          </OperationalRoute>
         }
       />
 

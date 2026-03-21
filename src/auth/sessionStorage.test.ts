@@ -28,6 +28,7 @@ describe("sessionStorage helpers", () => {
       roles: ["Admin"],
       profileType: UserProfileType.Nurse,
       requiresProfileCompletion: false,
+      requiresAdminReview: false,
     });
 
     expect(getAuthSession()).toEqual({
@@ -39,6 +40,7 @@ describe("sessionStorage helpers", () => {
       roles: ["Admin"],
       profileType: UserProfileType.Nurse,
       requiresProfileCompletion: false,
+      requiresAdminReview: false,
     });
   });
 
@@ -55,6 +57,7 @@ describe("sessionStorage helpers", () => {
       roles: ["Nurse"],
       profileType: UserProfileType.Nurse,
       requiresProfileCompletion: false,
+      requiresAdminReview: false,
     });
 
     clearAuthSession();
@@ -68,6 +71,7 @@ describe("sessionStorage helpers", () => {
       roles: ["Nurse"],
       profileType: UserProfileType.Nurse,
       requiresProfileCompletion: false,
+      requiresAdminReview: false,
     });
 
     expect(listener).toHaveBeenCalledTimes(2);
@@ -94,6 +98,7 @@ describe("sessionStorage helpers", () => {
         roles: ["Admin"],
         profileType: UserProfileType.Nurse,
         requiresProfileCompletion: false,
+        requiresAdminReview: false,
       }),
     );
 
@@ -106,6 +111,7 @@ describe("sessionStorage helpers", () => {
       roles: ["Admin"],
       profileType: UserProfileType.Nurse,
       requiresProfileCompletion: false,
+      requiresAdminReview: false,
     });
   });
 });

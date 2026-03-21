@@ -9,7 +9,7 @@ import { UserProfileType } from "../types/auth";
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { isAuthenticated, email, roles, profileType } = useAuth();
+  const { isAuthenticated, email, roles, profileType, requiresAdminReview } = useAuth();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -18,7 +18,7 @@ export default function HomePage() {
   }, [isAuthenticated, navigate]);
 
   const canCreateRequest =
-    roles.includes("User") || roles.includes("Nurse") || roles.includes("Admin");
+    !requiresAdminReview && (roles.includes("Client") || roles.includes("Nurse") || roles.includes("Admin"));
   const profileLabel =
     profileType === UserProfileType.Nurse ? "Perfil de enfermeria" : "Perfil de cliente";
 
@@ -37,10 +37,10 @@ export default function HomePage() {
       description="La experiencia web se organiza como una consola operativa con resumen, cola en vivo, captura de solicitudes y revision detallada segun el rol."
       actions={
         <>
-          <Button variant="outlined" onClick={() => navigate("/care-request")}>
+          <Button variant="outlined" onClick={() => navigate("/care-request")} disabled={!canCreateRequest}>
             Abrir formulario
           </Button>
-          <Button variant="contained" onClick={openBoard}>
+          <Button variant="contained" onClick={openBoard} disabled={!canCreateRequest}>
             Abrir cola de solicitudes
           </Button>
         </>
@@ -54,6 +54,11 @@ export default function HomePage() {
         }}
       >
         <Stack spacing={3}>
+          {requiresAdminReview && profileType === UserProfileType.Nurse && (
+            <Alert severity="info" variant="outlined">
+              Tu cuenta de enfermeria ya puede iniciar sesion, pero el acceso operativo sigue en revision administrativa hasta que completen tu perfil.
+            </Alert>
+          )}
           <Paper
             sx={{
               p: { xs: 3, md: 4 },
@@ -149,6 +154,11 @@ export default function HomePage() {
               Salud actual del espacio
             </Typography>
             <Stack spacing={1.25}>
+              {requiresAdminReview && profileType === UserProfileType.Nurse && (
+                <Alert severity="warning" variant="outlined">
+                  Mientras tu perfil de enfermeria siga en revision, el panel solo muestra estado de cuenta y no habilita acciones clinicas.
+                </Alert>
+              )}
               <Alert severity="success" variant="outlined">
                 La autenticacion se restaura desde almacenamiento local
               </Alert>

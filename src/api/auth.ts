@@ -9,16 +9,21 @@ import { API_BASE_URL } from "../config/env";
  * @param password User password
  * @param confirmPassword Password confirmation
  * @param profileType Client (0) or Nurse (1)
- * @returns AuthResponse with token (or empty for Nurse pending approval)
+ * @returns AuthResponse with tokens and the current onboarding state
  */
 export async function registerUser(
   name: string,
   lastName: string,
   identificationNumber: string,
-  phone: string,
+ phone: string,
   email: string,
   password: string,
   confirmPassword: string,
+  hireDate: string | null,
+  specialty: string | null,
+  licenseId: string | null,
+  bankName: string | null,
+  accountNumber: string | null,
   profileType: UserProfileType
 ): Promise<AuthResponse> {
   try {
@@ -36,6 +41,11 @@ export async function registerUser(
       email,
       password,
       confirmPassword,
+      hireDate,
+      specialty,
+      licenseId,
+      bankName,
+      accountNumber,
       profileType,
     };
 

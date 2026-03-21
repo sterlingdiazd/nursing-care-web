@@ -15,6 +15,11 @@ export interface RegisterRequest {
   email: string;
   password: string;
   confirmPassword: string;
+  hireDate?: string | null;
+  specialty?: string | null;
+  licenseId?: string | null;
+  bankName?: string | null;
+  accountNumber?: string | null;
   profileType: UserProfileType;
 }
 
@@ -31,6 +36,7 @@ export interface AuthResponse {
   email: string;
   roles: string[];
   requiresProfileCompletion: boolean;
+  requiresAdminReview: boolean;
 }
 
 export interface AuthContextType {
@@ -41,6 +47,7 @@ export interface AuthContextType {
   roles: string[];
   profileType: UserProfileType | null;
   requiresProfileCompletion: boolean;
+  requiresAdminReview: boolean;
   isLoading: boolean;
   error: string | null;
   register: (data: RegisterRequest) => Promise<void>;

@@ -81,6 +81,7 @@ httpClient.interceptors.response.use(
               roles: response.roles,
               profileType: session.profileType,
               requiresProfileCompletion: response.requiresProfileCompletion,
+              requiresAdminReview: response.requiresAdminReview,
             });
 
             logClientEvent("web.auth", "Access token refreshed");
