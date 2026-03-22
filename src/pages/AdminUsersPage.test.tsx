@@ -81,6 +81,10 @@ describe("AdminUsersPage", () => {
       status: "Active",
     });
 
+    fireEvent.click(screen.getByRole("button", { name: "Crear administrador" }));
+
+    expect(navigate).toHaveBeenCalledWith("/admin/users/create-admin");
+
     fireEvent.change(screen.getByLabelText("Buscar por correo, nombre, cedula o telefono"), {
       target: { value: "sandra" },
     });

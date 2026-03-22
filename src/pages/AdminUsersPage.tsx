@@ -144,6 +144,9 @@ export default function AdminUsersPage() {
       description="Esta vista centraliza la busqueda de usuarios, el seguimiento del onboarding y el acceso al detalle completo de cada cuenta sin mezclar la consola administrativa con los flujos operativos."
       actions={
         <>
+          <Button variant="contained" onClick={() => navigate("/admin/users/create-admin")}>
+            Crear administrador
+          </Button>
           <Button variant="outlined" onClick={() => void loadItems()} disabled={isLoading}>
             Actualizar modulo
           </Button>

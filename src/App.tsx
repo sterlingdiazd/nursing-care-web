@@ -13,6 +13,7 @@ import AdminActionQueuePage from "./pages/AdminActionQueuePage";
 import AdminCareRequestsPage from "./pages/AdminCareRequestsPage";
 import AdminCareRequestDetailPage from "./pages/AdminCareRequestDetailPage";
 import AdminCreateCareRequestPage from "./pages/AdminCreateCareRequestPage";
+import AdminCreateAdminPage from "./pages/AdminCreateAdminPage";
 import AdminUserDetailPage from "./pages/AdminUserDetailPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminModulePlaceholderPage from "./pages/AdminModulePlaceholderPage";
@@ -368,6 +369,14 @@ function AppRoutes() {
               description="El tablero puede llevar a este modulo desde el conteo de clientes activos y la navegacion principal del portal."
               nextSliceSummary="La siguiente entrega anadira listado, detalle y acciones administrativas para clientes sin cambiar esta ubicacion."
             />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/users/create-admin"
+        element={
+          <AdminRoute>
+            <AdminCreateAdminPage />
           </AdminRoute>
         }
       />

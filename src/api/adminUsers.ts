@@ -81,6 +81,16 @@ export interface UpdateAdminUserRequest {
   email: string;
 }
 
+export interface CreateAdminAccountRequest {
+  name: string;
+  lastName: string;
+  identificationNumber: string;
+  phone: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 export interface InvalidateAdminUserSessionsResult {
   userId: string;
   revokedActiveSessionCount: number;
@@ -134,6 +144,15 @@ export async function updateAdminUser(id: string, request: UpdateAdminUserReques
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible actualizar la cuenta."));
+  }
+}
+
+export async function createAdminAccount(request: CreateAdminAccountRequest) {
+  try {
+    const response = await httpClient.post<AdminUserDetail>("/admin/admin-accounts", request);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible crear la cuenta administrativa."));
   }
 }
 

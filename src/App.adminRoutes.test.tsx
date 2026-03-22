@@ -52,6 +52,10 @@ vi.mock("./pages/AdminCreateCareRequestPage", () => ({
   default: () => <div>admin create care request page</div>,
 }));
 
+vi.mock("./pages/AdminCreateAdminPage", () => ({
+  default: () => <div>admin create admin page</div>,
+}));
+
 vi.mock("./pages/AdminUsersPage", () => ({
   default: () => <div>admin users page</div>,
 }));
@@ -199,6 +203,28 @@ describe("Admin route boundaries", () => {
     window.localStorage.clear();
     saveSession(["Client"]);
     window.history.pushState({}, "", "/admin/users");
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
+  });
+
+  it("protects the admin create-admin route", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/users/create-admin");
+
+    const adminView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin create admin page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/users/create-admin");
 
     render(<App />);
 
