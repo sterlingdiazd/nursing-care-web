@@ -12,7 +12,9 @@ import {
   Typography,
 } from "@mui/material";
 
+import { getAdminActionItems, type AdminActionItem } from "../api/adminActionItems";
 import { getAdminDashboard, type AdminDashboardSnapshot } from "../api/adminDashboard";
+import AdminActionItemCard from "../components/admin/AdminActionItemCard";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
 
 interface DashboardWidget {
@@ -108,21 +110,44 @@ function WidgetCard({
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const [dashboard, setDashboard] = useState<AdminDashboardSnapshot | null>(null);
+  const [actionItems, setActionItems] = useState<AdminActionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionQueueError, setActionQueueError] = useState<string | null>(null);
 
   const loadDashboard = async () => {
     setIsLoading(true);
     setError(null);
+    setActionQueueError(null);
 
-    try {
-      const response = await getAdminDashboard();
-      setDashboard(response);
-    } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "No fue posible cargar el panel de administracion.");
-    } finally {
-      setIsLoading(false);
+    const [dashboardResult, actionItemsResult] = await Promise.allSettled([
+      getAdminDashboard(),
+      getAdminActionItems(),
+    ]);
+
+    if (dashboardResult.status === "fulfilled") {
+      setDashboard(dashboardResult.value);
+    } else {
+      setDashboard(null);
+      setError(
+        dashboardResult.reason instanceof Error
+          ? dashboardResult.reason.message
+          : "No fue posible cargar el panel de administracion.",
+      );
     }
+
+    if (actionItemsResult.status === "fulfilled") {
+      setActionItems(actionItemsResult.value);
+    } else {
+      setActionItems([]);
+      setActionQueueError(
+        actionItemsResult.reason instanceof Error
+          ? actionItemsResult.reason.message
+          : "No fue posible cargar la cola de acciones.",
+      );
+    }
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -208,8 +233,8 @@ export default function AdminDashboardPage() {
       description="Esta primera entrega organiza la experiencia administrativa como un espacio separado del trabajo operativo de clientes y enfermeria, con un tablero inicial, modulos ancla y rutas protegidas para administracion."
       actions={
         <>
-          <Button variant="outlined" onClick={() => navigate("/admin/nurse-profiles?view=pending")}>
-            Revisar perfiles pendientes
+          <Button variant="outlined" onClick={() => navigate("/admin/action-items")}>
+            Abrir cola de acciones
           </Button>
           <Button variant="contained" onClick={() => navigate("/admin/care-requests?view=unassigned")}>
             Abrir solicitudes criticas
@@ -293,92 +318,142 @@ export default function AdminDashboardPage() {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", xl: "1.2fr 0.8fr" },
+            gridTemplateColumns: { xs: "1fr", xl: "1.15fr 0.85fr" },
             gap: 3,
           }}
         >
           <Paper sx={{ p: 3.5, borderRadius: 4 }}>
-            <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-              Alertas de alta severidad
-            </Typography>
-            <Typography variant="h5" sx={{ mt: 1.2 }}>
-              Area preparada para incidentes criticos del negocio
-            </Typography>
+            <Stack
+              direction={{ xs: "column", lg: "row" }}
+              spacing={1.5}
+              justifyContent="space-between"
+              alignItems={{ xs: "flex-start", lg: "center" }}
+            >
+              <Box>
+                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                  Acciones que requieren atencion
+                </Typography>
+                <Typography variant="h5" sx={{ mt: 1.2 }}>
+                  La cola prioritaria separa trabajo accionable de las notificaciones.
+                </Typography>
+              </Box>
+              <Button variant="outlined" onClick={() => navigate("/admin/action-items")}>
+                Ver cola completa
+              </Button>
+            </Stack>
 
             <Stack spacing={1.5} sx={{ mt: 2.5 }}>
-              {isLoading && <Skeleton variant="rounded" height={110} />}
+              {isLoading && Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} variant="rounded" height={112} />
+              ))}
 
-              {!isLoading && dashboard && dashboard.highSeverityAlerts.length === 0 && (
-                <Alert severity="info" variant="outlined">
-                  Aun no hay alertas criticas automatizadas. El bloque ya quedo reservado para el centro de alertas del portal.
+              {!isLoading && actionQueueError && (
+                <Alert severity="warning" variant="outlined">
+                  {actionQueueError}
                 </Alert>
               )}
 
-              {!isLoading && dashboard?.highSeverityAlerts.map((alert) => (
-                <Paper
-                  key={alert.id}
-                  sx={{
-                    p: 2.5,
-                    borderRadius: 3,
-                    bgcolor: "rgba(183, 79, 77, 0.06)",
-                    border: "1px solid rgba(183, 79, 77, 0.16)",
-                  }}
-                >
-                  <Stack direction={{ xs: "column", md: "row" }} spacing={2} justifyContent="space-between">
-                    <Box>
-                      <Typography variant="h6">{alert.title}</Typography>
-                      <Typography color="text.secondary" sx={{ mt: 0.9, lineHeight: 1.7 }}>
-                        {alert.description}
-                      </Typography>
-                    </Box>
-                    <Button variant="outlined" color="error" onClick={() => navigate(alert.modulePath)}>
-                      Abrir alerta
-                    </Button>
-                  </Stack>
-                </Paper>
+              {!isLoading && !actionQueueError && actionItems.length === 0 && (
+                <Alert severity="info" variant="outlined">
+                  No hay acciones pendientes en este momento.
+                </Alert>
+              )}
+
+              {!isLoading && !actionQueueError && actionItems.slice(0, 4).map((item) => (
+                <AdminActionItemCard
+                  key={item.id}
+                  item={item}
+                  compact
+                  onOpen={(path) => navigate(path)}
+                />
               ))}
             </Stack>
           </Paper>
 
-          <Paper sx={{ p: 3.5, borderRadius: 4, bgcolor: "#f2ebde" }}>
-            <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
-              Rutas clave
-            </Typography>
-            <Stack spacing={1.35} sx={{ mt: 2.2 }}>
-              {[
-                {
-                  label: "Solicitudes pendientes de asignacion",
-                  path: "/admin/care-requests?view=unassigned",
-                },
-                {
-                  label: "Solicitudes listas para aprobacion",
-                  path: "/admin/care-requests?view=pending-approval",
-                },
-                {
-                  label: "Perfiles de enfermeria pendientes",
-                  path: "/admin/nurse-profiles?view=pending",
-                },
-                {
-                  label: "Bandeja de alertas",
-                  path: "/admin/alerts",
-                },
-              ].map((item) => (
-                <Button
-                  key={item.label}
-                  variant="text"
-                  onClick={() => navigate(item.path)}
-                  sx={{
-                    justifyContent: "space-between",
-                    px: 0,
-                    color: "#6b4f2c",
-                    fontWeight: 700,
-                  }}
-                >
-                  {item.label}
-                </Button>
-              ))}
-            </Stack>
-          </Paper>
+          <Stack spacing={3}>
+            <Paper sx={{ p: 3.5, borderRadius: 4 }}>
+              <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                Alertas de alta severidad
+              </Typography>
+              <Typography variant="h5" sx={{ mt: 1.2 }}>
+                Area preparada para incidentes criticos del negocio
+              </Typography>
+
+              <Stack spacing={1.5} sx={{ mt: 2.5 }}>
+                {isLoading && <Skeleton variant="rounded" height={110} />}
+
+                {!isLoading && dashboard && dashboard.highSeverityAlerts.length === 0 && (
+                  <Alert severity="info" variant="outlined">
+                    Aun no hay alertas criticas automatizadas. El bloque ya quedo reservado para el centro de alertas del portal.
+                  </Alert>
+                )}
+
+                {!isLoading && dashboard?.highSeverityAlerts.map((alert) => (
+                  <Paper
+                    key={alert.id}
+                    sx={{
+                      p: 2.5,
+                      borderRadius: 3,
+                      bgcolor: "rgba(183, 79, 77, 0.06)",
+                      border: "1px solid rgba(183, 79, 77, 0.16)",
+                    }}
+                  >
+                    <Stack direction={{ xs: "column", md: "row" }} spacing={2} justifyContent="space-between">
+                      <Box>
+                        <Typography variant="h6">{alert.title}</Typography>
+                        <Typography color="text.secondary" sx={{ mt: 0.9, lineHeight: 1.7 }}>
+                          {alert.description}
+                        </Typography>
+                      </Box>
+                      <Button variant="outlined" color="error" onClick={() => navigate(alert.modulePath)}>
+                        Abrir alerta
+                      </Button>
+                    </Stack>
+                  </Paper>
+                ))}
+              </Stack>
+            </Paper>
+
+            <Paper sx={{ p: 3.5, borderRadius: 4, bgcolor: "#f2ebde" }}>
+              <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
+                Rutas clave
+              </Typography>
+              <Stack spacing={1.35} sx={{ mt: 2.2 }}>
+                {[
+                  {
+                    label: "Cola de acciones prioritaria",
+                    path: "/admin/action-items",
+                  },
+                  {
+                    label: "Solicitudes pendientes de asignacion",
+                    path: "/admin/care-requests?view=unassigned",
+                  },
+                  {
+                    label: "Solicitudes listas para aprobacion",
+                    path: "/admin/care-requests?view=pending-approval",
+                  },
+                  {
+                    label: "Perfiles de enfermeria pendientes",
+                    path: "/admin/nurse-profiles?view=pending",
+                  },
+                ].map((item) => (
+                  <Button
+                    key={item.label}
+                    variant="text"
+                    onClick={() => navigate(item.path)}
+                    sx={{
+                      justifyContent: "space-between",
+                      px: 0,
+                      color: "#6b4f2c",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </Stack>
+            </Paper>
+          </Stack>
         </Box>
       </Stack>
     </AdminPortalShell>

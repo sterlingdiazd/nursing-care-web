@@ -146,7 +146,7 @@ describe("Admin nurse profiles page", () => {
 
     renderWithTheme(<AdminNurseProfilesPage />);
 
-    expect(await screen.findByDisplayValue("Laura")).toBeInTheDocument();
+    expect(await screen.findByDisplayValue("nurse1@example.com")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Completar perfil de enfermeria" }));
 

@@ -27,6 +27,11 @@ export const adminPortalNavigationItems: AdminPortalNavigationItem[] = [
     description: "Vista ejecutiva y prioridades",
   },
   {
+    label: "Acciones",
+    path: "/admin/action-items",
+    description: "Cola prioritaria y seguimiento",
+  },
+  {
     label: "Solicitudes",
     path: "/admin/care-requests",
     description: "Asignacion, aprobacion y riesgo operativo",

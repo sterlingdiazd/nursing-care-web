@@ -9,6 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminActionQueuePage from "./pages/AdminActionQueuePage";
 import AdminCareRequestsPage from "./pages/AdminCareRequestsPage";
 import AdminModulePlaceholderPage from "./pages/AdminModulePlaceholderPage";
 import CareRequestPage from "./pages/CareRequestPage";
@@ -290,10 +291,10 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/admin"
+        path="/admin/action-items"
         element={
           <AdminRoute>
-            <AdminDashboardPage />
+            <AdminActionQueuePage />
           </AdminRoute>
         }
       />
@@ -399,6 +400,14 @@ function AppRoutes() {
               description="Esta ruta fija la arquitectura para parametros administrativos sin inflar la consola ni mezclarla con flujos operativos."
               nextSliceSummary="La siguiente entrega anadira ajustes tipados y auditables dentro de este modulo."
             />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <AdminDashboardPage />
           </AdminRoute>
         }
       />

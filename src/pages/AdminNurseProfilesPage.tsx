@@ -127,8 +127,10 @@ export default function AdminNurseProfilesPage() {
   const displayedBankNameError = bankNameInputError || (formState.bankName.length > 0 ? bankNameError : "");
   const displayedAccountNumberError =
     accountNumberInputError || ((formState.accountNumber ?? "").length > 0 ? accountNumberError : "");
+  const searchParams = new URLSearchParams(location.search);
   const currentView: NurseProfilesView =
-    new URLSearchParams(location.search).get("view") === "active" ? "active" : "pending";
+    searchParams.get("view") === "active" ? "active" : "pending";
+  const preferredUserId = searchParams.get("userId");
   const isReadOnlyView = currentView === "active";
 
   const canSubmit = useMemo(
@@ -229,8 +231,8 @@ export default function AdminNurseProfilesPage() {
   };
 
   useEffect(() => {
-    void loadProfileList(selectedUserId, currentView);
-  }, [currentView]);
+    void loadProfileList(preferredUserId ?? selectedUserId, currentView);
+  }, [currentView, preferredUserId]);
 
   useEffect(() => {
     if (!selectedUserId) {

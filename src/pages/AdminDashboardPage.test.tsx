@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import { vi } from "vitest";
 
 import AdminDashboardPage from "./AdminDashboardPage";
+import { getAdminActionItems } from "../api/adminActionItems";
 import { getAdminDashboard } from "../api/adminDashboard";
 
 const navigate = vi.fn();
@@ -16,6 +17,10 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("../api/adminDashboard", () => ({
   getAdminDashboard: vi.fn(),
+}));
+
+vi.mock("../api/adminActionItems", () => ({
+  getAdminActionItems: vi.fn(),
 }));
 
 vi.mock("../context/AuthContext", () => ({
@@ -62,6 +67,20 @@ describe("AdminDashboardPage", () => {
       highSeverityAlerts: [],
       generatedAtUtc: "2026-03-22T12:30:00Z",
     });
+    vi.mocked(getAdminActionItems).mockResolvedValue([
+      {
+        id: "action-1",
+        severity: "High",
+        state: "Unread",
+        entityType: "CareRequest",
+        entityIdentifier: "request-1",
+        summary: "La solicitud requiere aprobacion administrativa inmediata.",
+        requiredAction: "Revisar y aprobar la solicitud.",
+        assignedOwner: null,
+        deepLinkPath: "/admin/care-requests?view=pending-approval&selected=request-1",
+        detectedAtUtc: "2026-03-22T11:00:00Z",
+      },
+    ]);
 
     renderWithTheme(<AdminDashboardPage />);
 
@@ -69,11 +88,19 @@ describe("AdminDashboardPage", () => {
     expect(screen.getByText("Solicitudes esperando asignacion")).toBeInTheDocument();
     expect(screen.getByText("21")).toBeInTheDocument();
     expect(screen.getByText("Area preparada para incidentes criticos del negocio")).toBeInTheDocument();
+    expect(screen.getByText("Acciones que requieren atencion")).toBeInTheDocument();
+    expect(screen.getByText("La solicitud requiere aprobacion administrativa inmediata.")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Abrir Solicitudes esperando asignacion" }));
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith("/admin/care-requests?view=unassigned");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Abrir cola de acciones" }));
+
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith("/admin/action-items");
     });
   });
 });

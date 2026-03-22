@@ -56,6 +56,10 @@ function resolveView(search: string): AdminCareRequestView {
     : "all";
 }
 
+function resolveSelectedRequestId(search: string) {
+  return new URLSearchParams(search).get("selected");
+}
+
 function getUtcDateKey(value: string | null | undefined) {
   if (!value) {
     return "";
@@ -111,6 +115,7 @@ export default function AdminCareRequestsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const currentView = resolveView(location.search);
+  const selectedRequestId = resolveSelectedRequestId(location.search);
 
   const loadCareRequests = async () => {
     setIsLoading(true);
@@ -213,6 +218,7 @@ export default function AdminCareRequestsPage() {
             {filteredRequests.map((careRequest) => {
               const status = getStatusStyles(careRequest.status);
               const flagged = isOverdueOrStale(careRequest);
+              const selected = careRequest.id === selectedRequestId;
 
               return (
                 <Paper
@@ -220,8 +226,11 @@ export default function AdminCareRequestsPage() {
                   sx={{
                     p: 3,
                     borderRadius: 3,
-                    boxShadow: "none",
-                    border: "1px solid rgba(23, 48, 66, 0.08)",
+                    boxShadow: selected ? "0 18px 32px rgba(183, 128, 60, 0.14)" : "none",
+                    border: selected
+                      ? "1px solid rgba(183, 128, 60, 0.32)"
+                      : "1px solid rgba(23, 48, 66, 0.08)",
+                    bgcolor: selected ? "rgba(246, 234, 215, 0.36)" : "background.paper",
                   }}
                 >
                   <Stack spacing={1.5}>
@@ -241,6 +250,16 @@ export default function AdminCareRequestsPage() {
                       </Box>
 
                       <Stack direction="row" spacing={1} flexWrap="wrap">
+                        {selected && (
+                          <Chip
+                            label="En foco"
+                            sx={{
+                              bgcolor: "rgba(15, 49, 69, 0.1)",
+                              color: "#173042",
+                              fontWeight: 700,
+                            }}
+                          />
+                        )}
                         <Chip
                           label={status.label}
                           sx={{
