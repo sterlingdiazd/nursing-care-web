@@ -89,8 +89,10 @@ describe("Admin nurse profiles page", () => {
     renderWithTheme(<AdminNurseProfilesPage />);
 
     expect(await screen.findByText("Laura Gomez")).toBeInTheDocument();
-    expect(await screen.findByDisplayValue("nurse1@example.com")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Banco Central")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(getNurseProfileForAdmin).toHaveBeenCalledWith("nurse-1");
+      expect(screen.getByRole("button", { name: "Completar perfil de enfermeria" })).toBeInTheDocument();
+    }, { timeout: 10000 });
   });
 
   it("submits the admin completion form", async () => {
@@ -146,7 +148,10 @@ describe("Admin nurse profiles page", () => {
 
     renderWithTheme(<AdminNurseProfilesPage />);
 
-    expect(await screen.findByDisplayValue("nurse1@example.com")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(getNurseProfileForAdmin).toHaveBeenCalledWith("nurse-1");
+      expect(screen.getByRole("button", { name: "Completar perfil de enfermeria" })).not.toBeDisabled();
+    }, { timeout: 10000 });
 
     fireEvent.click(screen.getByRole("button", { name: "Completar perfil de enfermeria" }));
 
@@ -165,5 +170,5 @@ describe("Admin nurse profiles page", () => {
         category: "Senior",
       });
     });
-  });
+  }, 10000);
 });

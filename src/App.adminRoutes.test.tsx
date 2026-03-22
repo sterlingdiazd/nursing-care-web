@@ -44,6 +44,14 @@ vi.mock("./pages/AdminCareRequestsPage", () => ({
   default: () => <div>admin care requests page</div>,
 }));
 
+vi.mock("./pages/AdminCareRequestDetailPage", () => ({
+  default: () => <div>admin care request detail page</div>,
+}));
+
+vi.mock("./pages/AdminCreateCareRequestPage", () => ({
+  default: () => <div>admin create care request page</div>,
+}));
+
 vi.mock("./pages/AdminModulePlaceholderPage", () => ({
   default: () => <div>admin placeholder page</div>,
 }));
@@ -117,6 +125,50 @@ describe("Admin route boundaries", () => {
     window.localStorage.clear();
     saveSession(["Client"]);
     window.history.pushState({}, "", "/admin/action-items");
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
+  });
+
+  it("renders admin care-request detail routes only for admin sessions", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/care-requests/request-1");
+
+    const adminView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin care request detail page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/care-requests/request-1");
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
+  });
+
+  it("protects the admin care-request creation route", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/care-requests/new");
+
+    const adminView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin create care request page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/care-requests/new");
 
     render(<App />);
 
