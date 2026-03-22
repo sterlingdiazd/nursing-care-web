@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Alert,
@@ -15,6 +15,8 @@ import { getActiveNurseProfiles, type ActiveNurseProfileSummary } from "../api/a
 import { getAdminCareRequestDetail, type AdminCareRequestDetail } from "../api/adminCareRequests";
 import { assignCareRequestNurse, transitionCareRequest } from "../api/careRequests";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
+import { buildCatalogDisplayMaps } from "../utils/pricingFromCatalogOptions";
 import {
   formatAdminCareRequestCategoryLabel,
   formatAdminCareRequestComplexityLabel,
@@ -31,6 +33,11 @@ export default function AdminCareRequestDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams();
+  const { data: catalogOptions } = useCareRequestCatalogOptions();
+  const catalogDisplayMaps = useMemo(
+    () => (catalogOptions ? buildCatalogDisplayMaps(catalogOptions) : null),
+    [catalogOptions],
+  );
   const [detail, setDetail] = useState<AdminCareRequestDetail | null>(null);
   const [activeNurses, setActiveNurses] = useState<ActiveNurseProfileSummary[]>([]);
   const [assignedNurseId, setAssignedNurseId] = useState("");
@@ -187,8 +194,14 @@ export default function AdminCareRequestDetailPage() {
                       ],
                       ["Cedula del cliente", detail.clientIdentificationNumber ?? "Sin cedula"],
                       ["Enfermera sugerida", detail.suggestedNurse ?? "Sin sugerencia"],
-                      ["Tipo", formatAdminCareRequestTypeLabel(detail.careRequestType)],
-                      ["Unidad", `${detail.unit} ${formatAdminCareRequestUnitTypeLabel(detail.unitType)}`],
+                      [
+                        "Tipo",
+                        formatAdminCareRequestTypeLabel(detail.careRequestType, catalogDisplayMaps?.careRequestType),
+                      ],
+                      [
+                        "Unidad",
+                        `${detail.unit} ${formatAdminCareRequestUnitTypeLabel(detail.unitType, catalogDisplayMaps?.unitType)}`,
+                      ],
                       ["Fecha del servicio", detail.careRequestDate ?? "Sin fecha"],
                       ["Creada", formatAdminCareRequestDateTime(detail.createdAtUtc)],
                     ].map(([label, value]) => (
@@ -216,16 +229,22 @@ export default function AdminCareRequestDetailPage() {
                   }}
                 >
                   {[
-                    ["Categoria", formatAdminCareRequestCategoryLabel(detail.pricingBreakdown.category)],
+                    [
+                      "Categoria",
+                      formatAdminCareRequestCategoryLabel(
+                        detail.pricingBreakdown.category,
+                        catalogDisplayMaps?.category,
+                      ),
+                    ],
                     ["Precio base", formatAdminCareRequestCurrency(detail.pricingBreakdown.basePrice)],
                     ["Factor de categoria", detail.pricingBreakdown.categoryFactor.toFixed(2)],
                     [
                       "Factor de distancia",
-                      `${formatAdminCareRequestDistanceLabel(detail.pricingBreakdown.distanceFactor)} · ${detail.pricingBreakdown.distanceFactorValue.toFixed(2)}`,
+                      `${formatAdminCareRequestDistanceLabel(detail.pricingBreakdown.distanceFactor, catalogDisplayMaps?.distance)} · ${detail.pricingBreakdown.distanceFactorValue.toFixed(2)}`,
                     ],
                     [
                       "Factor de complejidad",
-                      `${formatAdminCareRequestComplexityLabel(detail.pricingBreakdown.complexityLevel)} · ${detail.pricingBreakdown.complexityFactorValue.toFixed(2)}`,
+                      `${formatAdminCareRequestComplexityLabel(detail.pricingBreakdown.complexityLevel, catalogDisplayMaps?.complexity)} · ${detail.pricingBreakdown.complexityFactorValue.toFixed(2)}`,
                     ],
                     ["Descuento por volumen", `${detail.pricingBreakdown.volumeDiscountPercent.toFixed(2)}%`],
                     ["Subtotal antes de insumos", formatAdminCareRequestCurrency(detail.pricingBreakdown.subtotalBeforeSupplies)],

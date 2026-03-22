@@ -96,6 +96,24 @@ vi.mock("../api/adminCareRequests", () => ({
   getAdminCareRequestDetail: vi.fn(),
 }));
 
+vi.mock("../hooks/useCareRequestCatalogOptions", () => ({
+  useCareRequestCatalogOptions: () => ({
+    data: {
+      careRequestCategories: [{ code: "domicilio", displayName: "Domicilio", categoryFactor: 1.2 }],
+      careRequestTypes: [
+        { code: "domicilio_24h", displayName: "Domicilio 24h", careRequestCategoryCode: "domicilio", unitTypeCode: "dia_completo", basePrice: 3500 },
+      ],
+      unitTypes: [{ code: "dia_completo", displayName: "Dia completo" }],
+      distanceFactors: [{ code: "local", displayName: "Local", multiplier: 1 }],
+      complexityLevels: [{ code: "estandar", displayName: "Estandar", multiplier: 1 }],
+      volumeDiscountRules: [],
+    },
+    isLoading: false,
+    error: null,
+    reload: vi.fn(),
+  }),
+}));
+
 vi.mock("../api/adminNurseProfiles", () => ({
   getActiveNurseProfiles: vi.fn(),
 }));

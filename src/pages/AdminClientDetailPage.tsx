@@ -18,6 +18,8 @@ import {
 } from "../api/adminClients";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
 import AdminClientForm, { type AdminClientFormValues } from "../components/admin/AdminClientForm";
+import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
+import { buildCatalogDisplayMaps } from "../utils/pricingFromCatalogOptions";
 import {
   formatAdminCareRequestCurrency,
   formatAdminCareRequestDateTime,
@@ -48,6 +50,11 @@ export default function AdminClientDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams();
+  const { data: catalogOptions } = useCareRequestCatalogOptions();
+  const catalogDisplayMaps = useMemo(
+    () => (catalogOptions ? buildCatalogDisplayMaps(catalogOptions) : null),
+    [catalogOptions],
+  );
   const [detail, setDetail] = useState<AdminClientDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -269,7 +276,7 @@ export default function AdminClientDetailPage() {
                             <Box>
                               <Typography sx={{ fontWeight: 700 }}>{item.careRequestDescription}</Typography>
                               <Typography color="text.secondary" sx={{ mt: 0.4 }}>
-                                {formatAdminCareRequestTypeLabel(item.careRequestType)}
+                                {formatAdminCareRequestTypeLabel(item.careRequestType, catalogDisplayMaps?.careRequestType)}
                               </Typography>
                             </Box>
                             <Stack direction="row" spacing={1} flexWrap="wrap">

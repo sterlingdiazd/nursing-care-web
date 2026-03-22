@@ -20,6 +20,8 @@ import {
   type AdminCareRequestView,
 } from "../api/adminCareRequests";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
+import { buildCatalogDisplayMaps } from "../utils/pricingFromCatalogOptions";
 import {
   adminCareRequestViewOptions,
   formatAdminCareRequestCurrency,
@@ -125,6 +127,11 @@ function createQueryString({
 export default function AdminCareRequestsPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { data: catalogOptions } = useCareRequestCatalogOptions();
+  const catalogDisplayMaps = useMemo(
+    () => (catalogOptions ? buildCatalogDisplayMaps(catalogOptions) : null),
+    [catalogOptions],
+  );
   const [items, setItems] = useState<AdminCareRequestListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
@@ -424,12 +431,18 @@ export default function AdminCareRequestsPage() {
                           ? `${item.assignedNurseDisplayName} · ${item.assignedNurseEmail ?? "Sin correo"}`
                           : "Sin asignar",
                       ],
-                      ["Tipo", formatAdminCareRequestTypeLabel(item.careRequestType)],
+                      [
+                        "Tipo",
+                        formatAdminCareRequestTypeLabel(item.careRequestType, catalogDisplayMaps?.careRequestType),
+                      ],
                       ["Total", formatAdminCareRequestCurrency(item.total)],
                       ["Fecha del servicio", item.careRequestDate ?? "Sin fecha"],
                       ["Creada", formatAdminCareRequestDateTime(item.createdAtUtc)],
                       ["Actualizada", formatAdminCareRequestDateTime(item.updatedAtUtc)],
-                      ["Unidad", `${item.unit} ${formatAdminCareRequestUnitTypeLabel(item.unitType)}`],
+                      [
+                        "Unidad",
+                        `${item.unit} ${formatAdminCareRequestUnitTypeLabel(item.unitType, catalogDisplayMaps?.unitType)}`,
+                      ],
                     ].map(([label, value]) => (
                       <Box key={label}>
                         <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>

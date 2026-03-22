@@ -18,6 +18,18 @@ vi.mock("../api/adminNurseProfiles", () => ({
   createNurseProfileForAdmin: vi.fn(),
 }));
 
+vi.mock("../hooks/useNurseProfileCatalogOptions", () => ({
+  useNurseProfileCatalogOptions: () => ({
+    data: {
+      specialties: [{ code: "cuidados_intensivos", displayName: "Cuidados intensivos" }],
+      categories: [{ code: "senior", displayName: "Senior" }],
+    },
+    isLoading: false,
+    error: null,
+    reload: vi.fn(),
+  }),
+}));
+
 vi.mock("../context/AuthContext", () => ({
   useAuth: () => ({
     isAuthenticated: true,
@@ -80,11 +92,11 @@ describe("Admin create nurse profile page", () => {
     fireEvent.change(screen.getByLabelText("Telefono"), { target: { value: "8095550199" } });
     fireEvent.change(screen.getByLabelText("Correo"), { target: { value: "laura@example.com" } });
     fireEvent.change(screen.getByLabelText("Fecha de contratacion"), { target: { value: "2026-03-21" } });
-    fireEvent.change(screen.getByLabelText("Especialidad"), { target: { value: "Cuidados intensivos" } });
+    fireEvent.change(screen.getByLabelText("Especialidad"), { target: { value: "cuidados_intensivos" } });
     fireEvent.change(screen.getByLabelText("Licencia"), { target: { value: "55" } });
     fireEvent.change(screen.getByLabelText("Banco"), { target: { value: "Banco Central" } });
     fireEvent.change(screen.getByLabelText("Numero de cuenta"), { target: { value: "123456" } });
-    fireEvent.change(screen.getByLabelText("Categoria"), { target: { value: "Senior" } });
+    fireEvent.change(screen.getByLabelText("Categoria"), { target: { value: "senior" } });
     fireEvent.change(screen.getByLabelText("Contrasena inicial"), { target: { value: "Pass123!" } });
     fireEvent.change(screen.getByLabelText("Confirmar contrasena"), { target: { value: "Pass123!" } });
 
@@ -98,11 +110,11 @@ describe("Admin create nurse profile page", () => {
         phone: "8095550199",
         email: "laura@example.com",
         hireDate: "2026-03-21",
-        specialty: "Cuidados intensivos",
+        specialty: "cuidados_intensivos",
         licenseId: "55",
         bankName: "Banco Central",
         accountNumber: "123456",
-        category: "Senior",
+        category: "senior",
         password: "Pass123!",
         confirmPassword: "Pass123!",
         isOperationallyActive: true,

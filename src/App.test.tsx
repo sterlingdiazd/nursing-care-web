@@ -21,6 +21,30 @@ vi.mock("./api/careRequests", () => ({
   getCareRequests: vi.fn().mockResolvedValue([]),
 }));
 
+vi.mock("./hooks/useCareRequestCatalogOptions", () => ({
+  useCareRequestCatalogOptions: () => ({
+    data: {
+      careRequestCategories: [{ code: "domicilio", displayName: "Domicilio", categoryFactor: 1.2 }],
+      careRequestTypes: [
+        {
+          code: "domicilio_24h",
+          displayName: "Domicilio 24h",
+          careRequestCategoryCode: "domicilio",
+          unitTypeCode: "dia_completo",
+          basePrice: 3500,
+        },
+      ],
+      unitTypes: [{ code: "dia_completo", displayName: "Dia completo" }],
+      distanceFactors: [{ code: "local", displayName: "Local", multiplier: 1 }],
+      complexityLevels: [{ code: "estandar", displayName: "Estandar", multiplier: 1 }],
+      volumeDiscountRules: [{ minimumCount: 5, discountPercent: 5 }],
+    },
+    isLoading: false,
+    error: null,
+    reload: vi.fn(),
+  }),
+}));
+
 vi.mock("./context/AuthContext", () => ({
   useAuth: () => ({
     isAuthenticated: true,
@@ -89,8 +113,6 @@ describe("CareRequestPage", () => {
       );
     });
 
-    expect(
-      await screen.findByText("Solicitud creada correctamente con el ID created-id-123."),
-    ).toBeInTheDocument();
+    expect(navigate).toHaveBeenCalledWith("/care-requests/created-id-123");
   });
 });

@@ -53,7 +53,7 @@ npm start
 
 3. Open:
 
-- `http://localhost:3000`
+- [http://localhost:3000](http://localhost:3000)
 
 ## Available Scripts
 
@@ -72,8 +72,8 @@ Shared cross-project source of truth:
 
 Key settings:
 
-- `VITE_API_BASE_URL=https://10.0.0.33:5050/api`
-- `VITE_API_PROXY_TARGET=https://10.0.0.33:5050`
+- `VITE_API_BASE_URL=<https://10.0.0.33:5050/api>`
+- `VITE_API_PROXY_TARGET=<https://10.0.0.33:5050>`
 
 Environment mapping:
 
@@ -137,7 +137,7 @@ Logs are stored in `localStorage` and displayed in the UI for debugging.
 ## Troubleshooting
 
 - If submit fails with network errors, confirm the backend is running on `https://<lan-ip>:5050`.
-- If CORS errors appear, enable CORS on the backend for `http://localhost:3000`.
+- If CORS errors appear, enable CORS on the backend for [http://localhost:3000](http://localhost:3000).
 - If HTTPS errors appear, trust the local backend certificate on the machine.
 
 ## Suggested Next Improvements

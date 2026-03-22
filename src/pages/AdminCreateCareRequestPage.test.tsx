@@ -8,6 +8,7 @@ import {
   createAdminCareRequest,
   getAdminCareRequestClients,
 } from "../api/adminCareRequests";
+import { getCareRequestOptions } from "../api/catalogOptions";
 
 const navigate = vi.fn();
 const logout = vi.fn();
@@ -21,6 +22,10 @@ vi.mock("react-router-dom", () => ({
 vi.mock("../api/adminCareRequests", () => ({
   getAdminCareRequestClients: vi.fn(),
   createAdminCareRequest: vi.fn(),
+}));
+
+vi.mock("../api/catalogOptions", () => ({
+  getCareRequestOptions: vi.fn(),
 }));
 
 vi.mock("../context/AuthContext", () => ({
@@ -52,6 +57,24 @@ describe("AdminCreateCareRequestPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     routeSearch = "?view=pending";
+    vi.mocked(getCareRequestOptions).mockResolvedValue({
+      careRequestCategories: [
+        { code: "domicilio", displayName: "Domicilio", categoryFactor: 1.2 },
+      ],
+      careRequestTypes: [
+        {
+          code: "domicilio_24h",
+          displayName: "Domicilio 24h",
+          careRequestCategoryCode: "domicilio",
+          unitTypeCode: "dia_completo",
+          basePrice: 3500,
+        },
+      ],
+      unitTypes: [{ code: "dia_completo", displayName: "Dia completo" }],
+      distanceFactors: [{ code: "local", displayName: "Local", multiplier: 1 }],
+      complexityLevels: [{ code: "estandar", displayName: "Estandar", multiplier: 1 }],
+      volumeDiscountRules: [{ minimumCount: 5, discountPercent: 5 }],
+    });
     vi.mocked(getAdminCareRequestClients).mockResolvedValue([
       {
         userId: "client-1",

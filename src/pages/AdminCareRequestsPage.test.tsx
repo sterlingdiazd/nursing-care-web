@@ -37,6 +37,24 @@ vi.mock("../api/adminCareRequests", () => ({
   exportAdminCareRequestsCsv: vi.fn(),
 }));
 
+vi.mock("../hooks/useCareRequestCatalogOptions", () => ({
+  useCareRequestCatalogOptions: () => ({
+    data: {
+      careRequestCategories: [{ code: "hogar", displayName: "Hogar", categoryFactor: 1 }],
+      careRequestTypes: [
+        { code: "hogar_premium", displayName: "Hogar premium", careRequestCategoryCode: "hogar", unitTypeCode: "mes", basePrice: 65000 },
+      ],
+      unitTypes: [{ code: "mes", displayName: "Mes" }],
+      distanceFactors: [],
+      complexityLevels: [],
+      volumeDiscountRules: [],
+    },
+    isLoading: false,
+    error: null,
+    reload: vi.fn(),
+  }),
+}));
+
 vi.mock("../context/AuthContext", () => ({
   useAuth: () => ({
     isAuthenticated: true,

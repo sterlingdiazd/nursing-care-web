@@ -16,18 +16,16 @@ import {
   type AdminCareRequestClientOption,
 } from "../api/adminCareRequests";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
-import {
-  careRequestCategoryFactors,
-  careRequestComplexityFactors,
-  careRequestDistanceFactors,
-  careRequestServiceCatalog,
-  formatAdminCareRequestCurrency,
-  getVolumeDiscountPercent,
-} from "../utils/adminCareRequests";
+import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
+import { estimateCareRequestPricingFromCatalog } from "../utils/pricingFromCatalogOptions";
+import { formatAdminCareRequestCurrency } from "../utils/adminCareRequests";
+import { extractApiErrorMessage } from "../api/errorMessage";
 
 export default function AdminCreateCareRequestPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { data: catalogOptions, isLoading: catalogLoading, error: catalogError } =
+    useCareRequestCatalogOptions();
   const locationState = location.state as { presetClientUserId?: string; backPath?: string } | null;
   const presetClientUserId = locationState?.presetClientUserId ?? "";
   const [clientOptions, setClientOptions] = useState<AdminCareRequestClientOption[]>([]);
@@ -35,7 +33,7 @@ export default function AdminCreateCareRequestPage() {
   const [careRequestDescription, setCareRequestDescription] = useState("");
   const [suggestedNurse, setSuggestedNurse] = useState("");
   const [careRequestDate, setCareRequestDate] = useState("");
-  const [careRequestType, setCareRequestType] = useState<string>("domicilio_24h");
+  const [careRequestType, setCareRequestType] = useState<string>("");
   const [unit, setUnit] = useState<number>(1);
   const [distanceFactor, setDistanceFactor] = useState<string>("local");
   const [complexityLevel, setComplexityLevel] = useState<string>("estandar");
@@ -56,6 +54,19 @@ export default function AdminCreateCareRequestPage() {
   }, []);
 
   useEffect(() => {
+    if (!catalogOptions?.careRequestTypes.length) {
+      return;
+    }
+
+    setCareRequestType((prev) => {
+      if (prev && catalogOptions.careRequestTypes.some((t) => t.code === prev)) {
+        return prev;
+      }
+      return catalogOptions.careRequestTypes[0]?.code ?? "";
+    });
+  }, [catalogOptions]);
+
+  useEffect(() => {
     if (!clientUserId) {
       setExistingSameUnitTypeCount(0);
       return;
@@ -64,31 +75,71 @@ export default function AdminCreateCareRequestPage() {
     setExistingSameUnitTypeCount(0);
   }, [clientUserId, careRequestType]);
 
-  const selectedService = careRequestServiceCatalog[careRequestType];
-  const selectedCategory = selectedService.category;
+  const selectedService = catalogOptions?.careRequestTypes.find((t) => t.code === careRequestType);
+  const selectedCategory = selectedService?.careRequestCategoryCode ?? "";
+  const isDomicilio = selectedCategory === "domicilio";
+  const isHogarOrDomicilio = selectedCategory === "hogar" || isDomicilio;
+  const isMedicos = selectedCategory === "medicos";
+
+  const catalogBasePrice = selectedService?.basePrice ?? 0;
   const basePrice =
     typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
       ? clientBasePriceOverride
-      : selectedService.basePrice;
-  const categoryFactor = careRequestCategoryFactors[selectedCategory];
-  const distanceFactorValue =
-    selectedCategory === "domicilio"
-      ? careRequestDistanceFactors[distanceFactor as keyof typeof careRequestDistanceFactors]?.factor ?? 1.0
-      : 1.0;
-  const complexityFactorValue =
-    selectedCategory === "hogar" || selectedCategory === "domicilio"
-      ? careRequestComplexityFactors[complexityLevel as keyof typeof careRequestComplexityFactors]?.factor ?? 1.0
-      : 1.0;
-  const volumeDiscountPercent = getVolumeDiscountPercent(existingSameUnitTypeCount);
-  const unitPrice = basePrice * categoryFactor * distanceFactorValue * complexityFactorValue * (1 - volumeDiscountPercent / 100);
+      : catalogBasePrice;
+
+  const pricingEstimate = useMemo(() => {
+    if (!catalogOptions || !careRequestType) {
+      return null;
+    }
+
+    try {
+      return estimateCareRequestPricingFromCatalog(catalogOptions, {
+        careRequestTypeCode: careRequestType,
+        unit,
+        clientBasePriceOverride:
+          typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
+            ? clientBasePriceOverride
+            : undefined,
+        distanceFactorCode: isDomicilio ? distanceFactor : undefined,
+        complexityLevelCode: isHogarOrDomicilio ? complexityLevel : undefined,
+        medicalSuppliesCost:
+          isMedicos && typeof medicalSuppliesCost === "number" ? medicalSuppliesCost : undefined,
+        existingSameUnitTypeCount,
+      });
+    } catch {
+      return null;
+    }
+  }, [
+    catalogOptions,
+    careRequestType,
+    unit,
+    clientBasePriceOverride,
+    isDomicilio,
+    isHogarOrDomicilio,
+    isMedicos,
+    distanceFactor,
+    complexityLevel,
+    medicalSuppliesCost,
+    existingSameUnitTypeCount,
+  ]);
+
+  const unitPrice = pricingEstimate?.unitPriceAfterVolumeDiscount ?? 0;
   const medicalSuppliesValue =
-    selectedCategory === "medicos" && typeof medicalSuppliesCost === "number" && medicalSuppliesCost >= 0
+    isMedicos && typeof medicalSuppliesCost === "number" && medicalSuppliesCost >= 0
       ? medicalSuppliesCost
       : 0;
-  const estimatedTotal = unitPrice * unit + medicalSuppliesValue;
+  const estimatedTotal = pricingEstimate?.grandTotal ?? 0;
+  const volumeDiscountPercent = pricingEstimate?.volumeDiscountPercent ?? 0;
+  const distanceFactorValue = pricingEstimate?.distanceMultiplier ?? 1;
+  const complexityFactorValue = pricingEstimate?.complexityMultiplier ?? 1;
+  const categoryFactor = pricingEstimate?.categoryFactor ?? 0;
+
   const canSubmit =
     !isSaving
     && !isLoadingClients
+    && !catalogLoading
+    && Boolean(catalogOptions)
+    && Boolean(pricingEstimate)
     && clientUserId.length > 0
     && careRequestDescription.trim().length > 0
     && unit > 0;
@@ -121,20 +172,15 @@ export default function AdminCreateCareRequestPage() {
           typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
             ? clientBasePriceOverride
             : undefined,
-        distanceFactor: selectedCategory === "domicilio" ? distanceFactor : undefined,
-        complexityLevel:
-          selectedCategory === "hogar" || selectedCategory === "domicilio"
-            ? complexityLevel
-            : undefined,
+        distanceFactor: isDomicilio ? distanceFactor : undefined,
+        complexityLevel: isHogarOrDomicilio ? complexityLevel : undefined,
         medicalSuppliesCost:
-          selectedCategory === "medicos" && typeof medicalSuppliesCost === "number"
-            ? medicalSuppliesCost
-            : undefined,
+          isMedicos && typeof medicalSuppliesCost === "number" ? medicalSuppliesCost : undefined,
       });
 
       navigate(`/admin/care-requests/${response.id}${location.search}`);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "No fue posible crear la solicitud administrativa.");
+      setError(extractApiErrorMessage(nextError, "No fue posible crear la solicitud administrativa."));
     } finally {
       setIsSaving(false);
     }
@@ -166,6 +212,7 @@ export default function AdminCreateCareRequestPage() {
         <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3.5 }}>
           <Stack spacing={2.5} component="form" onSubmit={handleSubmit}>
             {error && <Alert severity="error">{error}</Alert>}
+            {catalogError && <Alert severity="error">{catalogError}</Alert>}
 
             <TextField
               select
@@ -215,11 +262,11 @@ export default function AdminCreateCareRequestPage() {
               value={careRequestType}
               onChange={(event) => setCareRequestType(event.target.value)}
               SelectProps={{ native: true }}
-              disabled={isSaving}
+              disabled={isSaving || catalogLoading}
             >
-              {Object.entries(careRequestServiceCatalog).map(([value, option]) => (
-                <option key={value} value={value}>
-                  {option.label}
+              {(catalogOptions?.careRequestTypes ?? []).map((row) => (
+                <option key={row.code} value={row.code}>
+                  {row.displayName}
                 </option>
               ))}
             </TextField>
@@ -233,35 +280,35 @@ export default function AdminCreateCareRequestPage() {
               disabled={isSaving}
             />
 
-            {selectedCategory === "domicilio" && (
+            {isDomicilio && (
               <TextField
                 select
                 label="Factor de distancia"
                 value={distanceFactor}
                 onChange={(event) => setDistanceFactor(event.target.value)}
                 SelectProps={{ native: true }}
-                disabled={isSaving}
+                disabled={isSaving || catalogLoading}
               >
-                {Object.entries(careRequestDistanceFactors).map(([value, option]) => (
-                  <option key={value} value={value}>
-                    {option.label}
+                {(catalogOptions?.distanceFactors ?? []).map((row) => (
+                  <option key={row.code} value={row.code}>
+                    {row.displayName}
                   </option>
                 ))}
               </TextField>
             )}
 
-            {(selectedCategory === "hogar" || selectedCategory === "domicilio") && (
+            {isHogarOrDomicilio && (
               <TextField
                 select
                 label="Nivel de complejidad"
                 value={complexityLevel}
                 onChange={(event) => setComplexityLevel(event.target.value)}
                 SelectProps={{ native: true }}
-                disabled={isSaving}
+                disabled={isSaving || catalogLoading}
               >
-                {Object.entries(careRequestComplexityFactors).map(([value, option]) => (
-                  <option key={value} value={value}>
-                    {option.label}
+                {(catalogOptions?.complexityLevels ?? []).map((row) => (
+                  <option key={row.code} value={row.code}>
+                    {row.displayName}
                   </option>
                 ))}
               </TextField>
@@ -279,7 +326,7 @@ export default function AdminCreateCareRequestPage() {
               disabled={isSaving}
             />
 
-            {selectedCategory === "medicos" && (
+            {isMedicos && (
               <TextField
                 label="Costo de insumos medicos (opcional)"
                 type="number"

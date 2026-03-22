@@ -52,6 +52,11 @@ export const adminPortalNavigationItems: AdminPortalNavigationItem[] = [
     description: "Gobernanza y permisos",
   },
   {
+    label: "Catalogo y precios",
+    path: "/admin/catalog",
+    description: "Parametros de tarifas y listas controladas",
+  },
+  {
     label: "Notificaciones",
     path: "/admin/notifications",
     description: "Centro de avisos administrativos",

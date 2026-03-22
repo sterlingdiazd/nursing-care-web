@@ -15,68 +15,24 @@ import { useNavigate } from "react-router-dom";
 import { createCareRequest, getCareRequests } from "../api/careRequests";
 import WorkspaceShell from "../components/layout/WorkspaceShell";
 import { useAuth } from "../context/AuthContext";
+import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
 import {
   clearClientLogs,
   createCorrelationId,
   logClientEvent,
   useClientLogs,
 } from "../logging/clientLogger";
-
-const SERVICE_TYPES: Record<
-  string,
-  { category: "hogar" | "domicilio" | "medicos"; basePrice: number; unitType: string }
-> = {
-  hogar_diario: { category: "hogar", basePrice: 2500, unitType: "dia_completo" },
-  hogar_basico: { category: "hogar", basePrice: 55000, unitType: "mes" },
-  hogar_estandar: { category: "hogar", basePrice: 60000, unitType: "mes" },
-  hogar_premium: { category: "hogar", basePrice: 65000, unitType: "mes" },
-  domicilio_dia_12h: { category: "domicilio", basePrice: 2500, unitType: "medio_dia" },
-  domicilio_noche_12h: { category: "domicilio", basePrice: 2500, unitType: "medio_dia" },
-  domicilio_24h: { category: "domicilio", basePrice: 3500, unitType: "dia_completo" },
-  suero: { category: "medicos", basePrice: 2000, unitType: "sesion" },
-  medicamentos: { category: "medicos", basePrice: 2000, unitType: "sesion" },
-  sonda_vesical: { category: "medicos", basePrice: 2000, unitType: "sesion" },
-  sonda_nasogastrica: { category: "medicos", basePrice: 3000, unitType: "sesion" },
-  sonda_peg: { category: "medicos", basePrice: 4000, unitType: "sesion" },
-  curas: { category: "medicos", basePrice: 2000, unitType: "sesion" },
-};
-
-const CATEGORY_FACTOR: Record<"hogar" | "domicilio" | "medicos", number> = {
-  hogar: 1.0,
-  domicilio: 1.2,
-  medicos: 1.5,
-};
-
-const DISTANCE_FACTORS: Record<string, number> = {
-  local: 1.0,
-  cercana: 1.1,
-  media: 1.2,
-  lejana: 1.3,
-};
-
-const COMPLEXITY_FACTORS: Record<string, number> = {
-  estandar: 1.0,
-  moderada: 1.1,
-  alta: 1.2,
-  critica: 1.3,
-};
-
-function volumeDiscountPercent(existingCount: number): number {
-  if (existingCount >= 50) return 20;
-  if (existingCount >= 20) return 15;
-  if (existingCount >= 10) return 10;
-  if (existingCount >= 5) return 5;
-  if (existingCount >= 1) return 0;
-  return 0;
-}
+import { estimateCareRequestPricingFromCatalog } from "../utils/pricingFromCatalogOptions";
 
 export default function CareRequestPage() {
   const navigate = useNavigate();
   const { userId } = useAuth();
+  const { data: catalogOptions, isLoading: catalogLoading, error: catalogError } =
+    useCareRequestCatalogOptions();
   const [careRequestDescription, setCareRequestDescription] = useState("");
   const [suggestedNurse, setSuggestedNurse] = useState("");
   const [careRequestDate, setCareRequestDate] = useState("");
-  const [careRequestType, setCareRequestType] = useState<string>("domicilio_24h");
+  const [careRequestType, setCareRequestType] = useState<string>("");
   const [unit, setUnit] = useState<number>(1);
   const [distanceFactor, setDistanceFactor] = useState<string>("local");
   const [complexityLevel, setComplexityLevel] = useState<string>("estandar");
@@ -90,40 +46,101 @@ export default function CareRequestPage() {
   } | null>(null);
   const logs = useClientLogs();
 
+  useEffect(() => {
+    if (!catalogOptions?.careRequestTypes.length) {
+      return;
+    }
+
+    setCareRequestType((prev) => {
+      if (prev && catalogOptions.careRequestTypes.some((t) => t.code === prev)) {
+        return prev;
+      }
+      return catalogOptions.careRequestTypes[0]?.code ?? "";
+    });
+  }, [catalogOptions]);
+
   const trimmedDescription = careRequestDescription.trim();
   const descriptionCount = trimmedDescription.length;
   const latestLogs = useMemo(() => logs.slice(0, 4), [logs]);
 
-  const selectedService = SERVICE_TYPES[careRequestType];
-  const selectedCategory = selectedService?.category ?? "domicilio";
-  const derivedUnitType = selectedService?.unitType ?? "dia_completo";
+  const selectedService = catalogOptions?.careRequestTypes.find((t) => t.code === careRequestType);
+  const selectedCategory = selectedService?.careRequestCategoryCode ?? "";
+  const derivedUnitType = selectedService?.unitTypeCode ?? "";
+
+  const categoryDisplayName =
+    catalogOptions?.careRequestCategories.find((c) => c.code === selectedCategory)?.displayName ??
+    selectedCategory;
+
+  const catalogBasePrice = selectedService?.basePrice ?? 0;
   const basePrice =
     typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
       ? clientBasePriceOverride
-      : selectedService?.basePrice ?? 0;
+      : catalogBasePrice;
 
-  const categoryFactor = CATEGORY_FACTOR[selectedCategory];
-  const distanceFactorValue =
-    selectedCategory === "domicilio" ? DISTANCE_FACTORS[distanceFactor] ?? 1.0 : 1.0;
-  const complexityFactor =
-    selectedCategory === "hogar" || selectedCategory === "domicilio"
-      ? COMPLEXITY_FACTORS[complexityLevel] ?? 1.0
-      : 1.0;
+  const pricingEstimate = useMemo(() => {
+    if (!catalogOptions || !careRequestType) {
+      return null;
+    }
 
-  const volumeDiscount = volumeDiscountPercent(existingSameUnitTypeCount);
-  const unitPrice =
-    basePrice * categoryFactor * distanceFactorValue * complexityFactor * (1 - volumeDiscount / 100);
+    try {
+      return estimateCareRequestPricingFromCatalog(catalogOptions, {
+        careRequestTypeCode: careRequestType,
+        unit,
+        clientBasePriceOverride:
+          typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
+            ? clientBasePriceOverride
+            : undefined,
+        distanceFactorCode: selectedCategory === "domicilio" ? distanceFactor : undefined,
+        complexityLevelCode:
+          selectedCategory === "hogar" || selectedCategory === "domicilio"
+            ? complexityLevel
+            : undefined,
+        medicalSuppliesCost:
+          selectedCategory === "medicos" && typeof medicalSuppliesCost === "number"
+            ? medicalSuppliesCost
+            : undefined,
+        existingSameUnitTypeCount,
+      });
+    } catch {
+      return null;
+    }
+  }, [
+    catalogOptions,
+    careRequestType,
+    unit,
+    clientBasePriceOverride,
+    selectedCategory,
+    distanceFactor,
+    complexityLevel,
+    medicalSuppliesCost,
+    existingSameUnitTypeCount,
+  ]);
+
+  const isDomicilio = selectedCategory === "domicilio";
+  const isHogarOrDomicilio = selectedCategory === "hogar" || isDomicilio;
+  const isMedicos = selectedCategory === "medicos";
+
   const medicalSupplies =
-    selectedCategory === "medicos" && typeof medicalSuppliesCost === "number" && medicalSuppliesCost >= 0
+    isMedicos && typeof medicalSuppliesCost === "number" && medicalSuppliesCost >= 0
       ? medicalSuppliesCost
       : 0;
-  const estimatedTotal = unitPrice * unit + medicalSupplies;
+
+  const unitPrice = pricingEstimate?.unitPriceAfterVolumeDiscount ?? 0;
+  const estimatedTotal = pricingEstimate?.grandTotal ?? 0;
+  const volumeDiscount = pricingEstimate?.volumeDiscountPercent ?? 0;
 
   const canSubmit =
-    !isLoading && Boolean(userId) && trimmedDescription.length > 0 && unit > 0 && Boolean(selectedService);
+    !isLoading
+    && !catalogLoading
+    && Boolean(catalogOptions)
+    && Boolean(userId)
+    && trimmedDescription.length > 0
+    && unit > 0
+    && Boolean(selectedService)
+    && Boolean(pricingEstimate);
 
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !derivedUnitType) {
       setExistingSameUnitTypeCount(0);
       return;
     }
@@ -181,13 +198,9 @@ export default function CareRequestPage() {
           ...(typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
             ? { clientBasePriceOverride }
             : {}),
-          ...(selectedCategory === "domicilio" ? { distanceFactor } : {}),
-          ...(selectedCategory === "hogar" || selectedCategory === "domicilio"
-            ? { complexityLevel }
-            : {}),
-          ...(selectedCategory === "medicos" && typeof medicalSuppliesCost === "number"
-            ? { medicalSuppliesCost }
-            : {}),
+          ...(isDomicilio ? { distanceFactor } : {}),
+          ...(isHogarOrDomicilio ? { complexityLevel } : {}),
+          ...(isMedicos && typeof medicalSuppliesCost === "number" ? { medicalSuppliesCost } : {}),
         },
         correlationId,
       );
@@ -206,21 +219,22 @@ export default function CareRequestPage() {
       setSuggestedNurse("");
       setCareRequestDate("");
       navigate(`/care-requests/${response.id}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Error desconocido";
       logClientEvent(
         "web.ui",
         "La creacion de la solicitud mostro un error en la interfaz",
         {
           correlationId,
           userId,
-          message: error.message ?? "Error desconocido",
+          message,
         },
         "error",
       );
 
       setFeedback({
         type: "error",
-        message: error.message ?? "Error desconocido",
+        message,
       });
     } finally {
       setIsLoading(false);
@@ -261,6 +275,14 @@ export default function CareRequestPage() {
                 </Typography>
               </Box>
 
+              {catalogError && <Alert severity="error">{catalogError}</Alert>}
+              {catalogLoading && (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <CircularProgress size={22} />
+                  <Typography color="text.secondary">Cargando catalogo de precios...</Typography>
+                </Stack>
+              )}
+
               {feedback && <Alert severity={feedback.type}>{feedback.message}</Alert>}
 
               {!userId && (
@@ -278,7 +300,7 @@ export default function CareRequestPage() {
                 value={careRequestDescription}
                 onChange={(event) => setCareRequestDescription(event.target.value)}
                 placeholder="Describe el cuidado requerido, urgencia, detalles clinicos relevantes y cualquier indicacion operativa para la aprobacion."
-                disabled={isLoading}
+                disabled={isLoading || catalogLoading}
                 helperText={`${descriptionCount} caracteres`}
               />
 
@@ -288,7 +310,7 @@ export default function CareRequestPage() {
                 value={suggestedNurse}
                 onChange={(event) => setSuggestedNurse(event.target.value)}
                 placeholder="Nombre de la enfermera que el cliente prefiere"
-                disabled={isLoading}
+                disabled={isLoading || catalogLoading}
                 helperText="Administracion decidira si asigna esta sugerencia u otra enfermera."
               />
 
@@ -298,7 +320,7 @@ export default function CareRequestPage() {
                 type="date"
                 value={careRequestDate}
                 onChange={(event) => setCareRequestDate(event.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || catalogLoading}
                 InputLabelProps={{ shrink: true }}
                 helperText="Si se indica una fecha futura, la enfermera asignada no podra completar la solicitud antes de ese dia."
               />
@@ -315,12 +337,12 @@ export default function CareRequestPage() {
                 label="Tipo de solicitud"
                 value={careRequestType}
                 onChange={(event) => setCareRequestType(event.target.value)}
-                disabled={isLoading}
+                disabled={isLoading || catalogLoading}
                 SelectProps={{ native: true }}
               >
-                {Object.keys(SERVICE_TYPES).map((key) => (
-                  <option key={key} value={key}>
-                    {key}
+                {(catalogOptions?.careRequestTypes ?? []).map((row) => (
+                  <option key={row.code} value={row.code}>
+                    {row.displayName}
                   </option>
                 ))}
               </TextField>
@@ -328,12 +350,12 @@ export default function CareRequestPage() {
               <TextField
                 fullWidth
                 label="Categoria del servicio"
-                value={selectedCategory}
+                value={categoryDisplayName}
                 disabled
                 helperText={`Tipo de unidad: ${derivedUnitType}`}
               />
 
-              <TextField fullWidth label="Precio base" value={selectedService?.basePrice ?? 0} disabled />
+              <TextField fullWidth label="Precio base" value={catalogBasePrice} disabled />
 
               <TextField
                 fullWidth
@@ -342,40 +364,40 @@ export default function CareRequestPage() {
                 value={unit}
                 inputProps={{ min: 1 }}
                 onChange={(event) => setUnit(Math.max(1, Number(event.target.value)))}
-                disabled={isLoading}
+                disabled={isLoading || catalogLoading}
               />
 
-              {selectedCategory === "domicilio" && (
+              {isDomicilio && (
                 <TextField
                   select
                   fullWidth
                   label="Factor de distancia"
                   value={distanceFactor}
                   onChange={(event) => setDistanceFactor(event.target.value)}
-                  disabled={isLoading}
+                  disabled={isLoading || catalogLoading}
                   SelectProps={{ native: true }}
                 >
-                  {Object.keys(DISTANCE_FACTORS).map((key) => (
-                    <option key={key} value={key}>
-                      {key}
+                  {(catalogOptions?.distanceFactors ?? []).map((row) => (
+                    <option key={row.code} value={row.code}>
+                      {row.displayName}
                     </option>
                   ))}
                 </TextField>
               )}
 
-              {(selectedCategory === "hogar" || selectedCategory === "domicilio") && (
+              {isHogarOrDomicilio && (
                 <TextField
                   select
                   fullWidth
                   label="Nivel de complejidad"
                   value={complexityLevel}
                   onChange={(event) => setComplexityLevel(event.target.value)}
-                  disabled={isLoading}
+                  disabled={isLoading || catalogLoading}
                   SelectProps={{ native: true }}
                 >
-                  {Object.keys(COMPLEXITY_FACTORS).map((key) => (
-                    <option key={key} value={key}>
-                      {key}
+                  {(catalogOptions?.complexityLevels ?? []).map((row) => (
+                    <option key={row.code} value={row.code}>
+                      {row.displayName}
                     </option>
                   ))}
                 </TextField>
@@ -391,11 +413,11 @@ export default function CareRequestPage() {
                   const value = event.target.value;
                   setClientBasePriceOverride(value === "" ? "" : Number(value));
                 }}
-                disabled={isLoading}
+                disabled={isLoading || catalogLoading}
                 helperText="Si se indica un valor mayor que 0, reemplaza el precio base estandar."
               />
 
-              {selectedCategory === "medicos" && (
+              {isMedicos && (
                 <TextField
                   fullWidth
                   label="Costo de insumos medicos (opcional)"
@@ -406,7 +428,7 @@ export default function CareRequestPage() {
                     const value = event.target.value;
                     setMedicalSuppliesCost(value === "" ? "" : Number(value));
                   }}
-                  disabled={isLoading}
+                  disabled={isLoading || catalogLoading}
                   helperText="Se suma al final del calculo, sin multiplicadores."
                 />
               )}
@@ -418,17 +440,26 @@ export default function CareRequestPage() {
                 <Typography variant="body2" color="text.secondary">
                   Precio unitario = base x categoria x distancia x complejidad x (1 - descuento)
                 </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  base: {basePrice} x categoria: {categoryFactor} x distancia: {distanceFactorValue}
-                  {" "}x complejidad: {complexityFactor} x (1 - {volumeDiscount}%)
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  Precio unitario: {unitPrice.toFixed(2)} • Cantidad: {unit} • Insumos:{" "}
-                  {medicalSupplies.toFixed(2)}
-                </Typography>
-                <Typography variant="h6" sx={{ mt: 0.5 }}>
-                  Total estimado: {estimatedTotal.toFixed(2)}
-                </Typography>
+                {pricingEstimate ? (
+                  <>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      base: {basePrice} x categoria: {pricingEstimate.categoryFactor} x distancia:{" "}
+                      {pricingEstimate.distanceMultiplier} x complejidad: {pricingEstimate.complexityMultiplier} x (1 -{" "}
+                      {volumeDiscount}%)
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Precio unitario: {unitPrice.toFixed(2)} • Cantidad: {unit} • Insumos:{" "}
+                      {medicalSupplies.toFixed(2)}
+                    </Typography>
+                    <Typography variant="h6" sx={{ mt: 0.5 }}>
+                      Total estimado: {estimatedTotal.toFixed(2)}
+                    </Typography>
+                  </>
+                ) : (
+                  <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
+                    {catalogLoading ? "Calculando..." : "Selecciona un tipo de solicitud valido para ver la estimacion."}
+                  </Typography>
+                )}
               </Paper>
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>

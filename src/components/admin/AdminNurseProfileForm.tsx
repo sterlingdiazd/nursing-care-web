@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 
 import { validateEmail, validatePassword } from "../../api/auth";
-import { nurseCategories, nurseSpecialties } from "../../constants/nurseProfileOptions";
+import { useNurseProfileCatalogOptions } from "../../hooks/useNurseProfileCatalogOptions";
 import {
   getExactDigitsFieldError,
   getOptionalDigitsFieldError,
@@ -77,6 +77,7 @@ export default function AdminNurseProfileForm({
   cancelLabel = "Cancelar",
   helperText,
 }: AdminNurseProfileFormProps) {
+  const { data: nurseCatalogOptions } = useNurseProfileCatalogOptions();
   const [formState, setFormState] = useState<NurseProfileFormValues>(initialValues);
   const [nameInputError, setNameInputError] = useState("");
   const [lastNameInputError, setLastNameInputError] = useState("");
@@ -322,9 +323,9 @@ export default function AdminNurseProfileForm({
             disabled={isSubmitting}
           >
             <option value="">Selecciona una especialidad</option>
-            {nurseSpecialties.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {(nurseCatalogOptions?.specialties ?? []).map((option) => (
+              <option key={option.code} value={option.code}>
+                {option.displayName}
               </option>
             ))}
           </TextField>
@@ -363,9 +364,9 @@ export default function AdminNurseProfileForm({
             disabled={isSubmitting}
           >
             <option value="">Selecciona una categoria</option>
-            {nurseCategories.map((option) => (
-              <option key={option} value={option}>
-                {option}
+            {(nurseCatalogOptions?.categories ?? []).map((option) => (
+              <option key={option.code} value={option.code}>
+                {option.displayName}
               </option>
             ))}
           </TextField>

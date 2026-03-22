@@ -19,6 +19,7 @@ import AdminClientDetailPage from "./pages/AdminClientDetailPage";
 import AdminUserDetailPage from "./pages/AdminUserDetailPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminModulePlaceholderPage from "./pages/AdminModulePlaceholderPage";
+import AdminPricingCatalogPage from "./pages/AdminPricingCatalogPage";
 import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
 import CareRequestDetailPage from "./pages/CareRequestDetailPage";
@@ -469,6 +470,14 @@ function AppRoutes() {
               description="Este espacio queda reservado para incidentes de alto impacto que deberan sobresalir sobre la mensajeria general."
               nextSliceSummary="La siguiente entrega incorporara alertas criticas del negocio y del sistema con seguimiento visible."
             />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/catalog"
+        element={
+          <AdminRoute>
+            <AdminPricingCatalogPage />
           </AdminRoute>
         }
       />

@@ -21,7 +21,7 @@ import {
 
 import { getGoogleOAuthStartUrl, validateEmail, validatePassword } from "../api/auth";
 import AuthScene from "../components/layout/AuthScene";
-import { nurseSpecialties } from "../constants/nurseProfileOptions";
+import { useNurseProfileCatalogOptions } from "../hooks/useNurseProfileCatalogOptions";
 import { useAuth } from "../context/AuthContext";
 import { RegisterRequest, UserProfileType } from "../types/auth";
 import {
@@ -42,6 +42,7 @@ const nurseProfileCopy =
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { data: nurseCatalogOptions } = useNurseProfileCatalogOptions();
   const {
     register,
     completeProfile,
@@ -377,9 +378,9 @@ export default function RegisterPage() {
                         <MenuItem value="">
                           <em>Selecciona una especialidad</em>
                         </MenuItem>
-                        {nurseSpecialties.map((option) => (
-                          <MenuItem key={option} value={option}>
-                            {option}
+                        {(nurseCatalogOptions?.specialties ?? []).map((option) => (
+                          <MenuItem key={option.code} value={option.code}>
+                            {option.displayName}
                           </MenuItem>
                         ))}
                       </TextField>
