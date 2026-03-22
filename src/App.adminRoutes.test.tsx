@@ -52,6 +52,14 @@ vi.mock("./pages/AdminCreateCareRequestPage", () => ({
   default: () => <div>admin create care request page</div>,
 }));
 
+vi.mock("./pages/AdminUsersPage", () => ({
+  default: () => <div>admin users page</div>,
+}));
+
+vi.mock("./pages/AdminUserDetailPage", () => ({
+  default: () => <div>admin user detail page</div>,
+}));
+
 vi.mock("./pages/AdminModulePlaceholderPage", () => ({
   default: () => <div>admin placeholder page</div>,
 }));
@@ -169,6 +177,50 @@ describe("Admin route boundaries", () => {
     window.localStorage.clear();
     saveSession(["Client"]);
     window.history.pushState({}, "", "/admin/care-requests/new");
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
+  });
+
+  it("renders the admin users list route only for admin sessions", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/users");
+
+    const adminView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin users page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/users");
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
+  });
+
+  it("protects the admin user detail route", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/users/user-1");
+
+    const adminView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin user detail page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/users/user-1");
 
     render(<App />);
 

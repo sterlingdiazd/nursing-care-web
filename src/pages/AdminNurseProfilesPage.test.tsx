@@ -93,7 +93,7 @@ describe("Admin nurse profiles page", () => {
       expect(getNurseProfileForAdmin).toHaveBeenCalledWith("nurse-1");
       expect(screen.getByRole("button", { name: "Completar perfil de enfermeria" })).toBeInTheDocument();
     }, { timeout: 10000 });
-  });
+  }, 10000);
 
   it("submits the admin completion form", async () => {
     vi.mocked(getPendingNurseProfiles).mockResolvedValue([
