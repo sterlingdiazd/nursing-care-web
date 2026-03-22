@@ -212,7 +212,7 @@ export default function AdminDashboardPage() {
       {
         label: "Clientes activos",
         value: dashboard.activeClientsCount,
-        helper: "Anticipa la base atendida desde el portal con acceso futuro al modulo dedicado de clientes.",
+        helper: "Resume la base disponible para gestion administrativa, consulta historica y solicitudes creadas en nombre del cliente.",
         path: "/admin/clients",
         tone: "info",
       },

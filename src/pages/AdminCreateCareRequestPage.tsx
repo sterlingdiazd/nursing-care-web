@@ -28,8 +28,10 @@ import {
 export default function AdminCreateCareRequestPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const locationState = location.state as { presetClientUserId?: string; backPath?: string } | null;
+  const presetClientUserId = locationState?.presetClientUserId ?? "";
   const [clientOptions, setClientOptions] = useState<AdminCareRequestClientOption[]>([]);
-  const [clientUserId, setClientUserId] = useState("");
+  const [clientUserId, setClientUserId] = useState(presetClientUserId);
   const [careRequestDescription, setCareRequestDescription] = useState("");
   const [suggestedNurse, setSuggestedNurse] = useState("");
   const [careRequestDate, setCareRequestDate] = useState("");
@@ -91,7 +93,7 @@ export default function AdminCreateCareRequestPage() {
     && careRequestDescription.trim().length > 0
     && unit > 0;
 
-  const backPath = `/admin/care-requests${location.search}`;
+  const backPath = locationState?.backPath ?? `/admin/care-requests${location.search}`;
   const selectedClient = useMemo(
     () => clientOptions.find((option) => option.userId === clientUserId) ?? null,
     [clientOptions, clientUserId],

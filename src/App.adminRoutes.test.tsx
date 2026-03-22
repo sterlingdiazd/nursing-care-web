@@ -72,6 +72,18 @@ vi.mock("./pages/AdminCreateAdminPage", () => ({
   default: () => <div>admin create admin page</div>,
 }));
 
+vi.mock("./pages/AdminClientsPage", () => ({
+  default: () => <div>admin clients page</div>,
+}));
+
+vi.mock("./pages/AdminCreateClientPage", () => ({
+  default: () => <div>admin create client page</div>,
+}));
+
+vi.mock("./pages/AdminClientDetailPage", () => ({
+  default: () => <div>admin client detail page</div>,
+}));
+
 vi.mock("./pages/AdminUsersPage", () => ({
   default: () => <div>admin users page</div>,
 }));
@@ -241,6 +253,46 @@ describe("Admin route boundaries", () => {
     window.localStorage.clear();
     saveSession(["Client"]);
     window.history.pushState({}, "", "/admin/users/create-admin");
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
+  });
+
+  it("protects the client administration routes", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/clients");
+
+    const adminView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin clients page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.history.pushState({}, "", "/admin/clients/new");
+
+    const createView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin create client page")).toBeInTheDocument();
+    });
+
+    createView.unmount();
+    window.history.pushState({}, "", "/admin/clients/client-1");
+
+    const detailView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin client detail page")).toBeInTheDocument();
+    });
+
+    detailView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/clients");
 
     render(<App />);
 

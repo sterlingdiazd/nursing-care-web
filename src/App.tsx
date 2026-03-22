@@ -14,6 +14,8 @@ import AdminCareRequestsPage from "./pages/AdminCareRequestsPage";
 import AdminCareRequestDetailPage from "./pages/AdminCareRequestDetailPage";
 import AdminCreateCareRequestPage from "./pages/AdminCreateCareRequestPage";
 import AdminCreateAdminPage from "./pages/AdminCreateAdminPage";
+import AdminCreateClientPage from "./pages/AdminCreateClientPage";
+import AdminClientDetailPage from "./pages/AdminClientDetailPage";
 import AdminUserDetailPage from "./pages/AdminUserDetailPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminModulePlaceholderPage from "./pages/AdminModulePlaceholderPage";
@@ -25,6 +27,7 @@ import AdminNurseProfileDetailPage from "./pages/AdminNurseProfileDetailPage";
 import AdminCreateNurseProfilePage from "./pages/AdminCreateNurseProfilePage";
 import AdminEditNurseProfilePage from "./pages/AdminEditNurseProfilePage";
 import AdminReviewNurseProfilePage from "./pages/AdminReviewNurseProfilePage";
+import AdminClientsPage from "./pages/AdminClientsPage";
 import { UserProfileType } from "./types/auth";
 
 // Create Material-UI theme
@@ -399,12 +402,23 @@ function AppRoutes() {
         path="/admin/clients"
         element={
           <AdminRoute>
-            <AdminModulePlaceholderPage
-              eyebrow="Clientes"
-              title="La administracion de clientes ya tiene una ruta reservada."
-              description="El tablero puede llevar a este modulo desde el conteo de clientes activos y la navegacion principal del portal."
-              nextSliceSummary="La siguiente entrega anadira listado, detalle y acciones administrativas para clientes sin cambiar esta ubicacion."
-            />
+            <AdminClientsPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/clients/new"
+        element={
+          <AdminRoute>
+            <AdminCreateClientPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/clients/:id"
+        element={
+          <AdminRoute>
+            <AdminClientDetailPage />
           </AdminRoute>
         }
       />
