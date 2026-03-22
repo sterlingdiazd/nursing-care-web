@@ -4,12 +4,16 @@ const roleLabelMap: Record<string, string> = {
   Nurse: "Enfermeria",
 };
 
+export function getRoleLabel(role: string) {
+  return roleLabelMap[role] ?? "Rol no reconocido";
+}
+
 export function formatRoleLabels(roles: string[]) {
   if (roles.length === 0) {
     return "Usuario";
   }
 
   return roles
-    .map((role) => roleLabelMap[role] ?? role)
+    .map((role) => getRoleLabel(role))
     .join(", ");
 }

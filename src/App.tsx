@@ -13,6 +13,8 @@ import AdminActionQueuePage from "./pages/AdminActionQueuePage";
 import AdminCareRequestsPage from "./pages/AdminCareRequestsPage";
 import AdminCareRequestDetailPage from "./pages/AdminCareRequestDetailPage";
 import AdminCreateCareRequestPage from "./pages/AdminCreateCareRequestPage";
+import AdminUserDetailPage from "./pages/AdminUserDetailPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminModulePlaceholderPage from "./pages/AdminModulePlaceholderPage";
 import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
@@ -373,12 +375,15 @@ function AppRoutes() {
         path="/admin/users"
         element={
           <AdminRoute>
-            <AdminModulePlaceholderPage
-              eyebrow="Usuarios y acceso"
-              title="La gobernanza de usuarios ya tiene su lugar dentro del portal."
-              description="Esta ruta consolida la estructura para permisos, estados de cuenta y futuras acciones de acceso administrativo."
-              nextSliceSummary="La siguiente entrega anadira busqueda, detalle y gestion de accesos en este modulo."
-            />
+            <AdminUsersPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/users/:id"
+        element={
+          <AdminRoute>
+            <AdminUserDetailPage />
           </AdminRoute>
         }
       />
