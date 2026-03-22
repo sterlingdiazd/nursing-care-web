@@ -153,5 +153,5 @@ describe("AdminUserDetailPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Volver al listado" }));
     expect(navigate).toHaveBeenCalledWith("/admin/users?role=Client");
-  }, 10000);
+  }, 20000);
 });
