@@ -15,7 +15,7 @@ const logout = vi.fn();
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigate,
-  useLocation: () => ({ pathname: "/admin/nurse-profiles" }),
+  useLocation: () => ({ pathname: "/admin/nurse-profiles", search: "" }),
 }));
 
 vi.mock("../api/adminNurseProfiles", () => ({

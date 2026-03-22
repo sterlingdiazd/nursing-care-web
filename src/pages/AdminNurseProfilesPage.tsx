@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Alert,
   Box,
@@ -14,12 +15,14 @@ import {
   Typography,
 } from "@mui/material";
 
-import WorkspaceShell from "../components/layout/WorkspaceShell";
+import AdminPortalShell from "../components/layout/AdminPortalShell";
 import { nurseCategories, nurseSpecialties } from "../constants/nurseProfileOptions";
 import {
   completeNurseProfileForAdmin,
+  getActiveNurseProfiles,
   getNurseProfileForAdmin,
   getPendingNurseProfiles,
+  type ActiveNurseProfileSummary,
   type CompleteNurseProfileRequest,
   type NurseProfileAdminRecord,
   type PendingNurseProfile,
@@ -35,6 +38,15 @@ import {
 } from "../utils/identityValidation";
 
 type FormState = CompleteNurseProfileRequest;
+type NurseProfilesView = "pending" | "active";
+
+interface NurseProfileListItem {
+  userId: string;
+  email: string;
+  name: string | null;
+  lastName: string | null;
+  helperText: string;
+}
 
 const emptyForm: FormState = {
   name: "",
@@ -67,7 +79,9 @@ function toFormState(profile: NurseProfileAdminRecord): FormState {
 }
 
 export default function AdminNurseProfilesPage() {
-  const [pendingProfiles, setPendingProfiles] = useState<PendingNurseProfile[]>([]);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [listItems, setListItems] = useState<NurseProfileListItem[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<NurseProfileAdminRecord | null>(null);
   const [formState, setFormState] = useState<FormState>(emptyForm);
@@ -113,9 +127,13 @@ export default function AdminNurseProfilesPage() {
   const displayedBankNameError = bankNameInputError || (formState.bankName.length > 0 ? bankNameError : "");
   const displayedAccountNumberError =
     accountNumberInputError || ((formState.accountNumber ?? "").length > 0 ? accountNumberError : "");
+  const currentView: NurseProfilesView =
+    new URLSearchParams(location.search).get("view") === "active" ? "active" : "pending";
+  const isReadOnlyView = currentView === "active";
 
   const canSubmit = useMemo(
     () =>
+      !isReadOnlyView &&
       !isSaving &&
       !displayedNameError &&
       !displayedLastNameError &&
@@ -137,28 +155,56 @@ export default function AdminNurseProfilesPage() {
       displayedNameError,
       displayedPhoneError,
       formState,
+      isReadOnlyView,
       isSaving,
     ],
   );
 
-  const loadPendingProfiles = async (preferredUserId?: string | null) => {
+  const mapPendingProfile = (profile: PendingNurseProfile): NurseProfileListItem => ({
+    userId: profile.userId,
+    email: profile.email,
+    name: profile.name,
+    lastName: profile.lastName,
+    helperText: `Creado: ${new Date(profile.createdAtUtc).toLocaleString()}`,
+  });
+
+  const mapActiveProfile = (profile: ActiveNurseProfileSummary): NurseProfileListItem => ({
+    userId: profile.userId,
+    email: profile.email,
+    name: profile.name,
+    lastName: profile.lastName,
+    helperText:
+      [profile.specialty, profile.category].filter(Boolean).join(" · ") || "Perfil activo listo para asignacion",
+  });
+
+  const loadProfileList = async (preferredUserId?: string | null, nextView: NurseProfilesView = currentView) => {
     setIsLoadingList(true);
     setError(null);
 
     try {
-      const nextPending = await getPendingNurseProfiles();
-      setPendingProfiles(nextPending);
+      const nextItems =
+        nextView === "pending"
+          ? (await getPendingNurseProfiles()).map(mapPendingProfile)
+          : (await getActiveNurseProfiles()).map(mapActiveProfile);
+
+      setListItems(nextItems);
 
       const nextSelected =
-        preferredUserId && nextPending.some((item) => item.userId === preferredUserId)
+        preferredUserId && nextItems.some((item) => item.userId === preferredUserId)
           ? preferredUserId
-          : nextPending[0]?.userId ?? null;
+          : nextItems[0]?.userId ?? null;
 
       setSelectedUserId(nextSelected);
       setSuccessMessage((current) => current);
-      return nextPending;
+      return nextItems;
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "No fue posible cargar los perfiles pendientes.");
+      setError(
+        nextError instanceof Error
+          ? nextError.message
+          : nextView === "pending"
+            ? "No fue posible cargar los perfiles pendientes."
+            : "No fue posible cargar las enfermeras activas.",
+      );
       return [];
     } finally {
       setIsLoadingList(false);
@@ -183,8 +229,8 @@ export default function AdminNurseProfilesPage() {
   };
 
   useEffect(() => {
-    void loadPendingProfiles();
-  }, []);
+    void loadProfileList(selectedUserId, currentView);
+  }, [currentView]);
 
   useEffect(() => {
     if (!selectedUserId) {
@@ -268,7 +314,7 @@ export default function AdminNurseProfilesPage() {
       setSuccessMessage("El perfil de enfermeria fue completado correctamente.");
 
       const currentUserId = selectedUserId;
-      const nextPending = await loadPendingProfiles(currentUserId);
+      const nextPending = await loadProfileList(currentUserId, "pending");
 
       if (!nextPending.some((item) => item.userId === currentUserId)) {
         setSelectedProfile(null);
@@ -282,14 +328,28 @@ export default function AdminNurseProfilesPage() {
   };
 
   return (
-    <WorkspaceShell
-      eyebrow="Administracion clinica"
-      title="Completa perfiles de enfermeria desde una sola vista."
-      description="Revisa las cuentas pendientes, abre el perfil combinado de usuario y enfermeria, y finaliza la creacion sin salir de este flujo."
+    <AdminPortalShell
+      eyebrow="Administracion de enfermeria"
+      title="Perfiles pendientes y fuerza activa dentro del portal admin."
+      description="El tablero puede aterrizar tanto en perfiles pendientes como en enfermeras activas. Esta vista ya vive dentro del portal administrativo y conserva el flujo de revision sin mezclarlo con la consola operativa general."
       actions={
-        <Button variant="outlined" onClick={() => void loadPendingProfiles(selectedUserId)} disabled={isLoadingList}>
-          Actualizar pendientes
-        </Button>
+        <>
+          <Button
+            variant={currentView === "pending" ? "contained" : "text"}
+            onClick={() => navigate("/admin/nurse-profiles?view=pending")}
+          >
+            Pendientes
+          </Button>
+          <Button
+            variant={currentView === "active" ? "contained" : "text"}
+            onClick={() => navigate("/admin/nurse-profiles?view=active")}
+          >
+            Activas
+          </Button>
+          <Button variant="outlined" onClick={() => void loadProfileList(selectedUserId)} disabled={isLoadingList}>
+            Actualizar lista
+          </Button>
+        </>
       }
     >
       <Stack spacing={3}>
@@ -306,22 +366,26 @@ export default function AdminNurseProfilesPage() {
           <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
             <Box sx={{ p: 2.5, borderBottom: "1px solid rgba(23, 48, 66, 0.08)" }}>
               <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                Pendientes
+                {currentView === "pending" ? "Pendientes" : "Activas"}
               </Typography>
               <Typography variant="h5" sx={{ mt: 1 }}>
-                Perfiles por completar
+                {currentView === "pending" ? "Perfiles por completar" : "Enfermeras listas para asignacion"}
               </Typography>
               <Typography sx={{ mt: 1, color: "text.secondary", lineHeight: 1.7 }}>
                 {isLoadingList
-                  ? "Actualizando la lista de enfermeria pendiente."
-                  : pendingProfiles.length === 0
-                    ? "No hay perfiles pendientes en este momento."
-                    : "Selecciona un perfil para revisar y completar sus datos administrativos."}
+                  ? "Actualizando la lista de enfermeria."
+                  : listItems.length === 0
+                    ? currentView === "pending"
+                      ? "No hay perfiles pendientes en este momento."
+                      : "No hay enfermeras activas registradas en este momento."
+                    : currentView === "pending"
+                      ? "Selecciona un perfil para revisar y completar sus datos administrativos."
+                      : "Selecciona una enfermera activa para inspeccionar el perfil combinado ya habilitado."}
               </Typography>
             </Box>
 
             <List disablePadding>
-              {pendingProfiles.map((profile) => {
+              {listItems.map((profile) => {
                 const selected = profile.userId === selectedUserId;
 
                 return (
@@ -343,7 +407,7 @@ export default function AdminNurseProfilesPage() {
                             {profile.email}
                           </Typography>
                           <Typography component="span" display="block" sx={{ mt: 0.4 }}>
-                            Creado: {new Date(profile.createdAtUtc).toLocaleString()}
+                            {profile.helperText}
                           </Typography>
                         </>
                       }
@@ -357,7 +421,9 @@ export default function AdminNurseProfilesPage() {
           <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
             {!selectedUserId ? (
               <Alert severity="info" variant="outlined">
-                No hay perfiles pendientes para completar.
+                {currentView === "pending"
+                  ? "No hay perfiles pendientes para completar."
+                  : "No hay perfiles activos para inspeccionar."}
               </Alert>
             ) : (
               <Stack spacing={2.5} component="form" onSubmit={handleSubmit}>
@@ -393,7 +459,7 @@ export default function AdminNurseProfilesPage() {
                     label="Nombre"
                     value={formState.name}
                     onChange={(event) => handleChange("name", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                     error={!!displayedNameError}
                     helperText={displayedNameError || "Solo letras y espacios."}
                   />
@@ -401,7 +467,7 @@ export default function AdminNurseProfilesPage() {
                     label="Apellido"
                     value={formState.lastName}
                     onChange={(event) => handleChange("lastName", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                     error={!!displayedLastNameError}
                     helperText={displayedLastNameError || "Solo letras y espacios."}
                   />
@@ -409,7 +475,7 @@ export default function AdminNurseProfilesPage() {
                     label="Cedula"
                     value={formState.identificationNumber}
                     onChange={(event) => handleChange("identificationNumber", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                     error={!!displayedIdentificationNumberError}
                     helperText={displayedIdentificationNumberError || "Debe tener exactamente 11 digitos."}
                     inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 11 }}
@@ -418,7 +484,7 @@ export default function AdminNurseProfilesPage() {
                     label="Telefono"
                     value={formState.phone}
                     onChange={(event) => handleChange("phone", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                     error={!!displayedPhoneError}
                     helperText={displayedPhoneError || "Debe tener exactamente 10 digitos."}
                     inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 10 }}
@@ -428,14 +494,14 @@ export default function AdminNurseProfilesPage() {
                     type="email"
                     value={formState.email}
                     onChange={(event) => handleChange("email", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                   />
                   <TextField
                     label="Fecha de contratacion"
                     type="date"
                     value={formState.hireDate}
                     onChange={(event) => handleChange("hireDate", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                     InputLabelProps={{ shrink: true }}
                   />
                   <TextField
@@ -443,7 +509,7 @@ export default function AdminNurseProfilesPage() {
                     label="Especialidad"
                     value={formState.specialty}
                     onChange={(event) => handleChange("specialty", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                   >
                     {nurseSpecialties.map((option) => (
                       <MenuItem key={option} value={option}>
@@ -455,7 +521,7 @@ export default function AdminNurseProfilesPage() {
                     label="Licencia"
                     value={formState.licenseId ?? ""}
                     onChange={(event) => handleChange("licenseId", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                     error={!!displayedLicenseIdError}
                     helperText={displayedLicenseIdError || "Opcional. Solo numeros."}
                     inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
@@ -464,7 +530,7 @@ export default function AdminNurseProfilesPage() {
                     label="Banco"
                     value={formState.bankName}
                     onChange={(event) => handleChange("bankName", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                     error={!!displayedBankNameError}
                     helperText={displayedBankNameError || "Solo letras y espacios."}
                   />
@@ -472,7 +538,7 @@ export default function AdminNurseProfilesPage() {
                     label="Numero de cuenta"
                     value={formState.accountNumber ?? ""}
                     onChange={(event) => handleChange("accountNumber", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                     error={!!displayedAccountNumberError}
                     helperText={displayedAccountNumberError || "Opcional. Solo numeros."}
                     inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
@@ -482,7 +548,7 @@ export default function AdminNurseProfilesPage() {
                     label="Categoria"
                     value={formState.category}
                     onChange={(event) => handleChange("category", event.target.value)}
-                    disabled={isLoadingDetail || isSaving}
+                    disabled={isLoadingDetail || isSaving || isReadOnlyView}
                   >
                     {nurseCategories.map((option) => (
                       <MenuItem key={option} value={option}>
@@ -493,9 +559,11 @@ export default function AdminNurseProfilesPage() {
                 </Box>
 
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-                  <Button type="submit" variant="contained" disabled={!canSubmit || isLoadingDetail}>
-                    Completar perfil de enfermeria
-                  </Button>
+                  {!isReadOnlyView && (
+                    <Button type="submit" variant="contained" disabled={!canSubmit || isLoadingDetail}>
+                      Completar perfil de enfermeria
+                    </Button>
+                  )}
                   <Button
                     variant="text"
                     onClick={() => selectedUserId && void loadProfile(selectedUserId)}
@@ -504,11 +572,17 @@ export default function AdminNurseProfilesPage() {
                     Recargar perfil
                   </Button>
                 </Stack>
+
+                {isReadOnlyView && (
+                  <Alert severity="success" variant="outlined">
+                    Esta enfermera ya tiene un perfil administrativo activo y disponible para asignacion.
+                  </Alert>
+                )}
               </Stack>
             )}
           </Paper>
         </Box>
       </Stack>
-    </WorkspaceShell>
+    </AdminPortalShell>
   );
 }

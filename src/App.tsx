@@ -8,6 +8,9 @@ import { logClientEvent } from "./logging/clientLogger";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminCareRequestsPage from "./pages/AdminCareRequestsPage";
+import AdminModulePlaceholderPage from "./pages/AdminModulePlaceholderPage";
 import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
 import CareRequestDetailPage from "./pages/CareRequestDetailPage";
@@ -226,9 +229,36 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function getDefaultAuthenticatedPath(roles: string[], requiresProfileCompletion: boolean) {
+  if (requiresProfileCompletion) {
+    return "/register";
+  }
+
+  return roles.includes("Admin") ? "/admin" : "/home";
+}
+
+function HomeRoute() {
+  const { isAuthenticated, requiresProfileCompletion, roles } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiresProfileCompletion) {
+    return <Navigate to="/register" replace />;
+  }
+
+  if (roles.includes("Admin")) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return <HomePage />;
+}
+
 // App Routes
 function AppRoutes() {
-  const { isAuthenticated, requiresProfileCompletion } = useAuth();
+  const { isAuthenticated, requiresProfileCompletion, roles } = useAuth();
+  const defaultAuthenticatedPath = getDefaultAuthenticatedPath(roles, requiresProfileCompletion);
 
   useEffect(() => {
     logClientEvent("web.ui", "Web app loaded");
@@ -239,13 +269,13 @@ function AppRoutes() {
       {/* Public Routes */}
       <Route
         path="/register"
-        element={isAuthenticated && !requiresProfileCompletion ? <Navigate to="/home" replace /> : <RegisterPage />}
+        element={isAuthenticated && !requiresProfileCompletion ? <Navigate to={defaultAuthenticatedPath} replace /> : <RegisterPage />}
       />
       <Route
         path="/login"
         element={
           isAuthenticated
-            ? <Navigate to={requiresProfileCompletion ? "/register" : "/home"} replace />
+            ? <Navigate to={defaultAuthenticatedPath} replace />
             : <LoginPage />
         }
       />
@@ -255,8 +285,24 @@ function AppRoutes() {
         path="/home"
         element={
           <ProtectedRoute>
-            <HomePage />
+            <HomeRoute />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <AdminDashboardPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/care-requests"
+        element={
+          <AdminRoute>
+            <AdminCareRequestsPage />
+          </AdminRoute>
         }
       />
       <Route
@@ -291,15 +337,80 @@ function AppRoutes() {
           </AdminRoute>
         }
       />
+      <Route
+        path="/admin/clients"
+        element={
+          <AdminRoute>
+            <AdminModulePlaceholderPage
+              eyebrow="Clientes"
+              title="La administracion de clientes ya tiene una ruta reservada."
+              description="El tablero puede llevar a este modulo desde el conteo de clientes activos y la navegacion principal del portal."
+              nextSliceSummary="La siguiente entrega anadira listado, detalle y acciones administrativas para clientes sin cambiar esta ubicacion."
+            />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <AdminRoute>
+            <AdminModulePlaceholderPage
+              eyebrow="Usuarios y acceso"
+              title="La gobernanza de usuarios ya tiene su lugar dentro del portal."
+              description="Esta ruta consolida la estructura para permisos, estados de cuenta y futuras acciones de acceso administrativo."
+              nextSliceSummary="La siguiente entrega anadira busqueda, detalle y gestion de accesos en este modulo."
+            />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/notifications"
+        element={
+          <AdminRoute>
+            <AdminModulePlaceholderPage
+              eyebrow="Notificaciones"
+              title="El centro de notificaciones administrativo queda anclado desde esta base."
+              description="El tablero ya puede dirigir aqui el conteo de avisos sin leer, aunque la bandeja completa se incorporara en la siguiente fase."
+              nextSliceSummary="La siguiente entrega incorporara el centro de notificaciones con estados de leido, severidad y enlaces a entidades."
+            />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/alerts"
+        element={
+          <AdminRoute>
+            <AdminModulePlaceholderPage
+              eyebrow="Alertas criticas"
+              title="La bandeja de alertas severas ya existe como destino del tablero."
+              description="Este espacio queda reservado para incidentes de alto impacto que deberan sobresalir sobre la mensajeria general."
+              nextSliceSummary="La siguiente entrega incorporara alertas criticas del negocio y del sistema con seguimiento visible."
+            />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <AdminRoute>
+            <AdminModulePlaceholderPage
+              eyebrow="Configuracion"
+              title="La configuracion del portal ya tiene una ubicacion estable."
+              description="Esta ruta fija la arquitectura para parametros administrativos sin inflar la consola ni mezclarla con flujos operativos."
+              nextSliceSummary="La siguiente entrega anadira ajustes tipados y auditables dentro de este modulo."
+            />
+          </AdminRoute>
+        }
+      />
 
       {/* Root and catch-all */}
       <Route
         path="/"
-        element={<Navigate to={isAuthenticated ? (requiresProfileCompletion ? "/register" : "/home") : "/login"} replace />}
+        element={<Navigate to={isAuthenticated ? defaultAuthenticatedPath : "/login"} replace />}
       />
       <Route
         path="*"
-        element={<Navigate to={isAuthenticated ? (requiresProfileCompletion ? "/register" : "/home") : "/login"} replace />}
+        element={<Navigate to={isAuthenticated ? defaultAuthenticatedPath : "/login"} replace />}
       />
     </Routes>
   );
