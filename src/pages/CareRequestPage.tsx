@@ -502,27 +502,29 @@ export default function CareRequestPage() {
                       border: "1px solid rgba(23, 48, 66, 0.08)",
                     }}
                   >
-                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                      {log.timestamp} • {log.source} • {log.level.toUpperCase()} • {log.correlationId}
-                    </Typography>
-                    <Typography sx={{ mt: 0.6, fontWeight: 700 }}>{log.message}</Typography>
-                    {log.data && (
-                      <>
-                        <Divider sx={{ my: 1 }} />
-                        <Box
-                          component="pre"
-                          sx={{
-                            m: 0,
-                            whiteSpace: "pre-wrap",
-                            fontSize: 12,
-                            color: "text.secondary",
-                            fontFamily: '"IBM Plex Mono", "SFMono-Regular", monospace',
-                          }}
-                        >
-                          {JSON.stringify(log.data, null, 2)}
-                        </Box>
-                      </>
-                    )}
+                    <>
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        {log.timestamp} • {log.source} • {log.level.toUpperCase()} • {log.correlationId}
+                      </Typography>
+                      <Typography sx={{ mt: 0.6, fontWeight: 700 }}>{log.message}</Typography>
+                      {log.data && (
+                        <>
+                          <Divider sx={{ my: 1 }} />
+                          <Box
+                            component="pre"
+                            sx={{
+                              m: 0,
+                              whiteSpace: "pre-wrap",
+                              fontSize: 12,
+                              color: "text.secondary",
+                              fontFamily: '"IBM Plex Mono", "SFMono-Regular", monospace',
+                            }}
+                          >
+                            {JSON.stringify(log.data, null, 2)}
+                          </Box>
+                        </>
+                      )}
+                    </>
                   </Box>
                 ))
               )}

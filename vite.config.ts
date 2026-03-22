@@ -23,6 +23,14 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: "dist",
       sourcemap: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ["react", "react-dom", "react-router-dom"],
+            mui: ["@emotion/react", "@emotion/styled", "@mui/material"],
+          },
+        },
+      },
     },
     test: {
       environment: "happy-dom",

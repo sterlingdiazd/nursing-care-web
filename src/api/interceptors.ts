@@ -1,3 +1,4 @@
+import { AxiosHeaders } from "axios";
 import { clearAuthSession, getAuthSession, saveAuthSession } from "../auth/sessionStorage";
 import { createCorrelationId, logClientEvent } from "../logging/clientLogger";
 import { refreshAuthToken } from "./auth";
@@ -15,16 +16,17 @@ httpClient.interceptors.request.use(
     const requestUrl = new URL(config.url ?? "", config.baseURL).toString();
     const session = getAuthSession();
     const storedToken = session?.token ?? null;
+    const headers = AxiosHeaders.from(config.headers);
 
-    config.headers = {
-      ...config.headers,
-      "X-Correlation-ID": correlationId,
-      "X-Client-App": "nursing-care-web",
-      "X-Client-Platform": "web",
-      ...(storedToken && !config.headers?.Authorization
-        ? { Authorization: `Bearer ${storedToken}` }
-        : {}),
-    };
+    headers.set("X-Correlation-ID", correlationId);
+    headers.set("X-Client-App", "nursing-care-web");
+    headers.set("X-Client-Platform", "web");
+
+    if (storedToken && !headers.has("Authorization")) {
+      headers.set("Authorization", `Bearer ${storedToken}`);
+    }
+
+    config.headers = headers;
 
     logClientEvent("web.http", "Request started", {
       correlationId,

@@ -10,6 +10,11 @@ export const httpClient = axios.create({
 });
 
 declare module "axios" {
+  export interface AxiosRequestConfig<D = any> {
+    _retry?: boolean;
+    skipAuthRefresh?: boolean;
+  }
+
   export interface InternalAxiosRequestConfig<D = any> {
     _retry?: boolean;
     skipAuthRefresh?: boolean;
