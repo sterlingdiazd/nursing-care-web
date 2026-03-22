@@ -11,6 +11,8 @@ import HomePage from "./pages/HomePage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminActionQueuePage from "./pages/AdminActionQueuePage";
 import AdminCareRequestsPage from "./pages/AdminCareRequestsPage";
+import AdminCareRequestDetailPage from "./pages/AdminCareRequestDetailPage";
+import AdminCreateCareRequestPage from "./pages/AdminCreateCareRequestPage";
 import AdminModulePlaceholderPage from "./pages/AdminModulePlaceholderPage";
 import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
@@ -295,6 +297,22 @@ function AppRoutes() {
         element={
           <AdminRoute>
             <AdminActionQueuePage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/care-requests/new"
+        element={
+          <AdminRoute>
+            <AdminCreateCareRequestPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/care-requests/:id"
+        element={
+          <AdminRoute>
+            <AdminCareRequestDetailPage />
           </AdminRoute>
         }
       />

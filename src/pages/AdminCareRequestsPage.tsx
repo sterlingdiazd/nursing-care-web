@@ -7,123 +7,153 @@ import {
   Chip,
   Paper,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 
-import { type CareRequest, getCareRequests } from "../api/careRequests";
+import {
+  exportAdminCareRequestsCsv,
+  getAdminCareRequests,
+  type AdminCareRequestListItem,
+  type AdminCareRequestListParams,
+  type AdminCareRequestSort,
+  type AdminCareRequestView,
+} from "../api/adminCareRequests";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import {
+  adminCareRequestViewOptions,
+  formatAdminCareRequestCurrency,
+  formatAdminCareRequestDateTime,
+  formatAdminCareRequestTypeLabel,
+  formatAdminCareRequestUnitTypeLabel,
+  getAdminCareRequestStatusLabel,
+  getAdminCareRequestStatusStyles,
+} from "../utils/adminCareRequests";
 
-type AdminCareRequestView =
-  | "all"
-  | "unassigned"
-  | "pending-approval"
-  | "rejected-today"
-  | "approved-incomplete"
-  | "overdue";
-
-interface ViewOption {
-  value: AdminCareRequestView;
-  label: string;
-}
-
-const viewOptions: ViewOption[] = [
-  { value: "all", label: "Todas" },
-  { value: "unassigned", label: "Sin asignar" },
-  { value: "pending-approval", label: "Listas para aprobacion" },
-  { value: "rejected-today", label: "Rechazadas hoy" },
-  { value: "approved-incomplete", label: "Aprobadas sin cierre" },
-  { value: "overdue", label: "Atrasadas o estancadas" },
+const sortOptions: Array<{ value: AdminCareRequestSort; label: string }> = [
+  { value: "newest", label: "Mas recientes" },
+  { value: "oldest", label: "Mas antiguas" },
+  { value: "scheduled", label: "Fecha del servicio" },
+  { value: "status", label: "Estado" },
+  { value: "value", label: "Mayor valor" },
 ];
-
-function getStatusStyles(status: CareRequest["status"]) {
-  switch (status) {
-    case "Approved":
-      return { bg: "rgba(44, 122, 100, 0.12)", color: "#205e4d", label: "Aprobada" };
-    case "Rejected":
-      return { bg: "rgba(183, 79, 77, 0.12)", color: "#9a3f3d", label: "Rechazada" };
-    case "Completed":
-      return { bg: "rgba(59, 108, 141, 0.12)", color: "#295774", label: "Completada" };
-    default:
-      return { bg: "rgba(193, 138, 66, 0.14)", color: "#8a5e22", label: "Pendiente" };
-  }
-}
 
 function resolveView(search: string): AdminCareRequestView {
   const value = new URLSearchParams(search).get("view");
+  const availableValues = new Set<AdminCareRequestView>([
+    "all",
+    "pending",
+    "approved",
+    "rejected",
+    "completed",
+    "unassigned",
+    "pending-approval",
+    "rejected-today",
+    "approved-incomplete",
+    "overdue",
+  ]);
 
-  return viewOptions.some((item) => item.value === value)
+  return value && availableValues.has(value as AdminCareRequestView)
     ? (value as AdminCareRequestView)
     : "all";
 }
 
-function resolveSelectedRequestId(search: string) {
-  return new URLSearchParams(search).get("selected");
+function resolveSort(search: string): AdminCareRequestSort {
+  const value = new URLSearchParams(search).get("sort");
+  return sortOptions.some((option) => option.value === value)
+    ? (value as AdminCareRequestSort)
+    : "newest";
 }
 
-function getUtcDateKey(value: string | null | undefined) {
-  if (!value) {
-    return "";
-  }
-
-  return new Date(value).toISOString().slice(0, 10);
+function resolveFilterState(search: string) {
+  const params = new URLSearchParams(search);
+  return {
+    view: resolveView(search),
+    sort: resolveSort(search),
+    searchText: params.get("search") ?? "",
+    scheduledFrom: params.get("scheduledFrom") ?? "",
+    scheduledTo: params.get("scheduledTo") ?? "",
+    selectedId: params.get("selected"),
+  };
 }
 
-function isOverdueOrStale(item: CareRequest) {
-  const todayUtc = new Date().toISOString().slice(0, 10);
-  const staleCutoff = Date.now() - 48 * 60 * 60 * 1000;
+function createQueryString({
+  view,
+  sort,
+  searchText,
+  scheduledFrom,
+  scheduledTo,
+  selectedId,
+}: {
+  view: AdminCareRequestView;
+  sort: AdminCareRequestSort;
+  searchText: string;
+  scheduledFrom: string;
+  scheduledTo: string;
+  selectedId?: string | null;
+}) {
+  const params = new URLSearchParams();
 
-  if (item.status === "Completed") {
-    return false;
+  if (view !== "all") {
+    params.set("view", view);
   }
 
-  if (item.careRequestDate) {
-    return item.careRequestDate < todayUtc;
+  if (sort !== "newest") {
+    params.set("sort", sort);
   }
 
-  return item.status === "Pending" && new Date(item.updatedAtUtc).getTime() <= staleCutoff;
-}
-
-function matchesView(item: CareRequest, view: AdminCareRequestView) {
-  switch (view) {
-    case "unassigned":
-      return item.status === "Pending" && !item.assignedNurse;
-    case "pending-approval":
-      return item.status === "Pending" && Boolean(item.assignedNurse);
-    case "rejected-today":
-      return item.status === "Rejected" && getUtcDateKey(item.rejectedAtUtc) === new Date().toISOString().slice(0, 10);
-    case "approved-incomplete":
-      return item.status === "Approved";
-    case "overdue":
-      return isOverdueOrStale(item);
-    default:
-      return true;
-  }
-}
-
-function formatAssignedNurse(item: CareRequest) {
-  if (!item.assignedNurse) {
-    return "Sin asignar";
+  if (searchText.trim()) {
+    params.set("search", searchText.trim());
   }
 
-  return item.assignedNurse;
+  if (scheduledFrom) {
+    params.set("scheduledFrom", scheduledFrom);
+  }
+
+  if (scheduledTo) {
+    params.set("scheduledTo", scheduledTo);
+  }
+
+  if (selectedId) {
+    params.set("selected", selectedId);
+  }
+
+  const query = params.toString();
+  return query.length > 0 ? `?${query}` : "";
 }
 
 export default function AdminCareRequestsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [careRequests, setCareRequests] = useState<CareRequest[]>([]);
+  const [items, setItems] = useState<AdminCareRequestListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const currentView = resolveView(location.search);
-  const selectedRequestId = resolveSelectedRequestId(location.search);
+  const filters = useMemo(() => resolveFilterState(location.search), [location.search]);
+  const [searchInput, setSearchInput] = useState(filters.searchText);
 
-  const loadCareRequests = async () => {
+  useEffect(() => {
+    setSearchInput(filters.searchText);
+  }, [filters.searchText]);
+
+  const requestParams = useMemo<AdminCareRequestListParams>(
+    () => ({
+      view: filters.view,
+      sort: filters.sort,
+      search: filters.searchText || undefined,
+      scheduledFrom: filters.scheduledFrom || undefined,
+      scheduledTo: filters.scheduledTo || undefined,
+    }),
+    [filters],
+  );
+
+  const loadItems = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await getCareRequests();
-      setCareRequests(response);
+      const response = await getAdminCareRequests(requestParams);
+      setItems(response);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "No fue posible cargar las solicitudes administrativas.");
     } finally {
@@ -132,36 +162,78 @@ export default function AdminCareRequestsPage() {
   };
 
   useEffect(() => {
-    void loadCareRequests();
-  }, []);
-
-  const filteredRequests = useMemo(
-    () => careRequests.filter((item) => matchesView(item, currentView)),
-    [careRequests, currentView],
-  );
+    void loadItems();
+  }, [requestParams]);
 
   const summary = useMemo(
     () => ({
-      total: careRequests.length,
-      unassigned: careRequests.filter((item) => matchesView(item, "unassigned")).length,
-      pendingApproval: careRequests.filter((item) => matchesView(item, "pending-approval")).length,
-      overdue: careRequests.filter((item) => matchesView(item, "overdue")).length,
+      total: items.length,
+      pending: items.filter((item) => item.status === "Pending").length,
+      unassigned: items.filter((item) => item.status === "Pending" && !item.assignedNurseUserId).length,
+      overdue: items.filter((item) => item.isOverdueOrStale).length,
+      totalValue: items.reduce((accumulator, item) => accumulator + item.total, 0),
     }),
-    [careRequests],
+    [items],
   );
+
+  const navigateWithFilters = (next: Partial<typeof filters>) => {
+    const query = createQueryString({
+      view: next.view ?? filters.view,
+      sort: next.sort ?? filters.sort,
+      searchText: next.searchText ?? filters.searchText,
+      scheduledFrom: next.scheduledFrom ?? filters.scheduledFrom,
+      scheduledTo: next.scheduledTo ?? filters.scheduledTo,
+      selectedId: next.selectedId !== undefined ? next.selectedId : filters.selectedId,
+    });
+
+    navigate(`/admin/care-requests${query}`);
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    setError(null);
+
+    try {
+      const { blob, fileName } = await exportAdminCareRequestsCsv(requestParams);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "No fue posible exportar las solicitudes.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <AdminPortalShell
-      eyebrow="Solicitudes administrativas"
-      title="Una cola inicial para leer el trabajo que exige accion administrativa."
-      description="Esta vista base del portal admin concentra las solicitudes necesarias para los KPI del tablero. El modulo completo de gestion administrativa se ampliara en la siguiente entrega sin romper estas rutas."
+      eyebrow="Gestion administrativa de solicitudes"
+      title="Un modulo completo para leer, crear, asignar y decidir solicitudes desde administracion."
+      description="Esta vista amplia la cola inicial del portal hacia un modulo operativo completo, con filtros, exportacion, acceso al detalle y una ruta dedicada para crear solicitudes en nombre de clientes."
       actions={
         <>
-          <Button variant="outlined" onClick={() => navigate("/admin")}>
-            Volver al panel principal
+          <Button variant="outlined" onClick={() => void loadItems()} disabled={isLoading}>
+            Actualizar modulo
           </Button>
-          <Button variant="contained" onClick={() => void loadCareRequests()} disabled={isLoading}>
-            Actualizar solicitudes
+          <Button variant="outlined" onClick={handleExport} disabled={isLoading || isExporting}>
+            Exportar CSV
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() =>
+              navigate(
+                `/admin/care-requests/new${createQueryString({
+                  ...filters,
+                  searchText: filters.searchText,
+                  selectedId: null,
+                })}`,
+              )
+            }
+          >
+            Crear solicitud para cliente
           </Button>
         </>
       }
@@ -172,21 +244,22 @@ export default function AdminCareRequestsPage() {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "repeat(4, minmax(0, 1fr))" },
+            gridTemplateColumns: { xs: "1fr", md: "repeat(5, minmax(0, 1fr))" },
             gap: 2,
           }}
         >
           {[
-            ["Solicitudes visibles", summary.total],
-            ["Sin asignar", summary.unassigned],
-            ["Listas para aprobacion", summary.pendingApproval],
-            ["Atrasadas o estancadas", summary.overdue],
+            ["Solicitudes visibles", String(summary.total)],
+            ["Pendientes", String(summary.pending)],
+            ["Sin asignar", String(summary.unassigned)],
+            ["Atrasadas o estancadas", String(summary.overdue)],
+            ["Valor visible", formatAdminCareRequestCurrency(summary.totalValue)],
           ].map(([label, value]) => (
             <Paper key={label} sx={{ p: 3, borderRadius: 3.5 }}>
               <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
                 {label}
               </Typography>
-              <Typography variant="h3" sx={{ mt: 1.1 }}>
+              <Typography variant="h4" sx={{ mt: 1.1 }}>
                 {value}
               </Typography>
             </Paper>
@@ -194,126 +267,198 @@ export default function AdminCareRequestsPage() {
         </Box>
 
         <Paper sx={{ p: 2.5, borderRadius: 3.5 }}>
-          <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} flexWrap="wrap">
-            {viewOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={currentView === option.value ? "contained" : "text"}
-                onClick={() => navigate(option.value === "all" ? "/admin/care-requests" : `/admin/care-requests?view=${option.value}`)}
+          <Stack spacing={2}>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} flexWrap="wrap">
+              {adminCareRequestViewOptions.map((option) => (
+                <Button
+                  key={option.value}
+                  variant={filters.view === option.value ? "contained" : "text"}
+                  onClick={() => navigateWithFilters({ view: option.value, selectedId: null })}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </Stack>
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", xl: "2fr 1fr 1fr 1fr auto" },
+                gap: 1.5,
+              }}
+            >
+              <TextField
+                label="Buscar por id, cliente, enfermera, tipo o texto"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+              />
+              <TextField
+                label="Desde fecha del servicio"
+                type="date"
+                value={filters.scheduledFrom}
+                onChange={(event) => navigateWithFilters({ scheduledFrom: event.target.value, selectedId: null })}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                label="Hasta fecha del servicio"
+                type="date"
+                value={filters.scheduledTo}
+                onChange={(event) => navigateWithFilters({ scheduledTo: event.target.value, selectedId: null })}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                select
+                label="Ordenar por"
+                value={filters.sort}
+                onChange={(event) => navigateWithFilters({ sort: event.target.value as AdminCareRequestSort })}
+                SelectProps={{ native: true }}
               >
-                {option.label}
-              </Button>
-            ))}
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </TextField>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
+                <Button
+                  variant="contained"
+                  onClick={() => navigateWithFilters({ searchText: searchInput, selectedId: null })}
+                >
+                  Buscar
+                </Button>
+                <Button
+                  variant="text"
+                  onClick={() => {
+                    setSearchInput("");
+                    navigate("/admin/care-requests");
+                  }}
+                >
+                  Limpiar
+                </Button>
+              </Stack>
+            </Box>
           </Stack>
         </Paper>
 
-        <Paper sx={{ p: 2.5, borderRadius: 3.5 }}>
-          <Stack spacing={1.5}>
-            {!isLoading && filteredRequests.length === 0 && (
-              <Alert severity="info" variant="outlined">
-                No hay solicitudes para el filtro seleccionado en este momento.
-              </Alert>
-            )}
+        <Stack spacing={1.5}>
+          {!isLoading && items.length === 0 && (
+            <Alert severity="info" variant="outlined">
+              No hay solicitudes para los filtros actuales.
+            </Alert>
+          )}
 
-            {filteredRequests.map((careRequest) => {
-              const status = getStatusStyles(careRequest.status);
-              const flagged = isOverdueOrStale(careRequest);
-              const selected = careRequest.id === selectedRequestId;
+          {items.map((item) => {
+            const statusStyles = getAdminCareRequestStatusStyles(item.status);
+            const selected = item.id === filters.selectedId;
 
-              return (
-                <Paper
-                  key={careRequest.id}
-                  sx={{
-                    p: 3,
-                    borderRadius: 3,
-                    boxShadow: selected ? "0 18px 32px rgba(183, 128, 60, 0.14)" : "none",
-                    border: selected
-                      ? "1px solid rgba(183, 128, 60, 0.32)"
-                      : "1px solid rgba(23, 48, 66, 0.08)",
-                    bgcolor: selected ? "rgba(246, 234, 215, 0.36)" : "background.paper",
-                  }}
-                >
-                  <Stack spacing={1.5}>
-                    <Stack
-                      direction={{ xs: "column", lg: "row" }}
-                      spacing={1.2}
-                      justifyContent="space-between"
-                      alignItems={{ xs: "flex-start", lg: "center" }}
-                    >
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="h5" sx={{ maxWidth: 760 }}>
-                          {careRequest.careRequestDescription}
-                        </Typography>
-                        <Typography color="text.secondary" sx={{ mt: 0.8 }}>
-                          Solicitud {careRequest.id}
-                        </Typography>
-                      </Box>
+            return (
+              <Paper
+                key={item.id}
+                sx={{
+                  p: 3,
+                  borderRadius: 3.25,
+                  border: selected
+                    ? "1px solid rgba(183, 128, 60, 0.3)"
+                    : "1px solid rgba(23, 48, 66, 0.08)",
+                  bgcolor: selected ? "rgba(246, 234, 215, 0.34)" : "background.paper",
+                }}
+              >
+                <Stack spacing={1.6}>
+                  <Stack
+                    direction={{ xs: "column", lg: "row" }}
+                    spacing={1.5}
+                    justifyContent="space-between"
+                    alignItems={{ xs: "flex-start", lg: "center" }}
+                  >
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="h5">{item.careRequestDescription}</Typography>
+                      <Typography color="text.secondary" sx={{ mt: 0.8 }}>
+                        Solicitud {item.id}
+                      </Typography>
+                    </Box>
 
-                      <Stack direction="row" spacing={1} flexWrap="wrap">
-                        {selected && (
-                          <Chip
-                            label="En foco"
-                            sx={{
-                              bgcolor: "rgba(15, 49, 69, 0.1)",
-                              color: "#173042",
-                              fontWeight: 700,
-                            }}
-                          />
-                        )}
+                    <Stack direction="row" spacing={1} flexWrap="wrap">
+                      {selected && (
                         <Chip
-                          label={status.label}
+                          label="En foco"
                           sx={{
-                            bgcolor: status.bg,
-                            color: status.color,
+                            bgcolor: "rgba(15, 49, 69, 0.1)",
+                            color: "#173042",
                             fontWeight: 700,
                           }}
                         />
-                        {flagged && (
-                          <Chip
-                            label="Requiere atencion"
-                            sx={{
-                              bgcolor: "rgba(183, 79, 77, 0.12)",
-                              color: "#9a3f3d",
-                              fontWeight: 700,
-                            }}
-                          />
-                        )}
-                      </Stack>
+                      )}
+                      <Chip
+                        label={getAdminCareRequestStatusLabel(item.status)}
+                        sx={{
+                          bgcolor: statusStyles.bg,
+                          color: statusStyles.color,
+                          fontWeight: 700,
+                        }}
+                      />
+                      {item.isOverdueOrStale && (
+                        <Chip
+                          label="Requiere atencion"
+                          sx={{
+                            bgcolor: "rgba(183, 79, 77, 0.12)",
+                            color: "#9a3f3d",
+                            fontWeight: 700,
+                          }}
+                        />
+                      )}
                     </Stack>
-
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
-                        gap: 1.5,
-                      }}
-                    >
-                      {[
-                        ["Cliente", careRequest.userID],
-                        ["Enfermera asignada", formatAssignedNurse(careRequest)],
-                        ["Fecha del servicio", careRequest.careRequestDate ?? "Sin fecha"],
-                        ["Creada", new Date(careRequest.createdAtUtc).toLocaleString()],
-                        ["Actualizada", new Date(careRequest.updatedAtUtc).toLocaleString()],
-                        ["Tipo", careRequest.careRequestType ?? "Sin tipo"],
-                      ].map(([label, value]) => (
-                        <Box key={label}>
-                          <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
-                            {label}
-                          </Typography>
-                          <Typography sx={{ mt: 0.35 }}>{value}</Typography>
-                        </Box>
-                      ))}
-                    </Box>
                   </Stack>
-                </Paper>
-              );
-            })}
-          </Stack>
-        </Paper>
 
-        <Alert severity="info" variant="outlined">
-          Esta base ya recibe los filtros del tablero. El detalle administrativo completo de solicitudes se expandira en la siguiente entrega del portal.
-        </Alert>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", md: "repeat(4, minmax(0, 1fr))" },
+                      gap: 1.5,
+                    }}
+                  >
+                    {[
+                      ["Cliente", `${item.clientDisplayName} · ${item.clientEmail}`],
+                      [
+                        "Enfermera asignada",
+                        item.assignedNurseDisplayName
+                          ? `${item.assignedNurseDisplayName} · ${item.assignedNurseEmail ?? "Sin correo"}`
+                          : "Sin asignar",
+                      ],
+                      ["Tipo", formatAdminCareRequestTypeLabel(item.careRequestType)],
+                      ["Total", formatAdminCareRequestCurrency(item.total)],
+                      ["Fecha del servicio", item.careRequestDate ?? "Sin fecha"],
+                      ["Creada", formatAdminCareRequestDateTime(item.createdAtUtc)],
+                      ["Actualizada", formatAdminCareRequestDateTime(item.updatedAtUtc)],
+                      ["Unidad", `${item.unit} ${formatAdminCareRequestUnitTypeLabel(item.unitType)}`],
+                    ].map(([label, value]) => (
+                      <Box key={label}>
+                        <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
+                          {label}
+                        </Typography>
+                        <Typography sx={{ mt: 0.45 }}>{value}</Typography>
+                      </Box>
+                    ))}
+                  </Box>
+
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={1.2}>
+                    <Button
+                      variant="contained"
+                      onClick={() =>
+                        navigate(`/admin/care-requests/${item.id}${createQueryString({
+                          ...filters,
+                          searchText: filters.searchText,
+                          selectedId: item.id,
+                        })}`)
+                      }
+                    >
+                      Ver detalle
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Paper>
+            );
+          })}
+        </Stack>
       </Stack>
     </AdminPortalShell>
   );
