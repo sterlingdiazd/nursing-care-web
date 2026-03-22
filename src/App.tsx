@@ -21,6 +21,10 @@ import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
 import CareRequestDetailPage from "./pages/CareRequestDetailPage";
 import AdminNurseProfilesPage from "./pages/AdminNurseProfilesPage";
+import AdminNurseProfileDetailPage from "./pages/AdminNurseProfileDetailPage";
+import AdminCreateNurseProfilePage from "./pages/AdminCreateNurseProfilePage";
+import AdminEditNurseProfilePage from "./pages/AdminEditNurseProfilePage";
+import AdminReviewNurseProfilePage from "./pages/AdminReviewNurseProfilePage";
 import { UserProfileType } from "./types/auth";
 
 // Create Material-UI theme
@@ -356,6 +360,38 @@ function AppRoutes() {
         element={
           <AdminRoute>
             <AdminNurseProfilesPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/nurse-profiles/new"
+        element={
+          <AdminRoute>
+            <AdminCreateNurseProfilePage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/nurse-profiles/:id"
+        element={
+          <AdminRoute>
+            <AdminNurseProfileDetailPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/nurse-profiles/:id/edit"
+        element={
+          <AdminRoute>
+            <AdminEditNurseProfilePage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/nurse-profiles/:id/review"
+        element={
+          <AdminRoute>
+            <AdminReviewNurseProfilePage />
           </AdminRoute>
         }
       />

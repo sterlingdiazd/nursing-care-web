@@ -5,8 +5,8 @@ import { vi } from "vitest";
 
 import AdminNurseProfilesPage from "./AdminNurseProfilesPage";
 import {
-  completeNurseProfileForAdmin,
-  getNurseProfileForAdmin,
+  getActiveNurseProfiles,
+  getInactiveNurseProfiles,
   getPendingNurseProfiles,
 } from "../api/adminNurseProfiles";
 
@@ -20,8 +20,8 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("../api/adminNurseProfiles", () => ({
   getPendingNurseProfiles: vi.fn(),
-  getNurseProfileForAdmin: vi.fn(),
-  completeNurseProfileForAdmin: vi.fn(),
+  getActiveNurseProfiles: vi.fn(),
+  getInactiveNurseProfiles: vi.fn(),
 }));
 
 vi.mock("../context/AuthContext", () => ({
@@ -54,121 +54,62 @@ describe("Admin nurse profiles page", () => {
     vi.clearAllMocks();
   });
 
-  it("loads pending nurse profiles and renders the selected detail form", async () => {
+  it("loads nurse administration counts and routes pending actions", async () => {
     vi.mocked(getPendingNurseProfiles).mockResolvedValue([
       {
-        userId: "nurse-1",
-        email: "nurse1@example.com",
+        userId: "pending-1",
+        email: "pending1@example.com",
         name: "Laura",
         lastName: "Gomez",
         identificationNumber: "00111111111",
         phone: "8095550199",
+        hireDate: "2026-03-21",
+        specialty: "Atencion domiciliaria",
         createdAtUtc: "2026-03-21T10:00:00Z",
       },
     ]);
-
-    vi.mocked(getNurseProfileForAdmin).mockResolvedValue({
-      userId: "nurse-1",
-      email: "nurse1@example.com",
-      name: "Laura",
-      lastName: "Gomez",
-      identificationNumber: "00111111111",
-      phone: "8095550199",
-      profileType: 1,
-      userIsActive: true,
-      nurseProfileIsActive: false,
-      createdAtUtc: "2026-03-21T10:00:00Z",
-      hireDate: "2026-03-21",
-      specialty: "Atencion domiciliaria",
-      licenseId: "55",
-      bankName: "Banco Central",
-      accountNumber: "123456",
-      category: "Senior",
-    });
+    vi.mocked(getActiveNurseProfiles).mockResolvedValue([
+      {
+        userId: "active-1",
+        email: "active1@example.com",
+        name: "Mariela",
+        lastName: "Santos",
+        specialty: "Cuidados intensivos",
+        category: "Senior",
+        isAssignmentReady: true,
+        workload: { totalAssignedCareRequests: 2, pendingAssignedCareRequests: 1, approvedAssignedCareRequests: 1, completedAssignedCareRequests: 0 },
+      },
+    ]);
+    vi.mocked(getInactiveNurseProfiles).mockResolvedValue([
+      {
+        userId: "inactive-1",
+        email: "inactive1@example.com",
+        name: "Rosa",
+        lastName: "Diaz",
+        specialty: "Cuidado geriatrico",
+        category: "Lider",
+        isAssignmentReady: false,
+        workload: { totalAssignedCareRequests: 5, pendingAssignedCareRequests: 0, approvedAssignedCareRequests: 2, completedAssignedCareRequests: 3 },
+      },
+    ]);
 
     renderWithTheme(<AdminNurseProfilesPage />);
 
     expect(await screen.findByText("Laura Gomez")).toBeInTheDocument();
-    await waitFor(() => {
-      expect(getNurseProfileForAdmin).toHaveBeenCalledWith("nurse-1");
-      expect(screen.getByRole("button", { name: "Completar perfil de enfermeria" })).toBeInTheDocument();
-    }, { timeout: 10000 });
-  }, 10000);
+    expect(screen.getByText("Pendientes")).toBeInTheDocument();
+    expect(screen.getByText("Activas")).toBeInTheDocument();
+    expect(screen.getByText("Inactivas")).toBeInTheDocument();
 
-  it("submits the admin completion form", async () => {
-    vi.mocked(getPendingNurseProfiles).mockResolvedValue([
-      {
-        userId: "nurse-1",
-        email: "nurse1@example.com",
-        name: "Laura",
-        lastName: "Gomez",
-        identificationNumber: "00111111111",
-        phone: "8095550199",
-        createdAtUtc: "2026-03-21T10:00:00Z",
-      },
-    ]);
-
-    vi.mocked(getNurseProfileForAdmin).mockResolvedValue({
-      userId: "nurse-1",
-      email: "nurse1@example.com",
-      name: "Laura",
-      lastName: "Gomez",
-      identificationNumber: "00111111111",
-      phone: "8095550199",
-      profileType: 1,
-      userIsActive: true,
-      nurseProfileIsActive: false,
-      createdAtUtc: "2026-03-21T10:00:00Z",
-      hireDate: "2026-03-21",
-      specialty: "Atencion domiciliaria",
-      licenseId: "55",
-      bankName: "Banco Central",
-      accountNumber: "123456",
-      category: "Senior",
-    });
-
-    vi.mocked(completeNurseProfileForAdmin).mockResolvedValue({
-      userId: "nurse-1",
-      email: "nurse1@example.com",
-      name: "Laura",
-      lastName: "Gomez",
-      identificationNumber: "00111111111",
-      phone: "8095550199",
-      profileType: 1,
-      userIsActive: true,
-      nurseProfileIsActive: true,
-      createdAtUtc: "2026-03-21T10:00:00Z",
-      hireDate: "2026-03-21",
-      specialty: "Atencion domiciliaria",
-      licenseId: "55",
-      bankName: "Banco Central",
-      accountNumber: "123456",
-      category: "Senior",
-    });
-
-    renderWithTheme(<AdminNurseProfilesPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Completar revision" }));
 
     await waitFor(() => {
-      expect(getNurseProfileForAdmin).toHaveBeenCalledWith("nurse-1");
-      expect(screen.getByRole("button", { name: "Completar perfil de enfermeria" })).not.toBeDisabled();
-    }, { timeout: 10000 });
-
-    fireEvent.click(screen.getByRole("button", { name: "Completar perfil de enfermeria" }));
-
-    await waitFor(() => {
-      expect(completeNurseProfileForAdmin).toHaveBeenCalledWith("nurse-1", {
-        name: "Laura",
-        lastName: "Gomez",
-        identificationNumber: "00111111111",
-        phone: "8095550199",
-        email: "nurse1@example.com",
-        hireDate: "2026-03-21",
-        specialty: "Atencion domiciliaria",
-        licenseId: "55",
-        bankName: "Banco Central",
-        accountNumber: "123456",
-        category: "Senior",
+      expect(navigate).toHaveBeenCalledWith("/admin/nurse-profiles/pending-1/review", {
+        state: { from: "/admin/nurse-profiles" },
       });
     });
-  }, 10000);
+
+    fireEvent.click(screen.getByRole("button", { name: "Crear enfermera" }));
+
+    expect(navigate).toHaveBeenCalledWith("/admin/nurse-profiles/new");
+  });
 });

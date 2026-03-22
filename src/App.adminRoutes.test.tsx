@@ -36,6 +36,22 @@ vi.mock("./pages/AdminNurseProfilesPage", () => ({
   default: () => <div>admin nurse profiles page</div>,
 }));
 
+vi.mock("./pages/AdminNurseProfileDetailPage", () => ({
+  default: () => <div>admin nurse profile detail page</div>,
+}));
+
+vi.mock("./pages/AdminCreateNurseProfilePage", () => ({
+  default: () => <div>admin create nurse profile page</div>,
+}));
+
+vi.mock("./pages/AdminEditNurseProfilePage", () => ({
+  default: () => <div>admin edit nurse profile page</div>,
+}));
+
+vi.mock("./pages/AdminReviewNurseProfilePage", () => ({
+  default: () => <div>admin review nurse profile page</div>,
+}));
+
 vi.mock("./pages/AdminActionQueuePage", () => ({
   default: () => <div>admin action queue page</div>,
 }));
@@ -225,6 +241,68 @@ describe("Admin route boundaries", () => {
     window.localStorage.clear();
     saveSession(["Client"]);
     window.history.pushState({}, "", "/admin/users/create-admin");
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
+  });
+
+  it("protects the nurse administration create route", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/nurse-profiles/new");
+
+    const adminView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin create nurse profile page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/nurse-profiles/new");
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
+  });
+
+  it("protects nurse administration detail and workflow routes", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/nurse-profiles/nurse-1");
+
+    const adminView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin nurse profile detail page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.history.pushState({}, "", "/admin/nurse-profiles/nurse-1/edit");
+
+    const editView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin edit nurse profile page")).toBeInTheDocument();
+    });
+
+    editView.unmount();
+    window.history.pushState({}, "", "/admin/nurse-profiles/nurse-1/review");
+
+    const reviewView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin review nurse profile page")).toBeInTheDocument();
+    });
+
+    reviewView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/nurse-profiles/nurse-1");
 
     render(<App />);
 
