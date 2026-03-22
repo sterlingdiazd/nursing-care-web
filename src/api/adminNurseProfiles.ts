@@ -1,4 +1,5 @@
 import { httpClient } from "./httpClient";
+import { extractApiErrorMessage } from "./errorMessage";
 
 export interface PendingNurseProfile {
   userId: string;
@@ -53,28 +54,44 @@ export interface CompleteNurseProfileRequest {
 }
 
 export async function getPendingNurseProfiles() {
-  const response = await httpClient.get<PendingNurseProfile[]>("/admin/nurse-profiles/pending");
-  return response.data;
+  try {
+    const response = await httpClient.get<PendingNurseProfile[]>("/admin/nurse-profiles/pending");
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible cargar los perfiles pendientes."));
+  }
 }
 
 export async function getActiveNurseProfiles() {
-  const response = await httpClient.get<ActiveNurseProfileSummary[]>("/admin/nurse-profiles/active");
-  return response.data;
+  try {
+    const response = await httpClient.get<ActiveNurseProfileSummary[]>("/admin/nurse-profiles/active");
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible cargar las enfermeras activas."));
+  }
 }
 
 export async function getNurseProfileForAdmin(userId: string) {
-  const response = await httpClient.get<NurseProfileAdminRecord>(`/admin/nurse-profiles/${userId}`);
-  return response.data;
+  try {
+    const response = await httpClient.get<NurseProfileAdminRecord>(`/admin/nurse-profiles/${userId}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible cargar el perfil."));
+  }
 }
 
 export async function completeNurseProfileForAdmin(
   userId: string,
   request: CompleteNurseProfileRequest,
 ) {
-  const response = await httpClient.put<NurseProfileAdminRecord>(
-    `/admin/nurse-profiles/${userId}/complete`,
-    request,
-  );
+  try {
+    const response = await httpClient.put<NurseProfileAdminRecord>(
+      `/admin/nurse-profiles/${userId}/complete`,
+      request,
+    );
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible completar el perfil."));
+  }
 }

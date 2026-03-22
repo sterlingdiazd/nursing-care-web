@@ -2,6 +2,7 @@ import { httpClient } from "./httpClient";
 import { AuthResponse, RegisterRequest, LoginRequest, UserProfileType } from "../types/auth";
 import { logClientEvent } from "../logging/clientLogger";
 import { API_BASE_URL } from "../config/env";
+import { extractApiErrorMessage } from "./errorMessage";
 
 /**
  * Register a new user (Client or Nurse)
@@ -59,12 +60,7 @@ export async function registerUser(
 
     return response.data;
   } catch (error: any) {
-    const errorMessage =
-      error.response?.data?.detail ||
-      error.response?.data?.message ||
-      error.response?.data?.title ||
-      error.message ||
-      "Registration failed";
+    const errorMessage = extractApiErrorMessage(error, "No fue posible completar el registro.");
 
     logClientEvent(
       "web.auth",
@@ -87,14 +83,18 @@ export async function completeProfile(
   identificationNumber: string,
   phone: string
 ): Promise<AuthResponse> {
-  const response = await httpClient.post<AuthResponse>("/auth/complete-profile", {
-    name,
-    lastName,
-    identificationNumber,
-    phone,
-  });
+  try {
+    const response = await httpClient.post<AuthResponse>("/auth/complete-profile", {
+      name,
+      lastName,
+      identificationNumber,
+      phone,
+    });
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible completar el perfil."));
+  }
 }
 
 /**
@@ -121,12 +121,7 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
 
     return response.data;
   } catch (error: any) {
-    const errorMessage =
-      error.response?.data?.detail ||
-      error.response?.data?.message ||
-      error.response?.data?.title ||
-      error.message ||
-      "Login failed";
+    const errorMessage = extractApiErrorMessage(error, "No fue posible iniciar sesion.");
 
     logClientEvent(
       "web.auth",

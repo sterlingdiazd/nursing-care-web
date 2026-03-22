@@ -1,6 +1,7 @@
 import { AxiosHeaders } from "axios";
 import { httpClient } from "./httpClient";
 import { logClientEvent } from "../logging/clientLogger";
+import { extractApiErrorMessage } from "./errorMessage";
 
 export interface CreateCareRequestRequest {
   careRequestDescription: string;
@@ -60,22 +61,8 @@ export async function createCareRequest(
       : undefined;
     const response = await httpClient.post("/care-requests", request, { headers });
     return response.data;
-  } catch (error: any) {
-    // Log full error details to console for debugging
-    console.error("Care Request Creation Error:", {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message,
-      fullError: error,
-    });
-
-    const errorMessage =
-      error.response?.data?.detail ||
-      error.response?.data?.message ||
-      error.response?.data?.title ||
-      error.message ||
-      "API error";
+  } catch (error) {
+    const errorMessage = extractApiErrorMessage(error, "No fue posible crear la solicitud.");
 
     logClientEvent(
       "web.ui",
@@ -87,32 +74,48 @@ export async function createCareRequest(
       "error",
     );
 
-    throw new Error("API error: " + errorMessage);
+    throw new Error(errorMessage);
   }
 }
 
 export async function getCareRequests() {
-  const response = await httpClient.get<CareRequest[]>("/care-requests");
-  return response.data;
+  try {
+    const response = await httpClient.get<CareRequest[]>("/care-requests");
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible cargar las solicitudes."));
+  }
 }
 
 export async function getCareRequestById(id: string) {
-  const response = await httpClient.get<CareRequest>(`/care-requests/${id}`);
-  return response.data;
+  try {
+    const response = await httpClient.get<CareRequest>(`/care-requests/${id}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible cargar la solicitud."));
+  }
 }
 
 export async function transitionCareRequest(
   id: string,
   action: CareRequestTransitionAction,
 ) {
-  const response = await httpClient.post<CareRequest>(`/care-requests/${id}/${action}`);
-  return response.data;
+  try {
+    const response = await httpClient.post<CareRequest>(`/care-requests/${id}/${action}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible actualizar la solicitud."));
+  }
 }
 
 export async function assignCareRequestNurse(
   id: string,
   request: AssignCareRequestNurseRequest,
 ) {
-  const response = await httpClient.put<CareRequest>(`/care-requests/${id}/assignment`, request);
-  return response.data;
+  try {
+    const response = await httpClient.put<CareRequest>(`/care-requests/${id}/assignment`, request);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible asignar la enfermera."));
+  }
 }
