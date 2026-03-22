@@ -21,6 +21,7 @@ import {
 
 import { getGoogleOAuthStartUrl, validateEmail, validatePassword } from "../api/auth";
 import AuthScene from "../components/layout/AuthScene";
+import { nurseSpecialties } from "../constants/nurseProfileOptions";
 import { useAuth } from "../context/AuthContext";
 import { RegisterRequest, UserProfileType } from "../types/auth";
 import {
@@ -32,14 +33,6 @@ import {
   sanitizeDigitsOnlyInput,
   sanitizeTextOnlyInput,
 } from "../utils/identityValidation";
-
-const nurseSpecialties = [
-  "Adult Care",
-  "Pediatric Care",
-  "Geriatric Care",
-  "Critical Care",
-  "Home Care",
-];
 
 const clientProfileCopy =
   "Perfil de cliente seleccionado. No hay campos adicionales por completar en esta etapa y el acceso operativo queda disponible cuando termine el registro.";
@@ -497,7 +490,7 @@ function PaperOption({
   description,
 }: {
   value: string;
-  control: React.ReactNode;
+  control: React.ReactElement;
   label: string;
   description: string;
 }) {

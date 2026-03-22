@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 
 import { useAuth } from "../../context/AuthContext";
+import { formatRoleLabels } from "../../utils/roleLabels";
 
 interface WorkspaceShellProps {
   eyebrow: string;
@@ -148,7 +149,7 @@ export default function WorkspaceShell({
                   }}
                 />
                 <Chip
-                  label={roles.join(", ") || "Usuario"}
+                  label={formatRoleLabels(roles)}
                   sx={{
                     justifyContent: "flex-start",
                     bgcolor: "rgba(255,255,255,0.08)",

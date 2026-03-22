@@ -6,6 +6,7 @@ import WorkspaceShell from "../components/layout/WorkspaceShell";
 import { useAuth } from "../context/AuthContext";
 import { logClientEvent } from "../logging/clientLogger";
 import { UserProfileType } from "../types/auth";
+import { formatRoleLabels } from "../utils/roleLabels";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -107,7 +108,7 @@ export default function HomePage() {
                   sx={{ bgcolor: "rgba(255,255,255,0.14)", color: "#fffef8", borderRadius: 2 }}
                 />
                 <Chip
-                  label={roles.join(", ") || "Usuario"}
+                  label={formatRoleLabels(roles)}
                   sx={{ bgcolor: "rgba(255,255,255,0.14)", color: "#d8ecec", borderRadius: 2 }}
                 />
                 <Chip

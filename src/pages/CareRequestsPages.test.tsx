@@ -110,7 +110,7 @@ describe("Care request pages", () => {
         email: "luisa@example.com",
         name: "Luisa",
         lastName: "Martinez",
-        specialty: "Home Care",
+        specialty: "Atencion domiciliaria",
         category: "Senior",
       },
     ]);

@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 
 import WorkspaceShell from "../components/layout/WorkspaceShell";
+import { nurseCategories, nurseSpecialties } from "../constants/nurseProfileOptions";
 import {
   completeNurseProfileForAdmin,
   getNurseProfileForAdmin,
@@ -32,21 +33,6 @@ import {
   sanitizeDigitsOnlyInput,
   sanitizeTextOnlyInput,
 } from "../utils/identityValidation";
-
-const nurseSpecialties = [
-  "Adult Care",
-  "Pediatric Care",
-  "Geriatric Care",
-  "Critical Care",
-  "Home Care",
-];
-
-const nurseCategories = [
-  "Junior",
-  "Semi Senior",
-  "Senior",
-  "Lead",
-];
 
 type FormState = CompleteNurseProfileRequest;
 
@@ -273,8 +259,8 @@ export default function AdminNurseProfilesPage() {
     try {
       const completed = await completeNurseProfileForAdmin(selectedUserId, {
         ...formState,
-        licenseId: formState.licenseId.trim() || null,
-        accountNumber: formState.accountNumber.trim() || null,
+        licenseId: (formState.licenseId ?? "").trim() || null,
+        accountNumber: (formState.accountNumber ?? "").trim() || null,
       });
 
       setSelectedProfile(completed);
