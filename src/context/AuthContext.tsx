@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from "react";
 import {
   AuthContextType,
   AuthResponse,
@@ -31,14 +31,17 @@ function resolveResponseUserId(response: AuthResponse) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
-  const [roles, setRoles] = useState<string[]>([]);
-  const [profileType, setProfileType] = useState<UserProfileType | null>(null);
-  const [requiresProfileCompletion, setRequiresProfileCompletion] = useState(false);
-  const [requiresAdminReview, setRequiresAdminReview] = useState(false);
+  const initialSession = useMemo(() => getAuthSession(), []);
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(initialSession?.token));
+  const [token, setToken] = useState<string | null>(initialSession?.token ?? null);
+  const [userId, setUserId] = useState<string | null>(initialSession?.userId ?? null);
+  const [email, setEmail] = useState<string | null>(initialSession?.email ?? null);
+  const [roles, setRoles] = useState<string[]>(initialSession?.roles ?? []);
+  const [profileType, setProfileType] = useState<UserProfileType | null>(initialSession?.profileType ?? null);
+  const [requiresProfileCompletion, setRequiresProfileCompletion] = useState(
+    initialSession?.requiresProfileCompletion ?? false,
+  );
+  const [requiresAdminReview, setRequiresAdminReview] = useState(initialSession?.requiresAdminReview ?? false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

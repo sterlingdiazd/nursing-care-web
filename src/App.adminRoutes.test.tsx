@@ -36,6 +36,10 @@ vi.mock("./pages/AdminNurseProfilesPage", () => ({
   default: () => <div>admin nurse profiles page</div>,
 }));
 
+vi.mock("./pages/AdminActionQueuePage", () => ({
+  default: () => <div>admin action queue page</div>,
+}));
+
 vi.mock("./pages/AdminCareRequestsPage", () => ({
   default: () => <div>admin care requests page</div>,
 }));
@@ -97,5 +101,27 @@ describe("Admin route boundaries", () => {
     });
 
     expect(screen.queryByText("admin dashboard page")).not.toBeInTheDocument();
+  });
+
+  it("protects the dedicated admin action queue route", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/action-items");
+
+    const adminView = render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("admin action queue page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/action-items");
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
   });
 });
