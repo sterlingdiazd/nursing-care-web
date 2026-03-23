@@ -219,7 +219,7 @@ export default function AdminDashboardPage() {
       {
         label: "Notificaciones administrativas sin leer",
         value: dashboard.unreadAdminNotificationsCount,
-        helper: "Prepara el acceso al centro de avisos del portal para la siguiente ampliacion.",
+        helper: "Mide la carga de avisos activos y abre la bandeja de notificaciones administrativa.",
         path: "/admin/notifications",
         tone: "info",
       },

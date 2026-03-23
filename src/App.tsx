@@ -20,6 +20,7 @@ import AdminUserDetailPage from "./pages/AdminUserDetailPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminModulePlaceholderPage from "./pages/AdminModulePlaceholderPage";
 import AdminPricingCatalogPage from "./pages/AdminPricingCatalogPage";
+import AdminNotificationsPage from "./pages/AdminNotificationsPage";
 import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
 import CareRequestDetailPage from "./pages/CareRequestDetailPage";
@@ -451,12 +452,7 @@ function AppRoutes() {
         path="/admin/notifications"
         element={
           <AdminRoute>
-            <AdminModulePlaceholderPage
-              eyebrow="Notificaciones"
-              title="El centro de notificaciones administrativo queda anclado desde esta base."
-              description="El tablero ya puede dirigir aqui el conteo de avisos sin leer, aunque la bandeja completa se incorporara en la siguiente fase."
-              nextSliceSummary="La siguiente entrega incorporara el centro de notificaciones con estados de leido, severidad y enlaces a entidades."
-            />
+            <AdminNotificationsPage />
           </AdminRoute>
         }
       />

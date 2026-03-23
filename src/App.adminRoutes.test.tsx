@@ -100,6 +100,10 @@ vi.mock("./pages/AdminDashboardPage", () => ({
   default: () => <div>admin dashboard page</div>,
 }));
 
+vi.mock("./pages/AdminNotificationsPage", () => ({
+  default: () => <div>admin notifications page</div>,
+}));
+
 function saveSession(roles: string[]) {
   window.localStorage.setItem(
     "authSession",
@@ -380,6 +384,26 @@ describe("Admin route boundaries", () => {
 
     render(<App />);
 
+    await waitFor(() => {
+      expect(screen.getByText("home page")).toBeInTheDocument();
+    });
+  });
+
+  it("protects the admin notifications route", async () => {
+    saveSession(["Admin"]);
+    window.history.pushState({}, "", "/admin/notifications");
+
+    const adminView = render(<App />);
+    await waitFor(() => {
+      expect(screen.getByText("admin notifications page")).toBeInTheDocument();
+    });
+
+    adminView.unmount();
+    window.localStorage.clear();
+    saveSession(["Client"]);
+    window.history.pushState({}, "", "/admin/notifications");
+
+    render(<App />);
     await waitFor(() => {
       expect(screen.getByText("home page")).toBeInTheDocument();
     });

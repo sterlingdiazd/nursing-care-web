@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -13,6 +13,7 @@ import {
 
 import { useAuth } from "../../context/AuthContext";
 import { formatRoleLabels } from "../../utils/roleLabels";
+import { getAdminNotificationSummary } from "../../api/adminNotifications";
 
 export interface AdminPortalNavigationItem {
   label: string;
@@ -101,6 +102,32 @@ export default function AdminPortalShell({
   const location = useLocation();
   const { email, logout, roles } = useAuth();
   const activeItem = resolveActiveNavigationItem(location.pathname);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  useEffect(() => {
+    let disposed = false;
+
+    const loadSummary = async () => {
+      try {
+        const summary = await getAdminNotificationSummary();
+        if (!disposed) {
+          setUnreadNotifications(summary.unread);
+        }
+      } catch {
+        if (!disposed) {
+          setUnreadNotifications(0);
+        }
+      }
+    };
+
+    void loadSummary();
+    const pollTimer = window.setInterval(() => void loadSummary(), 30000);
+
+    return () => {
+      disposed = true;
+      window.clearInterval(pollTimer);
+    };
+  }, []);
 
   return (
     <Box
@@ -157,6 +184,8 @@ export default function AdminPortalShell({
                 {adminPortalNavigationItems.map((item) => {
                   const active = item.path === activeItem.path;
 
+                  const showUnreadBadge = item.path === "/admin/notifications" && unreadNotifications > 0;
+
                   return (
                     <Button
                       key={item.path}
@@ -180,7 +209,20 @@ export default function AdminPortalShell({
                       }}
                     >
                       <Box>
-                        <Typography sx={{ fontWeight: 700 }}>{item.label}</Typography>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography sx={{ fontWeight: 700 }}>{item.label}</Typography>
+                          {showUnreadBadge && (
+                            <Chip
+                              label={unreadNotifications}
+                              size="small"
+                              sx={{
+                                bgcolor: active ? "#112c3f" : "#f6ead7",
+                                color: active ? "#f7ead5" : "#112c3f",
+                                fontWeight: 700,
+                              }}
+                            />
+                          )}
+                        </Stack>
                         <Typography
                           sx={{
                             mt: 0.35,
