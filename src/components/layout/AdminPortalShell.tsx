@@ -63,6 +63,11 @@ export const adminPortalNavigationItems: AdminPortalNavigationItem[] = [
     description: "Centro de avisos administrativos",
   },
   {
+    label: "Auditoria",
+    path: "/admin/audit-logs",
+    description: "Registro de acciones sensibles",
+  },
+  {
     label: "Alertas",
     path: "/admin/alerts",
     description: "Eventos criticos de alto impacto",
