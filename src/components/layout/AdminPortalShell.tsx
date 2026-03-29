@@ -14,6 +14,8 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { formatRoleLabels } from "../../utils/roleLabels";
 import { getAdminNotificationSummary } from "../../api/adminNotifications";
+import { useTranslation } from "react-i18next";
+import { TFunction } from "i18next";
 
 export interface AdminPortalNavigationItem {
   label: string;
@@ -21,75 +23,75 @@ export interface AdminPortalNavigationItem {
   description: string;
 }
 
-export const adminPortalNavigationItems: AdminPortalNavigationItem[] = [
+export const getAdminNavigationItems = (t: TFunction): AdminPortalNavigationItem[] => [
   {
-    label: "Panel principal",
+    label: t('nav.dashboard.label'),
     path: "/admin",
-    description: "Vista ejecutiva y prioridades",
+    description: t('nav.dashboard.desc'),
   },
   {
-    label: "Acciones",
+    label: t('nav.actionItems.label'),
     path: "/admin/action-items",
-    description: "Cola prioritaria y seguimiento",
+    description: t('nav.actionItems.desc'),
   },
   {
-    label: "Solicitudes",
+    label: t('nav.careRequests.label'),
     path: "/admin/care-requests",
-    description: "Asignacion, aprobacion y riesgo operativo",
+    description: t('nav.careRequests.desc'),
   },
   {
-    label: "Enfermeria",
+    label: t('nav.nurseProfiles.label'),
     path: "/admin/nurse-profiles",
-    description: "Perfiles pendientes y fuerza activa",
+    description: t('nav.nurseProfiles.desc'),
   },
   {
-    label: "Clientes",
+    label: t('nav.clients.label'),
     path: "/admin/clients",
-    description: "Base activa y contexto comercial",
+    description: t('nav.clients.desc'),
   },
   {
-    label: "Usuarios y acceso",
+    label: t('nav.users.label'),
     path: "/admin/users",
-    description: "Gobernanza y permisos",
+    description: t('nav.users.desc'),
   },
   {
-    label: "Catalogo y precios",
+    label: t('nav.catalog.label'),
     path: "/admin/catalog",
-    description: "Parametros de tarifas y listas controladas",
+    description: t('nav.catalog.desc'),
   },
   {
-    label: "Notificaciones",
+    label: t('nav.notifications.label'),
     path: "/admin/notifications",
-    description: "Centro de avisos administrativos",
+    description: t('nav.notifications.desc'),
   },
   {
-    label: "Auditoria",
+    label: t('nav.auditLogs.label'),
     path: "/admin/audit-logs",
-    description: "Registro de acciones sensibles",
+    description: t('nav.auditLogs.desc'),
   },
   {
-    label: "Alertas",
+    label: t('nav.alerts.label'),
     path: "/admin/alerts",
-    description: "Eventos criticos de alto impacto",
+    description: t('nav.alerts.desc'),
   },
   {
-    label: "Reportes",
+    label: t('nav.reports.label'),
     path: "/admin/reports",
-    description: "Indicadores operativos y exportacion de datos",
+    description: t('nav.reports.desc'),
   },
   {
-    label: "Configuracion",
+    label: t('nav.settings.label'),
     path: "/admin/settings",
-    description: "Parametros del portal",
+    description: t('nav.settings.desc'),
   },
 ];
 
-function resolveActiveNavigationItem(pathname: string) {
+function resolveActiveNavigationItem(pathname: string, items: AdminPortalNavigationItem[]) {
   return (
-    [...adminPortalNavigationItems]
+    [...items]
       .sort((left, right) => right.path.length - left.path.length)
       .find((item) => pathname === item.path || pathname.startsWith(`${item.path}/`))
-    ?? adminPortalNavigationItems[0]
+    ?? items[0]
   );
 }
 
@@ -108,10 +110,12 @@ export default function AdminPortalShell({
   actions,
   children,
 }: AdminPortalShellProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { email, logout, roles } = useAuth();
-  const activeItem = resolveActiveNavigationItem(location.pathname);
+  const navItems = getAdminNavigationItems(t);
+  const activeItem = resolveActiveNavigationItem(location.pathname, navItems);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
@@ -183,15 +187,15 @@ export default function AdminPortalShell({
                   NursingCare
                 </Typography>
                 <Typography variant="h4" sx={{ mt: 1.1, color: "#fffdf8" }}>
-                  Portal de administracion
+                  {t('shell.title')}
                 </Typography>
                 <Typography sx={{ mt: 1.2, color: "rgba(232, 241, 247, 0.76)", lineHeight: 1.75 }}>
-                  Controla prioridades, aprobaciones y carga operativa desde una consola separada del trabajo clinico diario.
+                  {t('shell.subtitle')}
                 </Typography>
               </Box>
 
               <Stack spacing={1}>
-                {adminPortalNavigationItems.map((item) => {
+                {navItems.map((item) => {
                   const active = item.path === activeItem.path;
 
                   const showUnreadBadge = item.path === "/admin/notifications" && unreadNotifications > 0;
@@ -253,7 +257,7 @@ export default function AdminPortalShell({
 
               <Stack spacing={1}>
                 <Chip
-                  label={email ?? "Sin correo cargado"}
+                  label={email ?? t('shell.noEmail')}
                   sx={{
                     justifyContent: "flex-start",
                     bgcolor: "rgba(255,255,255,0.08)",
@@ -289,7 +293,7 @@ export default function AdminPortalShell({
                   },
                 }}
               >
-                Cerrar sesion
+                {t('shell.logout')}
               </Button>
             </Stack>
           </Paper>
@@ -317,7 +321,7 @@ export default function AdminPortalShell({
                     variant="overline"
                     sx={{ color: "secondary.main", letterSpacing: "0.18em" }}
                   >
-                    Modulo activo
+                    {t('shell.activeModule')}
                   </Typography>
                   <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                     <Chip
@@ -333,7 +337,7 @@ export default function AdminPortalShell({
                 </Stack>
 
                 <Stack direction="row" spacing={1} flexWrap="wrap">
-                  {adminPortalNavigationItems.slice(0, 4).map((item) => {
+                  {navItems.slice(0, 4).map((item) => {
                     const active = item.path === activeItem.path;
 
                     return (

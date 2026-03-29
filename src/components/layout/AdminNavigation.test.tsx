@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { ThemeProvider, createTheme } from "@mui/material";
 import { BrowserRouter } from "react-router-dom";
 import { describe, it, expect, vi } from "vitest";
-import AdminPortalShell, { adminPortalNavigationItems } from "./AdminPortalShell";
+import AdminPortalShell, { getAdminNavigationItems } from "./AdminPortalShell";
 
 // Mock dependencies
 vi.mock("../../context/AuthContext", () => ({
@@ -20,13 +20,15 @@ vi.mock("../../api/adminNotifications", () => ({
 const theme = createTheme();
 
 describe("AdminPortal Navigation", () => {
-  it("should include 'Reportes' in the static navigation items", () => {
-    const reportItem = adminPortalNavigationItems.find(item => item.label === "Reportes");
+  it("should include 'reports' in the resolved navigation items", () => {
+    const t = (key: string) => key;
+    const items = getAdminNavigationItems(t as any);
+    const reportItem = items.find(item => item.path === "/admin/reports");
     expect(reportItem).toBeDefined();
-    expect(reportItem?.path).toBe("/admin/reports");
+    expect(reportItem?.label).toBe("nav.reports.label");
   });
 
-  it("should render the 'Reportes' navigation button in the sidebar", async () => {
+  it("should render the translated navigation button in the sidebar", async () => {
     render(
       <BrowserRouter>
         <ThemeProvider theme={theme}>
@@ -37,8 +39,7 @@ describe("AdminPortal Navigation", () => {
       </BrowserRouter>
     );
 
-    // Sidebar items are rendered as buttons with labels
-    expect(screen.getByText("Reportes")).toBeInTheDocument();
-    expect(screen.getByText(/Indicadores operativos y exportacion de datos/)).toBeInTheDocument();
+    // Sidebar items are rendered as buttons with labels (which return keys in mocked test)
+    expect(screen.getByText("nav.reports.label")).toBeInTheDocument();
   });
 });

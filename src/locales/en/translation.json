@@ -1,0 +1,66 @@
+{
+  "roles": {
+    "ADMIN": "Administration",
+    "CLIENT": "Client",
+    "NURSE": "Nursing",
+    "UNKNOWN": "Unrecognized role",
+    "USER": "User"
+  },
+  "nav": {
+    "dashboard": {
+      "label": "Dashboard",
+      "desc": "Executive view and priorities"
+    },
+    "actionItems": {
+      "label": "Action Items",
+      "desc": "Priority queue and tracking"
+    },
+    "careRequests": {
+      "label": "Requests",
+      "desc": "Assignment, approval and operational risk"
+    },
+    "nurseProfiles": {
+      "label": "Nursing",
+      "desc": "Pending profiles and active workforce"
+    },
+    "clients": {
+      "label": "Clients",
+      "desc": "Active base and business context"
+    },
+    "users": {
+      "label": "Users & Access",
+      "desc": "Governance and permissions"
+    },
+    "catalog": {
+      "label": "Catalog & Pricing",
+      "desc": "Rate parameters and controlled lists"
+    },
+    "notifications": {
+      "label": "Notifications",
+      "desc": "Administrative alert center"
+    },
+    "auditLogs": {
+      "label": "Audit Logs",
+      "desc": "Sensitive action records"
+    },
+    "alerts": {
+      "label": "Alerts",
+      "desc": "High impact critical events"
+    },
+    "reports": {
+      "label": "Reports",
+      "desc": "Operational indicators and data export"
+    },
+    "settings": {
+      "label": "Settings",
+      "desc": "Portal parameters"
+    }
+  },
+  "shell": {
+    "title": "Administration Portal",
+    "subtitle": "Control priorities, approvals, and operational load from a console separate from daily clinical work.",
+    "noEmail": "No email loaded",
+    "logout": "Log out",
+    "activeModule": "Active Module"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "roles": {
+    "ADMIN": "Administración",
+    "CLIENT": "Cliente",
+    "NURSE": "Enfermería",
+    "UNKNOWN": "Rol no reconocido",
+    "USER": "Usuario"
+  },
+  "nav": {
+    "dashboard": {
+      "label": "Panel principal",
+      "desc": "Vista ejecutiva y prioridades"
+    },
+    "actionItems": {
+      "label": "Acciones",
+      "desc": "Cola prioritaria y seguimiento"
+    },
+    "careRequests": {
+      "label": "Solicitudes",
+      "desc": "Asignación, aprobación y riesgo operativo"
+    },
+    "nurseProfiles": {
+      "label": "Enfermería",
+      "desc": "Perfiles pendientes y fuerza activa"
+    },
+    "clients": {
+      "label": "Clientes",
+      "desc": "Base activa y contexto comercial"
+    },
+    "users": {
+      "label": "Usuarios y acceso",
+      "desc": "Gobernanza y permisos"
+    },
+    "catalog": {
+      "label": "Catálogo y precios",
+      "desc": "Parámetros de tarifas y listas controladas"
+    },
+    "notifications": {
+      "label": "Notificaciones",
+      "desc": "Centro de avisos administrativos"
+    },
+    "auditLogs": {
+      "label": "Auditoría",
+      "desc": "Registro de acciones sensibles"
+    },
+    "alerts": {
+      "label": "Alertas",
+      "desc": "Eventos críticos de alto impacto"
+    },
+    "reports": {
+      "label": "Reportes",
+      "desc": "Indicadores operativos y exportación de datos"
+    },
+    "settings": {
+      "label": "Configuración",
+      "desc": "Parámetros del portal"
+    }
+  },
+  "shell": {
+    "title": "Portal de administración",
+    "subtitle": "Controla prioridades, aprobaciones y carga operativa desde una consola separada del trabajo clínico diario.",
+    "noEmail": "Sin correo cargado",
+    "logout": "Cerrar sesión",
+    "activeModule": "Módulo activo"
+  }
+}
