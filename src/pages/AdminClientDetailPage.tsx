@@ -17,7 +17,7 @@ import {
   type AdminClientDetail,
 } from "../api/adminClients";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
-import AdminClientForm, { type AdminClientFormValues } from "../components/admin/AdminClientForm";
+import AdminClientForm, { emptyAdminClientFormValues, type AdminClientFormValues } from "../components/admin/AdminClientForm";
 import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
 import { buildCatalogDisplayMaps } from "../utils/pricingFromCatalogOptions";
 import {
@@ -62,6 +62,11 @@ export default function AdminClientDetailPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(
     (location.state as { successMessage?: string } | null)?.successMessage ?? null,
   );
+  
+  const initialFormValues = useMemo(() => {
+    return detail ? toFormValues(detail) : emptyAdminClientFormValues;
+  }, [detail]);
+
   const listPath = useMemo(
     () => ((location.state as { from?: string } | null)?.from ?? "/admin/clients"),
     [location.state],
@@ -241,7 +246,7 @@ export default function AdminClientDetailPage() {
                 </Typography>
                 <AdminClientForm
                   mode="edit"
-                  initialValues={toFormValues(detail)}
+                  initialValues={initialFormValues}
                   isSubmitting={isSaving}
                   submitLabel="Guardar cambios"
                   onSubmit={handleSave}
