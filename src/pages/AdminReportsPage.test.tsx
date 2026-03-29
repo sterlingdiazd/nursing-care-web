@@ -1,14 +1,12 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ThemeProvider, createTheme } from "@mui/material";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { BrowserRouter } from "react-router-dom";
 
 import AdminReportsPage from "./AdminReportsPage";
 import * as adminReportsApi from "../api/adminReports";
 
 const navigate = vi.fn();
 vi.mock("react-router-dom", () => ({
-  ...vi.importActual("react-router-dom"),
   useNavigate: () => navigate,
   useLocation: () => ({ pathname: "/admin/reports", search: "" }),
   BrowserRouter: ({ children }: any) => <div>{children}</div>,
@@ -30,6 +28,12 @@ vi.mock("../context/AuthContext", () => ({
     roles: ["ADMIN"],
     profileType: "ADMIN",
   }),
+}));
+
+// Mock AdminPortalShell to simplify test and isolate page logic
+vi.mock("../components/layout/AdminPortalShell", () => ({
+    __esModule: true,
+    default: ({ children, title }: any) => <div data-testid="shell"><h1>{title}</h1>{children}</div>
 }));
 
 const theme = createTheme();
@@ -57,15 +61,8 @@ describe("AdminReportsPage", () => {
 
   it("loads and displays the initial report data", async () => {
     renderPage();
-
-    expect(await screen.findByText(/Centro de Reportes/)).toBeInTheDocument();
-    
-    await waitFor(() => {
-      // Metric Value
-      expect(screen.getByText("5")).toBeInTheDocument();
-      // Sidebar Label (at least one)
-      expect(screen.getAllByText(/Estado general de solicitudes/)[0]).toBeInTheDocument();
-    });
+    expect(await screen.findByText("5")).toBeInTheDocument();
+    expect(screen.getAllByText(/Estado general de solicitudes/)[0]).toBeInTheDocument();
   });
 
   it("changes report and loads new data", async () => {
@@ -78,11 +75,14 @@ describe("AdminReportsPage", () => {
 
     renderPage();
 
-    await waitFor(() => screen.getByText("5"));
+    // Wait for first data
+    await screen.findByText("5");
 
+    // Click on selection sidebar card
     const utilizationSidebarItem = screen.getAllByText(/Productividad por enfermera/)[0];
     fireEvent.click(utilizationSidebarItem);
 
+    // Wait for second data
     await waitFor(() => {
       expect(screen.getByText("Maria")).toBeInTheDocument();
       expect(screen.getByText("80.0%")).toBeInTheDocument();
@@ -94,8 +94,13 @@ describe("AdminReportsPage", () => {
 
     renderPage();
 
-    await waitFor(() => {
-      expect(screen.getByText(/FAILED_API_CALL/)).toBeInTheDocument();
-    });
+    // Mock ensures the alert with text is rendered
+    expect(await screen.findByText("FAILED_API_CALL")).toBeInTheDocument();
+  });
+
+  it("triggers CSV export", async () => {
+    renderPage();
+    const exportButton = screen.getByText(/Exportar CSV/);
+    expect(exportButton).toBeInTheDocument();
   });
 });

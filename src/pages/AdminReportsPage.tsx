@@ -88,7 +88,7 @@ export default function AdminReportsPage() {
   const [selectedReportKey, setSelectedReportKey] = useState<string>(REPORTS[0].key);
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
-  const [data, setData] = useState<AdminReportResponse | null>(null);
+  const [reportResult, setReportResult] = useState<{ key: string; data: AdminReportResponse } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,15 +100,16 @@ export default function AdminReportsPage() {
   const loadReportData = async () => {
     setIsLoading(true);
     setError(null);
+    setReportResult(null);
     try {
       const result = await getAdminReport(selectedReportKey, {
         from: fromDate || undefined,
         to: toDate || undefined,
       });
-      setData(result);
+      setReportResult({ key: selectedReportKey, data: result });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al cargar el reporte.");
-      setData(null);
+      setReportResult(null);
     } finally {
       setIsLoading(false);
     }
@@ -218,8 +219,8 @@ export default function AdminReportsPage() {
                   <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 8 }}>
                     <CircularProgress />
                   </Box>
-                ) : data ? (
-                  <ReportVisualizer reportKey={selectedReportKey} data={data} />
+                ) : (reportResult && reportResult.key === selectedReportKey) ? (
+                  <ReportVisualizer reportKey={selectedReportKey} data={reportResult.data} />
                 ) : (
                   <Alert severity="info" variant="outlined">
                     No hay datos disponibles para el periodo seleccionado.
