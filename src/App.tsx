@@ -289,6 +289,8 @@ function HomeRoute() {
 // App Routes
 function AppRoutes() {
   const { isAuthenticated, requiresProfileCompletion, roles } = useAuth();
+  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
+  const needsRegistration = requiresProfileCompletion || !isFullyRegistered;
   const defaultAuthenticatedPath = getDefaultAuthenticatedPath(roles, requiresProfileCompletion);
 
   useEffect(() => {
@@ -300,14 +302,22 @@ function AppRoutes() {
       {/* Public Routes */}
       <Route
         path="/register"
-        element={isAuthenticated && !requiresProfileCompletion ? <Navigate to={defaultAuthenticatedPath} replace /> : <RegisterPage />}
+        element={
+          isAuthenticated && !needsRegistration ? (
+            <Navigate to={defaultAuthenticatedPath} replace />
+          ) : (
+            <RegisterPage />
+          )
+        }
       />
       <Route
         path="/login"
         element={
-          isAuthenticated
-            ? <Navigate to={defaultAuthenticatedPath} replace />
-            : <LoginPage />
+          isAuthenticated && !needsRegistration ? (
+            <Navigate to={defaultAuthenticatedPath} replace />
+          ) : (
+            <LoginPage />
+          )
         }
       />
 

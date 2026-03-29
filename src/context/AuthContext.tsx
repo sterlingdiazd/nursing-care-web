@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<string[]>(initialSession?.roles ?? []);
   const [profileType, setProfileType] = useState<UserProfileType | null>(initialSession?.profileType ?? null);
   const [requiresProfileCompletion, setRequiresProfileCompletion] = useState(
-    initialSession?.requiresProfileCompletion ?? false,
+    initialSession ? (initialSession.requiresProfileCompletion || initialSession.roles.length === 0) : false
   );
   const [requiresAdminReview, setRequiresAdminReview] = useState(initialSession?.requiresAdminReview ?? false);
   const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setEmail(session.email);
     setRoles(session.roles);
     setProfileType(session.profileType);
-    setRequiresProfileCompletion(session.requiresProfileCompletion);
+    setRequiresProfileCompletion(session.requiresProfileCompletion || session.roles.length === 0);
     setRequiresAdminReview(session.requiresAdminReview);
     setIsAuthenticated(Boolean(session.token));
   };
