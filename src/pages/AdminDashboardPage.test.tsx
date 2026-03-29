@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ThemeProvider, createTheme } from "@mui/material";
-import { vi } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 
 import AdminDashboardPage from "./AdminDashboardPage";
 import { getAdminActionItems } from "../api/adminActionItems";
@@ -26,20 +26,20 @@ vi.mock("../api/adminActionItems", () => ({
 vi.mock("../context/AuthContext", () => ({
   useAuth: () => ({
     isAuthenticated: true,
-    token: "token",
-    userId: "11111111-1111-1111-1111-111111111111",
     email: "admin@example.com",
     roles: ["ADMIN"],
-    profileType: "ADMIN",
-    requiresProfileCompletion: false,
-    requiresAdminReview: false,
-    isLoading: false,
-    error: null,
     logout,
-    register: vi.fn(),
-    login: vi.fn(),
-    clearError: vi.fn(),
   }),
+}));
+
+// Mock AdminPortalShell to isolate the dashboard content
+vi.mock("../components/layout/AdminPortalShell", () => ({
+    default: ({ children, actions }: any) => (
+      <div data-testid="admin-shell">
+        <div data-testid="shell-actions">{actions}</div>
+        {children}
+      </div>
+    )
 }));
 
 const theme = createTheme();
@@ -84,23 +84,25 @@ describe("AdminDashboardPage", () => {
 
     renderWithTheme(<AdminDashboardPage />);
 
-    expect(await screen.findByText("dashboard.widgets.pendingNurses.label")).toBeInTheDocument();
-    expect(screen.getByText("dashboard.widgets.waitingAssignment.label")).toBeInTheDocument();
+    // Wait for content (Corrected Spanish labels from translation.json)
+    expect(await screen.findByText("Perfiles pendientes de enfermería")).toBeInTheDocument();
+    expect(screen.getByText("Solicitudes esperando asignación")).toBeInTheDocument();
     expect(screen.getByText("21")).toBeInTheDocument();
-    expect(screen.getByText("dashboard.criticalAlertsDesc")).toBeInTheDocument();
-    expect(screen.getByText("dashboard.actionQueueTitle")).toBeInTheDocument();
+    
+    // Alertas y Acciones labels - match translation.json exactly
+    expect(screen.getByText("Alertas de alta severidad")).toBeInTheDocument();
+    expect(screen.getByText("Acciones que requieren atención")).toBeInTheDocument();
     expect(screen.getByText("La solicitud requiere aprobacion administrativa inmediata.")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Abrir dashboard.widgets.waitingAssignment.label" }));
+    // Interaction with metric card / link - the dashboard renders a button with an aria-label
+    fireEvent.click(screen.getByRole("button", { name: /Abrir Solicitudes esperando asignación/i }));
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith("/admin/care-requests?view=unassigned");
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "dashboard.openQueue" }));
-
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith("/admin/action-items");
-    });
-  }, 30000);
+    // Interaction with queue link
+    fireEvent.click(screen.getByRole("button", { name: "Abrir cola de acciones" }));
+    expect(navigate).toHaveBeenCalledWith("/admin/action-items");
+  });
 });

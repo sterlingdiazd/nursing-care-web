@@ -81,7 +81,7 @@ describe("AdminActionQueuePage", () => {
     expect(await screen.findByText("Solicitud pendiente de aprobacion inmediata.")).toBeInTheDocument();
     expect(screen.getByText("Perfil de enfermeria pendiente por completar.")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Filtrar por severidad alta" }));
+    fireEvent.click(screen.getByRole("button", { name: "Alta severidad" }));
 
     await waitFor(() => {
       expect(screen.getByText("Solicitud pendiente de aprobacion inmediata.")).toBeInTheDocument();

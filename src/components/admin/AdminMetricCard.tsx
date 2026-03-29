@@ -35,6 +35,9 @@ export default function AdminMetricCard({
   return (
     <Paper
       onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={label}
       sx={{
         p: 2.8,
         borderRadius: 3.5,

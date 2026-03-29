@@ -40,6 +40,6 @@ describe("AdminPortal Navigation", () => {
     );
 
     // Sidebar items are rendered as buttons with labels (which return keys in mocked test)
-    expect(screen.getByText("nav.reports.label")).toBeInTheDocument();
+    expect(screen.getByText("Reportes")).toBeInTheDocument();
   });
 });
