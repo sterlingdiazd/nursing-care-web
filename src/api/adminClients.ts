@@ -87,7 +87,7 @@ function buildQueryParams(params: AdminClientListParams) {
 
 export async function getAdminClients(params: AdminClientListParams = {}) {
   try {
-    const response = await httpClient.get<AdminClientListItem[]>("/admin/clients", {
+    const response = await httpClient.get<AdminClientListItem[]>("admin/clients", {
       params: buildQueryParams(params),
     });
     return response.data;
@@ -98,7 +98,7 @@ export async function getAdminClients(params: AdminClientListParams = {}) {
 
 export async function getAdminClientDetail(id: string) {
   try {
-    const response = await httpClient.get<AdminClientDetail>(`/admin/clients/${id}`);
+    const response = await httpClient.get<AdminClientDetail>(`admin/clients/${id}`);
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible cargar el detalle del cliente."));
@@ -107,7 +107,7 @@ export async function getAdminClientDetail(id: string) {
 
 export async function createAdminClient(request: CreateAdminClientRequest) {
   try {
-    const response = await httpClient.post<AdminClientDetail>("/admin/clients", request);
+    const response = await httpClient.post<AdminClientDetail>("admin/clients", request);
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible crear el cliente."));
@@ -116,7 +116,7 @@ export async function createAdminClient(request: CreateAdminClientRequest) {
 
 export async function updateAdminClient(id: string, request: UpdateAdminClientRequest) {
   try {
-    const response = await httpClient.put<AdminClientDetail>(`/admin/clients/${id}`, request);
+    const response = await httpClient.put<AdminClientDetail>(`admin/clients/${id}`, request);
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible actualizar el cliente."));
@@ -125,7 +125,7 @@ export async function updateAdminClient(id: string, request: UpdateAdminClientRe
 
 export async function updateAdminClientActiveState(id: string, isActive: boolean) {
   try {
-    const response = await httpClient.put<AdminClientDetail>(`/admin/clients/${id}/active-state`, {
+    const response = await httpClient.put<AdminClientDetail>(`admin/clients/${id}/active-state`, {
       isActive,
     });
     return response.data;

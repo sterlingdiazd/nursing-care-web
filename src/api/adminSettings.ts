@@ -1,4 +1,4 @@
-import { axiosInstance } from "./axiosInstance";
+import { httpClient } from "./httpClient";
 
 export interface SystemSetting {
   key: string;
@@ -16,7 +16,7 @@ export interface UpdateSystemSettingRequest {
 }
 
 export const getAdminSettings = async (): Promise<SystemSetting[]> => {
-  const response = await axiosInstance.get<SystemSetting[]>("/api/admin/settings");
+  const response = await httpClient.get<SystemSetting[]>("admin/settings");
   return response.data;
 };
 
@@ -24,8 +24,8 @@ export const updateAdminSetting = async (
   key: string,
   request: UpdateSystemSettingRequest
 ): Promise<SystemSetting> => {
-  const response = await axiosInstance.put<SystemSetting>(
-    `/api/admin/settings/${key}`,
+  const response = await httpClient.put<SystemSetting>(
+    `admin/settings/${key}`,
     request
   );
   return response.data;
