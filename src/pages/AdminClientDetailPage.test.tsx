@@ -137,6 +137,7 @@ describe("AdminClientDetailPage", () => {
         email: "carla.nueva@example.com",
       });
     });
+    await screen.findByText("La informacion del cliente se actualizo correctamente.");
 
     fireEvent.click(screen.getByRole("button", { name: "Crear solicitud para este cliente" }));
     expect(navigate).toHaveBeenCalledWith("/admin/care-requests/new", {
@@ -151,6 +152,7 @@ describe("AdminClientDetailPage", () => {
     await waitFor(() => {
       expect(updateAdminClientActiveState).toHaveBeenCalledWith("client-1", false);
     });
+    await screen.findByText("El cliente se desactivo y quedo fuera del flujo operativo.");
 
     expect(await screen.findByRole("button", { name: "Activar cliente" })).toBeInTheDocument();
   }, 30000);

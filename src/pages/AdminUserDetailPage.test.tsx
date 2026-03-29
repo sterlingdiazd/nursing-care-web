@@ -131,6 +131,7 @@ describe("AdminUserDetailPage", () => {
         phone: "8095550444",
       }));
     });
+    await screen.findByText("La informacion de la cuenta se actualizo correctamente.");
 
     fireEvent.click(screen.getByLabelText("Administración"));
     fireEvent.click(screen.getByRole("button", { name: "Guardar roles" }));
@@ -138,18 +139,21 @@ describe("AdminUserDetailPage", () => {
     await waitFor(() => {
       expect(updateAdminUserRoles).toHaveBeenCalledWith("user-1", ["ADMIN", "CLIENT"]);
     });
+    await screen.findByText("Los roles permitidos se actualizaron correctamente.");
 
     fireEvent.click(screen.getByRole("button", { name: "Desactivar cuenta" }));
 
     await waitFor(() => {
       expect(updateAdminUserActiveState).toHaveBeenCalledWith("user-1", false);
     });
+    await screen.findByText("La cuenta se desactivo y se cerraron las sesiones activas.");
 
     fireEvent.click(screen.getByRole("button", { name: "Invalidar sesiones activas" }));
 
     await waitFor(() => {
       expect(invalidateAdminUserSessions).toHaveBeenCalledWith("user-1");
     });
+    await screen.findByText("Se invalidaron 1 sesiones activas.");
 
     fireEvent.click(screen.getByRole("button", { name: "Volver al listado" }));
     expect(navigate).toHaveBeenCalledWith("/admin/users?role=CLIENT");
