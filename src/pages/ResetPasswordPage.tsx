@@ -66,14 +66,18 @@ export default function ResetPasswordPage() {
 
     try {
       const response = await resetPassword(email, code, newPassword);
-      setSuccess(true);
       applyAuthResponse(response);
-      
-      // Auto-redirect after a short delay
+      setSuccess(true);
+
+      // Determine the correct destination based on returned roles
+      const isAdmin = response.roles.includes("ADMIN");
+      const destination = isAdmin ? "/admin" : "/home";
+
+      // Brief delay so the user sees the success message, then redirect
       setTimeout(() => {
-        navigate("/home");
+        navigate(destination, { replace: true });
       }, 2000);
-      
+
     } catch (err: any) {
       setError(err.message || "Ocurrió un error al restablecer tu contraseña.");
     } finally {

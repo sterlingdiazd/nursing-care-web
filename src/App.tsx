@@ -324,13 +324,7 @@ function AppRoutes() {
       />
       <Route
         path="/reset-password"
-        element={
-          isAuthenticated && !needsRegistration ? (
-            <Navigate to={defaultAuthenticatedPath} replace />
-          ) : (
-            <ResetPasswordPage />
-          )
-        }
+        element={<ResetPasswordPage />}
       />
       <Route
         path="/login"
