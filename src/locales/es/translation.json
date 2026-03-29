@@ -62,5 +62,72 @@
     "noEmail": "Sin correo cargado",
     "logout": "Cerrar sesión",
     "activeModule": "Módulo activo"
+  },
+  "dashboard": {
+    "title": "El portal administrativo ya tiene un punto de entrada propio y visible.",
+    "desc": "Esta primera entrega organiza la experiencia administrativa como un espacio separado del trabajo operativo de clientes y enfermería, con un tablero inicial, módulos ancla y rutas protegidas para administración.",
+    "eyebrow": "Centro de control",
+    "openQueue": "Abrir cola de acciones",
+    "openCritical": "Abrir solicitudes críticas",
+    "loadError": "No fue posible cargar el panel de administración.",
+    "queueLoadError": "No fue posible cargar la cola de acciones.",
+    "widgets": {
+      "pendingNurses": {
+        "label": "Perfiles pendientes de enfermería",
+        "helper": "Perfila la cola administrativa para completar registros clínicos antes de liberar acceso operativo."
+      },
+      "waitingAssignment": {
+        "label": "Solicitudes esperando asignación",
+        "helper": "Identifica casos pendientes de enfermera asignada antes de pasar a aprobación."
+      },
+      "readyApproval": {
+        "label": "Solicitudes listas para aprobación",
+        "helper": "Reúne solicitudes ya asignadas que solo necesitan decisión administrativa final."
+      },
+      "rejectedToday": {
+        "label": "Solicitudes rechazadas hoy",
+        "helper": "Ofrece una lectura rápida del rechazo reciente para seguimiento comercial u operativo."
+      },
+      "approvedIncomplete": {
+        "label": "Solicitudes aprobadas sin cierre",
+        "helper": "Mide el trabajo ya autorizado que sigue abierto y requiere acompañamiento."
+      },
+      "overdueStale": {
+        "label": "Solicitudes atrasadas o estancadas",
+        "helper": "Marca servicios con fecha vencida o solicitudes pendientes que ya superaron 48 horas sin avance."
+      },
+      "activeNurses": {
+        "label": "Enfermeras activas",
+        "helper": "Resume la capacidad operativa actualmente disponible para asignación."
+      },
+      "activeClients": {
+        "label": "Clientes activos",
+        "helper": "Resume la base disponible para gestión administrativa, consulta histórica y solicitudes creadas en nombre del cliente."
+      },
+      "unreadNotifications": {
+        "label": "Notificaciones administrativas sin leer",
+        "helper": "Mide la carga de avisos activos y abre la bandeja de notificaciones administrativa."
+      }
+    },
+    "openModule": "Abrir módulo",
+    "updatedAt": "Actualizado {{date}}",
+    "visibilityTitle": "Visibilidad inmediata",
+    "visibilityDesc1": "Prioriza perfiles, asignaciones y aprobaciones desde un tablero pensado para escritorio.",
+    "visibilityDesc2": "Las tarjetas del tablero llevan directo al módulo relevante. La definición inicial de solicitudes atrasadas o estancadas se basa en servicios con fecha anterior a hoy o solicitudes pendientes sin fecha que ya acumulan más de 48 horas sin avance.",
+    "actionQueueTitle": "Acciones que requieren atención",
+    "actionQueueDesc": "La cola prioritaria separa trabajo accionable de las notificaciones.",
+    "viewFullQueue": "Ver cola completa",
+    "noActions": "No hay acciones pendientes en este momento.",
+    "criticalAlertsTitle": "Alertas de alta severidad",
+    "criticalAlertsDesc": "Área preparada para incidentes críticos del negocio",
+    "noAlerts": "Aún no hay alertas críticas automatizadas. El bloque ya quedó reservado para el centro de alertas del portal.",
+    "openAlert": "Abrir alerta",
+    "keyRoutes": "Rutas clave",
+    "routes": {
+      "queue": "Cola de acciones prioritaria",
+      "unassigned": "Solicitudes pendientes de asignación",
+      "approval": "Solicitudes listas para aprobación",
+      "pendingNurses": "Perfiles de enfermería pendientes"
+    }
   }
 }

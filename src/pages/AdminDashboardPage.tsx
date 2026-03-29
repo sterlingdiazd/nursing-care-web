@@ -16,6 +16,7 @@ import { getAdminActionItems, type AdminActionItem } from "../api/adminActionIte
 import { getAdminDashboard, type AdminDashboardSnapshot } from "../api/adminDashboard";
 import AdminActionItemCard from "../components/admin/AdminActionItemCard";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { useTranslation } from "react-i18next";
 
 interface DashboardWidget {
   label: string;
@@ -93,7 +94,7 @@ function WidgetCard({
             {item.helper}
           </Typography>
           <Chip
-            label="Abrir modulo"
+            label={item.path ? 'Abrir módulo' : 'Abrir'} // Will translate dynamically soon, using static helper for now or let's pass it from parent.
             sx={{
               width: "fit-content",
               bgcolor: "rgba(255,255,255,0.56)",
@@ -108,6 +109,7 @@ function WidgetCard({
 }
 
 export default function AdminDashboardPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [dashboard, setDashboard] = useState<AdminDashboardSnapshot | null>(null);
   const [actionItems, setActionItems] = useState<AdminActionItem[]>([]);
@@ -132,7 +134,7 @@ export default function AdminDashboardPage() {
       setError(
         dashboardResult.reason instanceof Error
           ? dashboardResult.reason.message
-          : "No fue posible cargar el panel de administracion.",
+          : t('dashboard.loadError'),
       );
     }
 
@@ -143,7 +145,7 @@ export default function AdminDashboardPage() {
       setActionQueueError(
         actionItemsResult.reason instanceof Error
           ? actionItemsResult.reason.message
-          : "No fue posible cargar la cola de acciones.",
+          : t('dashboard.queueLoadError'),
       );
     }
 
@@ -161,83 +163,83 @@ export default function AdminDashboardPage() {
 
     return [
       {
-        label: "Perfiles pendientes de enfermeria",
+        label: t('dashboard.widgets.pendingNurses.label'),
         value: dashboard.pendingNurseProfilesCount,
-        helper: "Perfila la cola administrativa para completar registros clinicos antes de liberar acceso operativo.",
+        helper: t('dashboard.widgets.pendingNurses.helper'),
         path: "/admin/nurse-profiles?view=pending",
         tone: "warning",
       },
       {
-        label: "Solicitudes esperando asignacion",
+        label: t('dashboard.widgets.waitingAssignment.label'),
         value: dashboard.careRequestsWaitingForAssignmentCount,
-        helper: "Identifica casos pendientes de enfermera asignada antes de pasar a aprobacion.",
+        helper: t('dashboard.widgets.waitingAssignment.helper'),
         path: "/admin/care-requests?view=unassigned",
         tone: "warning",
       },
       {
-        label: "Solicitudes listas para aprobacion",
+        label: t('dashboard.widgets.readyApproval.label'),
         value: dashboard.careRequestsWaitingForApprovalCount,
-        helper: "Reune solicitudes ya asignadas que solo necesitan decision administrativa final.",
+        helper: t('dashboard.widgets.readyApproval.helper'),
         path: "/admin/care-requests?view=pending-approval",
         tone: "info",
       },
       {
-        label: "Solicitudes rechazadas hoy",
+        label: t('dashboard.widgets.rejectedToday.label'),
         value: dashboard.careRequestsRejectedTodayCount,
-        helper: "Ofrece una lectura rapida del rechazo reciente para seguimiento comercial u operativo.",
+        helper: t('dashboard.widgets.rejectedToday.helper'),
         path: "/admin/care-requests?view=rejected-today",
         tone: "info",
       },
       {
-        label: "Solicitudes aprobadas sin cierre",
+        label: t('dashboard.widgets.approvedIncomplete.label'),
         value: dashboard.approvedCareRequestsStillIncompleteCount,
-        helper: "Mide el trabajo ya autorizado que sigue abierto y requiere acompanamiento.",
+        helper: t('dashboard.widgets.approvedIncomplete.helper'),
         path: "/admin/care-requests?view=approved-incomplete",
         tone: "success",
       },
       {
-        label: "Solicitudes atrasadas o estancadas",
+        label: t('dashboard.widgets.overdueStale.label'),
         value: dashboard.overdueOrStaleRequestsCount,
-        helper: "Marca servicios con fecha vencida o solicitudes pendientes que ya superaron 48 horas sin avance.",
+        helper: t('dashboard.widgets.overdueStale.helper'),
         path: "/admin/care-requests?view=overdue",
         tone: "warning",
       },
       {
-        label: "Enfermeras activas",
+        label: t('dashboard.widgets.activeNurses.label'),
         value: dashboard.activeNursesCount,
-        helper: "Resume la capacidad operativa actualmente disponible para asignacion.",
+        helper: t('dashboard.widgets.activeNurses.helper'),
         path: "/admin/nurse-profiles?view=active",
         tone: "success",
       },
       {
-        label: "Clientes activos",
+        label: t('dashboard.widgets.activeClients.label'),
         value: dashboard.activeClientsCount,
-        helper: "Resume la base disponible para gestion administrativa, consulta historica y solicitudes creadas en nombre del cliente.",
+        helper: t('dashboard.widgets.activeClients.helper'),
         path: "/admin/clients",
         tone: "info",
       },
       {
-        label: "Notificaciones administrativas sin leer",
+        label: t('dashboard.widgets.unreadNotifications.label'),
         value: dashboard.unreadAdminNotificationsCount,
-        helper: "Mide la carga de avisos activos y abre la bandeja de notificaciones administrativa.",
+        helper: t('dashboard.widgets.unreadNotifications.helper'),
         path: "/admin/notifications",
         tone: "info",
       },
     ];
-  }, [dashboard]);
+  }, [dashboard, t]);
 
   return (
     <AdminPortalShell
-      eyebrow="Centro de control"
-      title="El portal administrativo ya tiene un punto de entrada propio y visible."
-      description="Esta primera entrega organiza la experiencia administrativa como un espacio separado del trabajo operativo de clientes y enfermeria, con un tablero inicial, modulos ancla y rutas protegidas para administracion."
+      eyebrow={t('dashboard.eyebrow')}
+      title={t('dashboard.title')}
+      description={t('dashboard.desc')}
       actions={
         <>
           <Button variant="outlined" onClick={() => navigate("/admin/action-items")}>
-            Abrir cola de acciones
+            {t('dashboard.openQueue')}
           </Button>
           <Button variant="contained" onClick={() => navigate("/admin/care-requests?view=unassigned")}>
-            Abrir solicitudes criticas
+            {t('dashboard.openCritical')}
           </Button>
         </>
       }
@@ -269,17 +271,17 @@ export default function AdminDashboardPage() {
           />
           <Stack spacing={2.2} sx={{ position: "relative" }}>
             <Typography variant="overline" sx={{ letterSpacing: "0.2em", color: "#cbe3ee" }}>
-              Visibilidad inmediata
+              {t('dashboard.visibilityTitle')}
             </Typography>
             <Typography variant="h3" sx={{ color: "#fffef8", maxWidth: 760 }}>
-              Prioriza perfiles, asignaciones y aprobaciones desde un tablero pensado para escritorio.
+              {t('dashboard.visibilityDesc1')}
             </Typography>
             <Typography sx={{ maxWidth: 760, color: "rgba(235,244,247,0.84)", lineHeight: 1.85 }}>
-              Las tarjetas del tablero llevan directo al modulo relevante. La definicion inicial de solicitudes atrasadas o estancadas se basa en servicios con fecha anterior a hoy o solicitudes pendientes sin fecha que ya acumulan mas de 48 horas sin avance.
+              {t('dashboard.visibilityDesc2')}
             </Typography>
             {dashboard?.generatedAtUtc && (
               <Chip
-                label={`Actualizado ${formatTimestamp(dashboard.generatedAtUtc)}`}
+                label={t('dashboard.updatedAt', { date: formatTimestamp(dashboard.generatedAtUtc) })}
                 sx={{
                   width: "fit-content",
                   bgcolor: "rgba(255,255,255,0.12)",
@@ -331,14 +333,14 @@ export default function AdminDashboardPage() {
             >
               <Box>
                 <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                  Acciones que requieren atencion
+                  {t('dashboard.actionQueueTitle')}
                 </Typography>
                 <Typography variant="h5" sx={{ mt: 1.2 }}>
-                  La cola prioritaria separa trabajo accionable de las notificaciones.
+                  {t('dashboard.actionQueueDesc')}
                 </Typography>
               </Box>
               <Button variant="outlined" onClick={() => navigate("/admin/action-items")}>
-                Ver cola completa
+                {t('dashboard.viewFullQueue')}
               </Button>
             </Stack>
 
@@ -355,7 +357,7 @@ export default function AdminDashboardPage() {
 
               {!isLoading && !actionQueueError && actionItems.length === 0 && (
                 <Alert severity="info" variant="outlined">
-                  No hay acciones pendientes en este momento.
+                  {t('dashboard.noActions')}
                 </Alert>
               )}
 
@@ -373,10 +375,10 @@ export default function AdminDashboardPage() {
           <Stack spacing={3}>
             <Paper sx={{ p: 3.5, borderRadius: 4 }}>
               <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                Alertas de alta severidad
+                {t('dashboard.criticalAlertsTitle')}
               </Typography>
               <Typography variant="h5" sx={{ mt: 1.2 }}>
-                Area preparada para incidentes criticos del negocio
+                {t('dashboard.criticalAlertsDesc')}
               </Typography>
 
               <Stack spacing={1.5} sx={{ mt: 2.5 }}>
@@ -384,7 +386,7 @@ export default function AdminDashboardPage() {
 
                 {!isLoading && dashboard && dashboard.highSeverityAlerts.length === 0 && (
                   <Alert severity="info" variant="outlined">
-                    Aun no hay alertas criticas automatizadas. El bloque ya quedo reservado para el centro de alertas del portal.
+                    {t('dashboard.noAlerts')}
                   </Alert>
                 )}
 
@@ -406,7 +408,7 @@ export default function AdminDashboardPage() {
                         </Typography>
                       </Box>
                       <Button variant="outlined" color="error" onClick={() => navigate(alert.modulePath)}>
-                        Abrir alerta
+                        {t('dashboard.openAlert')}
                       </Button>
                     </Stack>
                   </Paper>
@@ -416,24 +418,24 @@ export default function AdminDashboardPage() {
 
             <Paper sx={{ p: 3.5, borderRadius: 4, bgcolor: "#f2ebde" }}>
               <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
-                Rutas clave
+                {t('dashboard.keyRoutes')}
               </Typography>
               <Stack spacing={1.35} sx={{ mt: 2.2 }}>
                 {[
                   {
-                    label: "Cola de acciones prioritaria",
+                    label: t('dashboard.routes.queue'),
                     path: "/admin/action-items",
                   },
                   {
-                    label: "Solicitudes pendientes de asignacion",
+                    label: t('dashboard.routes.unassigned'),
                     path: "/admin/care-requests?view=unassigned",
                   },
                   {
-                    label: "Solicitudes listas para aprobacion",
+                    label: t('dashboard.routes.approval'),
                     path: "/admin/care-requests?view=pending-approval",
                   },
                   {
-                    label: "Perfiles de enfermeria pendientes",
+                    label: t('dashboard.routes.pendingNurses'),
                     path: "/admin/nurse-profiles?view=pending",
                   },
                 ].map((item) => (

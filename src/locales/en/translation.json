@@ -62,5 +62,72 @@
     "noEmail": "No email loaded",
     "logout": "Log out",
     "activeModule": "Active Module"
+  },
+  "dashboard": {
+    "title": "The administrative portal already has a visible and proprietary entry point.",
+    "desc": "This first release organizes the administrative experience as a separate space from daily operational work, with an initial dashboard, anchor modules, and protected administration routes.",
+    "eyebrow": "Control Center",
+    "openQueue": "Open Action Queue",
+    "openCritical": "Open Critical Requests",
+    "loadError": "Could not load the administration dashboard.",
+    "queueLoadError": "Could not load the action queue.",
+    "widgets": {
+      "pendingNurses": {
+        "label": "Pending Nursing Profiles",
+        "helper": "Profiles administrative queue to complete clinical registration before unlocking operational access."
+      },
+      "waitingAssignment": {
+        "label": "Requests Awaiting Assignment",
+        "helper": "Identifies cases waiting for an assigned nurse before approval."
+      },
+      "readyApproval": {
+        "label": "Requests Ready for Approval",
+        "helper": "Gathers already-assigned requests that only require final administrative decision."
+      },
+      "rejectedToday": {
+        "label": "Requests Rejected Today",
+        "helper": "Provides a quick overview of recent rejections for commercial or operational tracking."
+      },
+      "approvedIncomplete": {
+        "label": "Approved Requests Without Closure",
+        "helper": "Measures authorized work that remains open and needs follow-up."
+      },
+      "overdueStale": {
+        "label": "Overdue or Stalled Requests",
+        "helper": "Flags services with passed dates or pending requests stalled for over 48 hours."
+      },
+      "activeNurses": {
+        "label": "Active Nurses",
+        "helper": "Summarizes the currently available operational capacity for assignment."
+      },
+      "activeClients": {
+        "label": "Active Clients",
+        "helper": "Summarizes the available base for administrative management, historical queries, and requests created on behalf of the client."
+      },
+      "unreadNotifications": {
+        "label": "Unread Administrative Notifications",
+        "helper": "Measures the active alert load and opens the administrative notification tray."
+      }
+    },
+    "openModule": "Open Module",
+    "updatedAt": "Updated {{date}}",
+    "visibilityTitle": "Immediate Visibility",
+    "visibilityDesc1": "Prioritize profiles, assignments, and approvals from a desktop-centered dashboard.",
+    "visibilityDesc2": "Dashboard cards link directly to relevant modules. The initial definition of overdue or stalled requests is based on services dated before today or pending undated requests stalled for over 48 hours.",
+    "actionQueueTitle": "Actions Requiring Attention",
+    "actionQueueDesc": "The priority queue separates actionable work from notifications.",
+    "viewFullQueue": "View Full Queue",
+    "noActions": "There are no pending actions at this moment.",
+    "criticalAlertsTitle": "High Severity Alerts",
+    "criticalAlertsDesc": "Area reserved for critical business incidents",
+    "noAlerts": "There are no automated critical alerts yet. This block is reserved for the portal alert center.",
+    "openAlert": "Open Alert",
+    "keyRoutes": "Key Routes",
+    "routes": {
+      "queue": "Priority Action Queue",
+      "unassigned": "Requests Pending Assignment",
+      "approval": "Requests Ready for Approval",
+      "pendingNurses": "Pending Nursing Profiles"
+    }
   }
 }

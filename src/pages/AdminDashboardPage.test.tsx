@@ -84,20 +84,20 @@ describe("AdminDashboardPage", () => {
 
     renderWithTheme(<AdminDashboardPage />);
 
-    expect(await screen.findByText("Perfiles pendientes de enfermeria")).toBeInTheDocument();
-    expect(screen.getByText("Solicitudes esperando asignacion")).toBeInTheDocument();
+    expect(await screen.findByText("dashboard.widgets.pendingNurses.label")).toBeInTheDocument();
+    expect(screen.getByText("dashboard.widgets.waitingAssignment.label")).toBeInTheDocument();
     expect(screen.getByText("21")).toBeInTheDocument();
-    expect(screen.getByText("Area preparada para incidentes criticos del negocio")).toBeInTheDocument();
-    expect(screen.getByText("Acciones que requieren atencion")).toBeInTheDocument();
+    expect(screen.getByText("dashboard.criticalAlertsDesc")).toBeInTheDocument();
+    expect(screen.getByText("dashboard.actionQueueTitle")).toBeInTheDocument();
     expect(screen.getByText("La solicitud requiere aprobacion administrativa inmediata.")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Abrir Solicitudes esperando asignacion" }));
+    fireEvent.click(screen.getByRole("button", { name: "Abrir dashboard.widgets.waitingAssignment.label" }));
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith("/admin/care-requests?view=unassigned");
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Abrir cola de acciones" }));
+    fireEvent.click(screen.getByRole("button", { name: "dashboard.openQueue" }));
 
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith("/admin/action-items");
