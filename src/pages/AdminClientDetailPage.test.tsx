@@ -123,6 +123,10 @@ describe("AdminClientDetailPage", () => {
     expect(await screen.findByText("Carla Jimenez")).toBeInTheDocument();
     expect(screen.getByText(/tiene historial de solicitudes/i)).toBeInTheDocument();
 
+    await waitFor(() => {
+      expect(screen.getByLabelText("Correo del cliente")).toHaveValue("carla@example.com");
+    });
+
     fireEvent.change(screen.getByLabelText("Correo del cliente"), {
       target: { value: "carla.nueva@example.com" },
     });
