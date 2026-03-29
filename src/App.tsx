@@ -23,6 +23,7 @@ import AdminPricingCatalogPage from "./pages/AdminPricingCatalogPage";
 import AdminNotificationsPage from "./pages/AdminNotificationsPage";
 import AdminAuditLogPage from "./pages/AdminAuditLogPage";
 import AdminReportsPage from "./pages/AdminReportsPage";
+import AdminSettingsPage from "./pages/AdminSettingsPage";
 import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
 import CareRequestDetailPage from "./pages/CareRequestDetailPage";
@@ -508,12 +509,7 @@ function AppRoutes() {
         path="/admin/settings"
         element={
           <AdminRoute>
-            <AdminModulePlaceholderPage
-              eyebrow="Configuracion"
-              title="La configuracion del portal ya tiene una ubicacion estable."
-              description="Esta ruta fija la arquitectura para parametros administrativos sin inflar la consola ni mezclarla con flujos operativos."
-              nextSliceSummary="La siguiente entrega anadira ajustes tipados y auditables dentro de este modulo."
-            />
+            <AdminSettingsPage />
           </AdminRoute>
         }
       />

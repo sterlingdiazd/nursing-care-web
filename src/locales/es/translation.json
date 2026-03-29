@@ -556,5 +556,31 @@
       "approval": "Solicitudes listas para aprobación",
       "pendingNurses": "Perfiles de enfermería pendientes"
     }
+  },
+  "adminSettings": {
+    "eyebrow": "Configuración",
+    "title": "Parámetros del sistema",
+    "description": "Gestiona las reglas de negocio, umbrales de alerta y preferencias globales desde un solo lugar.",
+    "actions": {
+      "refresh": "Refrescar valores"
+    },
+    "categories": {
+      "Localization": "Localización",
+      "Dashboard": "Panel administrativo",
+      "Operations": "Operaciones",
+      "General": "General"
+    },
+    "auditTrail": {
+      "title": "Gestión de cambios",
+      "description": "Toda modificación en los parámetros del sistema queda registrada en el registro de auditoría indicando el actor, el valor anterior y el nuevo valor. Los cambios afectan a todos los usuarios de forma inmediata o en el siguiente refresco de sesión según el tipo de configuración.",
+      "action": "Ver registros de auditoría"
+    },
+    "errors": {
+      "load": "Error al cargar la configuración del sistema.",
+      "update": "Error al actualizar el parámetro '{{key}}'."
+    },
+    "metadata": {
+      "modifiedBy": "Modificado por: {{actor}} ({{date}})"
+    }
   }
 }

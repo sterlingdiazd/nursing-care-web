@@ -59,7 +59,10 @@ export default function WorkspaceShell({
       ? [{ label: "Nueva solicitud", path: "/care-request" }]
       : []),
     ...(roles.includes("ADMIN")
-      ? [{ label: "Perfiles de enfermeria", path: "/admin/nurse-profiles" }]
+      ? [
+          { label: "Perfiles de enfermeria", path: "/admin/nurse-profiles" },
+          { label: "Administracion", path: "/admin" },
+        ]
       : []),
   ];
   const activePath = getActivePath(location.pathname);
