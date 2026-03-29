@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -7,7 +8,6 @@ import {
   CardContent,
   Chip,
   CircularProgress,
-  Divider,
   Paper,
   Stack,
   Table,
@@ -34,6 +34,7 @@ import {
   type PriceUsageSummaryReport,
   type NotificationVolumeReport,
 } from "../api/adminReports";
+import { extractApiErrorMessage } from "../api/errorMessage";
 
 interface ReportMetadata {
   key: string;
@@ -41,50 +42,51 @@ interface ReportMetadata {
   description: string;
 }
 
-const REPORTS: ReportMetadata[] = [
-  {
-    key: "care-request-pipeline",
-    label: "Estado general de solicitudes",
-    description: "Distribucion de solicitudes por estado (Pendiente, Aprobada, Completada, etc).",
-  },
-  {
-    key: "assignment-approval-backlog",
-    label: "Pendientes de asignacion y aprobacion",
-    description: "Mide el retraso en la gestion de solicitudes que esperan enfermera o aprobacion.",
-  },
-  {
-    key: "nurse-onboarding",
-    label: "Registro y activacion de enfermeras",
-    description: "Seguimiento del embudo de registro de personal clinico.",
-  },
-  {
-    key: "active-inactive-users",
-    label: "Usuarios activos e inactivos",
-    description: "Conteo de usuarios por rol y estado de cuenta.",
-  },
-  {
-    key: "nurse-utilization",
-    label: "Productividad por enfermera",
-    description: "Tasa de cumplimiento y carga de trabajo por profesional.",
-  },
-  {
-    key: "care-request-completion",
-    label: "Servicios completados",
-    description: "Analisis de cierre de servicios y tiempos promedio de atencion.",
-  },
-  {
-    key: "price-usage-summary",
-    label: "Resumen de facturacion y servicios",
-    description: "Distribucion de ingresos por tipo de servicio y factores de complejidad.",
-  },
-  {
-    key: "notification-volume",
-    label: "Volumen de notificaciones y alertas",
-    description: "Estadisticas de comunicacion administrativa y acciones pendientes.",
-  },
-];
-
 export default function AdminReportsPage() {
+  const { t } = useTranslation();
+  const REPORTS: ReportMetadata[] = useMemo(() => [
+    {
+      key: "care-request-pipeline",
+      label: t("adminReports.list.pipeline.label"),
+      description: t("adminReports.list.pipeline.description"),
+    },
+    {
+      key: "assignment-approval-backlog",
+      label: t("adminReports.list.backlog.label"),
+      description: t("adminReports.list.backlog.description"),
+    },
+    {
+      key: "nurse-onboarding",
+      label: t("adminReports.list.onboarding.label"),
+      description: t("adminReports.list.onboarding.description"),
+    },
+    {
+      key: "active-inactive-users",
+      label: t("adminReports.list.users.label"),
+      description: t("adminReports.list.users.description"),
+    },
+    {
+      key: "nurse-utilization",
+      label: t("adminReports.list.utilization.label"),
+      description: t("adminReports.list.utilization.description"),
+    },
+    {
+      key: "care-request-completion",
+      label: t("adminReports.list.completion.label"),
+      description: t("adminReports.list.completion.description"),
+    },
+    {
+      key: "price-usage-summary",
+      label: t("adminReports.list.pricing.label"),
+      description: t("adminReports.list.pricing.description"),
+    },
+    {
+      key: "notification-volume",
+      label: t("adminReports.list.notifications.label"),
+      description: t("adminReports.list.notifications.description"),
+    },
+  ], [t]);
+
   const [selectedReportKey, setSelectedReportKey] = useState<string>(REPORTS[0].key);
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
@@ -94,7 +96,7 @@ export default function AdminReportsPage() {
 
   const selectedReport = useMemo(
     () => REPORTS.find((r) => r.key === selectedReportKey) || REPORTS[0],
-    [selectedReportKey]
+    [selectedReportKey, REPORTS]
   );
 
   const loadReportData = async () => {
@@ -108,7 +110,7 @@ export default function AdminReportsPage() {
       });
       setReportResult({ key: selectedReportKey, data: result });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar el reporte.");
+      setError(extractApiErrorMessage(err, t("adminReports.errors.loadFailed")));
       setReportResult(null);
     } finally {
       setIsLoading(false);
@@ -129,9 +131,9 @@ export default function AdminReportsPage() {
 
   return (
     <AdminPortalShell
-      eyebrow="Centro de Reportes"
-      title="Analisis operativo y exportacion de datos"
-      description="Selecciona un reporte, filtra por fechas y visualiza los indicadores clave del negocio. Puedes exportar los resultados a CSV para analisis externo."
+      eyebrow={t("adminReports.eyebrow")}
+      title={t("adminReports.title")}
+      description={t("adminReports.description")}
     >
       <Stack spacing={4}>
         {error && <Alert severity="error">{error}</Alert>}
@@ -146,7 +148,7 @@ export default function AdminReportsPage() {
           {/* Report Selection Sidebar */}
           <Box>
             <Stack spacing={2}>
-              <Typography variant="h6">Seleccionar reporte</Typography>
+              <Typography variant="h6">{t("adminReports.actions.selectReport")}</Typography>
               {REPORTS.map((report) => {
                 const active = report.key === selectedReportKey;
                 return (
@@ -180,10 +182,10 @@ export default function AdminReportsPage() {
           <Box>
             <Stack spacing={3}>
               <Paper sx={{ p: 3, borderRadius: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2 }}>Filtros y acciones</Typography>
+                <Typography variant="h6" sx={{ mb: 2 }}>{t("adminReports.actions.filtersTitle")}</Typography>
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="flex-end">
                   <TextField
-                    label="Desde"
+                    label={t("adminReports.actions.from")}
                     type="date"
                     size="small"
                     value={fromDate}
@@ -192,7 +194,7 @@ export default function AdminReportsPage() {
                     fullWidth
                   />
                   <TextField
-                    label="Hasta"
+                    label={t("adminReports.actions.to")}
                     type="date"
                     size="small"
                     value={toDate}
@@ -201,10 +203,10 @@ export default function AdminReportsPage() {
                     fullWidth
                   />
                   <Button variant="contained" onClick={() => void loadReportData()} disabled={isLoading} sx={{ py: 1, minWidth: 120 }}>
-                    Actualizar
+                    {t("adminReports.actions.refresh")}
                   </Button>
                   <Button variant="outlined" onClick={handleExport} sx={{ py: 1, minWidth: 120 }}>
-                    Exportar CSV
+                    {t("adminReports.actions.export")}
                   </Button>
                 </Stack>
               </Paper>
@@ -223,7 +225,7 @@ export default function AdminReportsPage() {
                   <ReportVisualizer reportKey={selectedReportKey} data={reportResult.data} />
                 ) : (
                   <Alert severity="info" variant="outlined">
-                    No hay datos disponibles para el periodo seleccionado.
+                    {t("adminReports.list.empty")}
                   </Alert>
                 )}
               </Paper>
@@ -236,6 +238,7 @@ export default function AdminReportsPage() {
 }
 
 function ReportVisualizer({ reportKey, data }: { reportKey: string; data: AdminReportResponse }) {
+  const { t } = useTranslation();
   switch (reportKey) {
     case "care-request-pipeline":
       return <PipelineVisualizer data={data as CareRequestPipelineReport} />;
@@ -254,7 +257,7 @@ function ReportVisualizer({ reportKey, data }: { reportKey: string; data: AdminR
     case "notification-volume":
       return <NotificationsVisualizer data={data as NotificationVolumeReport} />;
     default:
-      return <Typography>Reporte desconocido</Typography>;
+      return <Typography>{t("adminReports.list.unknown")}</Typography>;
   }
 }
 
@@ -268,6 +271,7 @@ function MetricCard({ label, value, color = "primary" }: { label: string; value:
 }
 
 function PipelineVisualizer({ data }: { data: CareRequestPipelineReport }) {
+  const { t } = useTranslation();
   return (
     <Box
       sx={{
@@ -277,12 +281,12 @@ function PipelineVisualizer({ data }: { data: CareRequestPipelineReport }) {
       }}
     >
       {[
-        { label: "Pendientes", value: data.pendingCount },
-        { label: "Aprobadas", value: data.approvedCount },
-        { label: "Completadas", value: data.completedCount, color: "success.main" },
-        { label: "Rechazadas", value: data.rejectedCount, color: "error.main" },
-        { label: "Sin asignar", value: data.unassignedCount, color: "warning.main" },
-        { label: "Vencidas", value: data.overdueCount, color: "error.dark" },
+        { label: t("adminReports.list.pipeline.pending"), value: data.pendingCount },
+        { label: t("adminReports.list.pipeline.approved"), value: data.approvedCount },
+        { label: t("adminReports.list.pipeline.completed"), value: data.completedCount, color: "success.main" },
+        { label: t("adminReports.list.pipeline.rejected"), value: data.rejectedCount, color: "error.main" },
+        { label: t("adminReports.list.pipeline.unassigned"), value: data.unassignedCount, color: "warning.main" },
+        { label: t("adminReports.list.pipeline.overdue"), value: data.overdueCount, color: "error.dark" },
       ].map((m) => (
         <MetricCard key={m.label} label={m.label} value={m.value} color={m.color} />
       ))}
@@ -291,6 +295,7 @@ function PipelineVisualizer({ data }: { data: CareRequestPipelineReport }) {
 }
 
 function BacklogVisualizer({ data }: { data: AssignmentApprovalBacklogReport }) {
+  const { t } = useTranslation();
   return (
     <Box
       sx={{
@@ -299,16 +304,17 @@ function BacklogVisualizer({ data }: { data: AssignmentApprovalBacklogReport }) 
         gap: 2,
       }}
     >
-      <MetricCard label="Sin enfermera" value={data.pendingUnassignedCount} color="warning.main" />
-      <MetricCard label="Esperando aprobacion" value={data.pendingAssignedAwaitingApprovalCount} color="info.main" />
+      <MetricCard label={t("adminReports.list.backlog.unassigned")} value={data.pendingUnassignedCount} color="warning.main" />
+      <MetricCard label={t("adminReports.list.backlog.awaitingApproval")} value={data.pendingAssignedAwaitingApprovalCount} color="info.main" />
       <Box sx={{ gridColumn: { sm: "span 2" } }}>
-        <MetricCard label="Dias promedio en espera" value={`${data.averageDaysPending.toFixed(1)} dias`} />
+        <MetricCard label={t("adminReports.list.backlog.avgWaitDays")} value={`${data.averageDaysPending.toFixed(1)} dias`} />
       </Box>
     </Box>
   );
 }
 
 function OnboardingVisualizer({ data }: { data: NurseOnboardingReport }) {
+  const { t } = useTranslation();
   return (
     <Box
       sx={{
@@ -318,11 +324,11 @@ function OnboardingVisualizer({ data }: { data: NurseOnboardingReport }) {
       }}
     >
       {[
-        { label: "Total registradas", value: data.totalRegisteredCount },
-        { label: "Pendientes de revision", value: data.pendingReviewCount, color: "warning.main" },
-        { label: "Activas", value: data.activeCount, color: "success.main" },
-        { label: "Inactivas", value: data.inactiveCount, color: "text.secondary" },
-        { label: "Activadas en periodo", value: data.completedThisPeriodCount },
+        { label: t("adminReports.list.onboarding.total"), value: data.totalRegisteredCount },
+        { label: t("adminReports.list.onboarding.pending"), value: data.pendingReviewCount, color: "warning.main" },
+        { label: t("adminReports.list.onboarding.active"), value: data.activeCount, color: "success.main" },
+        { label: t("adminReports.list.onboarding.inactive"), value: data.inactiveCount, color: "text.secondary" },
+        { label: t("adminReports.list.onboarding.period"), value: data.completedThisPeriodCount },
       ].map((m) => (
         <MetricCard key={m.label} label={m.label} value={m.value} color={m.color} />
       ))}
@@ -331,21 +337,22 @@ function OnboardingVisualizer({ data }: { data: NurseOnboardingReport }) {
 }
 
 function UsersVisualizer({ data }: { data: ActiveInactiveUsersReport }) {
+  const { t } = useTranslation();
   return (
     <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
       <Table>
         <TableHead>
           <TableRow sx={{ bgcolor: "grey.50" }}>
-            <TableCell sx={{ fontWeight: 700 }}>Perfil</TableCell>
-            <TableCell align="center" sx={{ fontWeight: 700 }}>Activas</TableCell>
-            <TableCell align="center" sx={{ fontWeight: 700 }}>Inactivas</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>{t("adminReports.list.users.profile")}</TableCell>
+            <TableCell align="center" sx={{ fontWeight: 700 }}>{t("adminReports.list.users.active")}</TableCell>
+            <TableCell align="center" sx={{ fontWeight: 700 }}>{t("adminReports.list.users.inactive")}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {[
-            { label: "Administrador", active: data.adminActiveCount, inactive: data.adminInactiveCount },
-            { label: "Cliente", active: data.clientActiveCount, inactive: data.clientInactiveCount },
-            { label: "Enfermera", active: data.nurseActiveCount, inactive: data.nurseInactiveCount },
+            { label: t("adminAuditLog.roles.admin"), active: data.adminActiveCount, inactive: data.adminInactiveCount },
+            { label: t("adminAuditLog.roles.client"), active: data.clientActiveCount, inactive: data.clientInactiveCount },
+            { label: t("adminAuditLog.roles.nurse"), active: data.nurseActiveCount, inactive: data.nurseInactiveCount },
           ].map((row) => (
             <TableRow key={row.label}>
               <TableCell>{row.label}</TableCell>
@@ -360,16 +367,17 @@ function UsersVisualizer({ data }: { data: ActiveInactiveUsersReport }) {
 }
 
 function UtilizationVisualizer({ data }: { data: NurseUtilizationReport }) {
+  const { t } = useTranslation();
   return (
     <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
       <Table>
         <TableHead>
           <TableRow sx={{ bgcolor: "grey.50" }}>
-            <TableCell sx={{ fontWeight: 700 }}>Enfermera</TableCell>
-            <TableCell align="center" sx={{ fontWeight: 700 }}>Total Asignadas</TableCell>
-            <TableCell align="center" sx={{ fontWeight: 700 }}>Completadas</TableCell>
-            <TableCell align="center" sx={{ fontWeight: 700 }}>Pendientes</TableCell>
-            <TableCell align="right" sx={{ fontWeight: 700 }}>Tasa de Cierre</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>{t("adminReports.list.utilization.nurse")}</TableCell>
+            <TableCell align="center" sx={{ fontWeight: 700 }}>{t("adminReports.list.utilization.totalAssigned")}</TableCell>
+            <TableCell align="center" sx={{ fontWeight: 700 }}>{t("adminReports.list.utilization.completed")}</TableCell>
+            <TableCell align="center" sx={{ fontWeight: 700 }}>{t("adminReports.list.utilization.pending")}</TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700 }}>{t("adminReports.list.utilization.completionRate")}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -389,6 +397,7 @@ function UtilizationVisualizer({ data }: { data: NurseUtilizationReport }) {
 }
 
 function CompletionVisualizer({ data }: { data: CareRequestCompletionReport }) {
+  const { t } = useTranslation();
   return (
     <Stack spacing={3}>
       <Box
@@ -398,17 +407,17 @@ function CompletionVisualizer({ data }: { data: CareRequestCompletionReport }) {
           gap: 2,
         }}
       >
-        <MetricCard label="Total completadas" value={data.totalCompletedCount} color="success.main" />
-        <MetricCard label="Cierre promedio" value={`${data.averageDaysToComplete.toFixed(1)} dias`} />
+        <MetricCard label={t("adminReports.list.completion.total")} value={data.totalCompletedCount} color="success.main" />
+        <MetricCard label={t("adminReports.list.completion.avgDays")} value={`${data.averageDaysToComplete.toFixed(1)} dias`} />
       </Box>
       
-      <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 700 }}>Completadas por periodo</Typography>
+      <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 700 }}>{t("adminReports.list.completion.periodTitle")}</Typography>
       <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: "grey.50" }}>
-              <TableCell sx={{ fontWeight: 700 }}>Mes / Periodo</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700 }}>Completadas</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t("adminReports.list.completion.range")}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>{t("adminReports.list.completion.total")}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -426,17 +435,18 @@ function CompletionVisualizer({ data }: { data: CareRequestCompletionReport }) {
 }
 
 function PriceVisualizer({ data }: { data: PriceUsageSummaryReport }) {
+  const { t } = useTranslation();
   return (
     <Stack spacing={3}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Top tipos de servicio</Typography>
+      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t("adminReports.list.pricing.topServices")}</Typography>
       <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
         <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: "grey.50" }}>
-              <TableCell sx={{ fontWeight: 700 }}>Servicio</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 700 }}>Conteo</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700 }}>Ticket Promedio</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 700 }}>Ingresos Totales</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>{t("adminReports.list.pricing.service")}</TableCell>
+              <TableCell align="center" sx={{ fontWeight: 700 }}>{t("adminReports.list.pricing.count")}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>{t("adminReports.list.pricing.avgTicket")}</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700 }}>{t("adminReports.list.pricing.totalRevenue")}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -460,7 +470,7 @@ function PriceVisualizer({ data }: { data: PriceUsageSummaryReport }) {
         }}
       >
         <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 700 }}>Factores de distancia comunes</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 700 }}>{t("adminReports.list.pricing.distanceFactors")}</Typography>
           <Stack spacing={1}>
             {data.topDistanceFactors.map(f => (
               <Chip key={f} label={f} variant="outlined" size="small" sx={{ width: "fit-content" }} />
@@ -468,7 +478,7 @@ function PriceVisualizer({ data }: { data: PriceUsageSummaryReport }) {
           </Stack>
         </Box>
         <Box>
-          <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 700 }}>Niveles de complejidad comunes</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 700 }}>{t("adminReports.list.pricing.complexityLevels")}</Typography>
           <Stack spacing={1}>
             {data.topComplexityLevels.map(f => (
               <Chip key={f} label={f} variant="outlined" size="small" sx={{ width: "fit-content" }} />
@@ -481,6 +491,7 @@ function PriceVisualizer({ data }: { data: PriceUsageSummaryReport }) {
 }
 
 function NotificationsVisualizer({ data }: { data: NotificationVolumeReport }) {
+  const { t } = useTranslation();
   return (
     <Stack spacing={3}>
       <Box
@@ -490,13 +501,13 @@ function NotificationsVisualizer({ data }: { data: NotificationVolumeReport }) {
           gap: 2,
         }}
       >
-        <MetricCard label="Total notificaciones" value={data.totalNotificationsCount} />
-        <MetricCard label="Sin leer" value={data.unreadNotificationsCount} color="warning.main" />
-        <MetricCard label="Acciones pendientes" value={data.pendingActionItemsCount} color="error.main" />
+        <MetricCard label={t("adminReports.list.notifications.total")} value={data.totalNotificationsCount} />
+        <MetricCard label={t("adminReports.list.notifications.unread")} value={data.unreadNotificationsCount} color="warning.main" />
+        <MetricCard label={t("adminReports.list.notifications.pendingActions")} value={data.pendingActionItemsCount} color="error.main" />
       </Box>
       
       <Box>
-        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 700 }}>Volumen por categoria</Typography>
+        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 700 }}>{t("adminReports.list.notifications.byCategory")}</Typography>
         <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: "wrap", gap: 1 }}>
           {Object.entries(data.notificationsByCategory).map(([cat, count]) => (
             <Chip 

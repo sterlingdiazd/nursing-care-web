@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -16,32 +17,35 @@ import {
   type AdminActionItemSeverity,
   type AdminActionItemState,
 } from "../api/adminActionItems";
+import { extractApiErrorMessage } from "../api/errorMessage";
 import AdminActionItemCard from "../components/admin/AdminActionItemCard";
+import AdminMetricCard from "../components/admin/AdminMetricCard";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
 
 type SeverityFilter = "all" | AdminActionItemSeverity;
 type StateFilter = "all" | AdminActionItemState;
 
-const severityOptions: Array<{ value: SeverityFilter; label: string }> = [
-  { value: "all", label: "Todas" },
-  { value: "High", label: "Alta" },
-  { value: "Medium", label: "Media" },
-  { value: "Low", label: "Baja" },
-];
-
-const stateOptions: Array<{ value: StateFilter; label: string }> = [
-  { value: "all", label: "Todas" },
-  { value: "Unread", label: "No leidas" },
-  { value: "Pending", label: "Pendientes" },
-];
-
 export default function AdminActionQueuePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [items, setItems] = useState<AdminActionItem[]>([]);
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>("all");
   const [stateFilter, setStateFilter] = useState<StateFilter>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const severityOptions = useMemo((): Array<{ value: SeverityFilter; label: string }> => [
+    { value: "all", label: t("adminActionQueue.filters.severity.all") },
+    { value: "High", label: t("adminActionQueue.filters.severity.high") },
+    { value: "Medium", label: t("adminActionQueue.filters.severity.medium") },
+    { value: "Low", label: t("adminActionQueue.filters.severity.low") },
+  ], [t]);
+
+  const stateOptions = useMemo((): Array<{ value: StateFilter; label: string }> => [
+    { value: "all", label: t("adminActionQueue.filters.state.all") },
+    { value: "Unread", label: t("adminActionQueue.filters.state.unread") },
+    { value: "Pending", label: t("adminActionQueue.filters.state.pending") },
+  ], [t]);
 
   const loadItems = async () => {
     setIsLoading(true);
@@ -51,7 +55,7 @@ export default function AdminActionQueuePage() {
       const response = await getAdminActionItems();
       setItems(response);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "No fue posible cargar la cola de acciones.");
+      setError(extractApiErrorMessage(nextError, t("adminActionQueue.errors.loadFailed")));
     } finally {
       setIsLoading(false);
     }
@@ -83,16 +87,16 @@ export default function AdminActionQueuePage() {
 
   return (
     <AdminPortalShell
-      eyebrow="Acciones actuales"
-      title="Una cola administrativa separada para lo que si requiere intervencion."
-      description="Esta bandeja no replica notificaciones generales. Reune solo elementos operativos, cuentas y situaciones del sistema que exigen una accion concreta desde administracion."
+      eyebrow={t("adminActionQueue.eyebrow")}
+      title={t("adminActionQueue.title")}
+      description={t("adminActionQueue.description")}
       actions={
         <>
           <Button variant="outlined" onClick={() => navigate("/admin")}>
-            Volver al panel principal
+            {t("adminActionQueue.actions.back")}
           </Button>
           <Button variant="contained" onClick={() => void loadItems()} disabled={isLoading}>
-            Actualizar cola
+            {t("adminActionQueue.actions.refresh")}
           </Button>
         </>
       }
@@ -107,28 +111,35 @@ export default function AdminActionQueuePage() {
             gap: 2,
           }}
         >
-          {[
-            ["Elementos visibles", summary.total],
-            ["No leidas", summary.unread],
-            ["Pendientes", summary.pending],
-            ["Alta severidad", summary.high],
-          ].map(([label, value]) => (
-            <Paper key={label} sx={{ p: 3, borderRadius: 3.5 }}>
-              <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                {label}
-              </Typography>
-              <Typography variant="h3" sx={{ mt: 1.1 }}>
-                {value}
-              </Typography>
-            </Paper>
-          ))}
+          <AdminMetricCard
+            label={t("adminActionQueue.metrics.total")}
+            value={summary.total}
+          />
+          <AdminMetricCard
+            label={t("adminActionQueue.metrics.unread")}
+            value={summary.unread}
+            isSelected={stateFilter === "Unread"}
+            onClick={() => setStateFilter(stateFilter === "Unread" ? "all" : "Unread")}
+          />
+          <AdminMetricCard
+            label={t("adminActionQueue.metrics.pending")}
+            value={summary.pending}
+            isSelected={stateFilter === "Pending"}
+            onClick={() => setStateFilter(stateFilter === "Pending" ? "all" : "Pending")}
+          />
+          <AdminMetricCard
+            label={t("adminActionQueue.metrics.high")}
+            value={summary.high}
+            isSelected={severityFilter === "High"}
+            onClick={() => setSeverityFilter(severityFilter === "High" ? "all" : "High")}
+          />
         </Box>
 
         <Paper sx={{ p: 2.5, borderRadius: 3.5 }}>
           <Stack spacing={2}>
             <Box>
               <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                Filtrar por severidad
+                {t("adminActionQueue.filters.severityLabel")}
               </Typography>
               <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} sx={{ mt: 1.2 }} flexWrap="wrap">
                 {severityOptions.map((option) => (
@@ -136,7 +147,7 @@ export default function AdminActionQueuePage() {
                     key={option.value}
                     variant={severityFilter === option.value ? "contained" : "text"}
                     onClick={() => setSeverityFilter(option.value)}
-                    aria-label={`Filtrar por severidad ${option.label.toLowerCase()}`}
+                    aria-label={`${t("adminActionQueue.filters.severityLabel")} ${option.label.toLowerCase()}`}
                   >
                     {option.label}
                   </Button>
@@ -146,7 +157,7 @@ export default function AdminActionQueuePage() {
 
             <Box>
               <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                Filtrar por estado
+                {t("adminActionQueue.filters.stateLabel")}
               </Typography>
               <Stack direction={{ xs: "column", md: "row" }} spacing={1.2} sx={{ mt: 1.2 }} flexWrap="wrap">
                 {stateOptions.map((option) => (
@@ -154,7 +165,7 @@ export default function AdminActionQueuePage() {
                     key={option.value}
                     variant={stateFilter === option.value ? "contained" : "text"}
                     onClick={() => setStateFilter(option.value)}
-                    aria-label={`Filtrar por estado ${option.label.toLowerCase()}`}
+                    aria-label={`${t("adminActionQueue.filters.stateLabel")} ${option.label.toLowerCase()}`}
                   >
                     {option.label}
                   </Button>
@@ -175,7 +186,7 @@ export default function AdminActionQueuePage() {
 
           {!isLoading && filteredItems.length === 0 && (
             <Alert severity="info" variant="outlined">
-              No hay elementos en la cola para los filtros seleccionados en este momento.
+              {t("adminActionQueue.list.empty")}
             </Alert>
           )}
 

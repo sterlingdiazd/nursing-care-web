@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -19,7 +20,10 @@ import {
   type AdminCareRequestSort,
   type AdminCareRequestView,
 } from "../api/adminCareRequests";
+import { extractApiErrorMessage } from "../api/errorMessage";
+import AdminMetricCard from "../components/admin/AdminMetricCard";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { useAdminTableFilters, type FilterState } from "../hooks/useAdminTableFilters";
 import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
 import { buildCatalogDisplayMaps } from "../utils/pricingFromCatalogOptions";
 import {
@@ -32,112 +36,58 @@ import {
   getAdminCareRequestStatusStyles,
 } from "../utils/adminCareRequests";
 
-const sortOptions: Array<{ value: AdminCareRequestSort; label: string }> = [
-  { value: "newest", label: "Mas recientes" },
-  { value: "oldest", label: "Mas antiguas" },
-  { value: "scheduled", label: "Fecha del servicio" },
-  { value: "status", label: "Estado" },
-  { value: "value", label: "Mayor valor" },
-];
-
-function resolveView(search: string): AdminCareRequestView {
-  const value = new URLSearchParams(search).get("view");
-  const availableValues = new Set<AdminCareRequestView>([
-    "all",
-    "pending",
-    "approved",
-    "rejected",
-    "completed",
-    "unassigned",
-    "pending-approval",
-    "rejected-today",
-    "approved-incomplete",
-    "overdue",
-  ]);
-
-  return value && availableValues.has(value as AdminCareRequestView)
-    ? (value as AdminCareRequestView)
-    : "all";
-}
-
-function resolveSort(search: string): AdminCareRequestSort {
-  const value = new URLSearchParams(search).get("sort");
-  return sortOptions.some((option) => option.value === value)
-    ? (value as AdminCareRequestSort)
-    : "newest";
-}
-
-function resolveFilterState(search: string) {
-  const params = new URLSearchParams(search);
-  return {
-    view: resolveView(search),
-    sort: resolveSort(search),
-    searchText: params.get("search") ?? "",
-    scheduledFrom: params.get("scheduledFrom") ?? "",
-    scheduledTo: params.get("scheduledTo") ?? "",
-    selectedId: params.get("selected"),
-  };
-}
-
-function createQueryString({
-  view,
-  sort,
-  searchText,
-  scheduledFrom,
-  scheduledTo,
-  selectedId,
-}: {
+interface AdminCareRequestFilters extends FilterState {
   view: AdminCareRequestView;
   sort: AdminCareRequestSort;
-  searchText: string;
   scheduledFrom: string;
   scheduledTo: string;
-  selectedId?: string | null;
-}) {
-  const params = new URLSearchParams();
-
-  if (view !== "all") {
-    params.set("view", view);
-  }
-
-  if (sort !== "newest") {
-    params.set("sort", sort);
-  }
-
-  if (searchText.trim()) {
-    params.set("search", searchText.trim());
-  }
-
-  if (scheduledFrom) {
-    params.set("scheduledFrom", scheduledFrom);
-  }
-
-  if (scheduledTo) {
-    params.set("scheduledTo", scheduledTo);
-  }
-
-  if (selectedId) {
-    params.set("selected", selectedId);
-  }
-
-  const query = params.toString();
-  return query.length > 0 ? `?${query}` : "";
 }
 
+const availableViews: AdminCareRequestView[] = [
+  "all", "pending", "approved", "rejected", "completed",
+  "unassigned", "pending-approval", "rejected-today",
+  "approved-incomplete", "overdue",
+];
+
+const availableSorts: AdminCareRequestSort[] = ["newest", "oldest", "scheduled", "status", "value"];
+
 export default function AdminCareRequestsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const {
+    filters,
+    navigateWithFilters,
+    createQueryString,
+    clearFilters,
+  } = useAdminTableFilters<AdminCareRequestFilters>({
+    path: "/admin/care-requests",
+    defaultView: "all",
+    defaultSort: "newest",
+    availableViews,
+    availableSorts,
+  });
+
   const { data: catalogOptions } = useCareRequestCatalogOptions();
   const catalogDisplayMaps = useMemo(
     () => (catalogOptions ? buildCatalogDisplayMaps(catalogOptions) : null),
     [catalogOptions],
   );
+
   const [items, setItems] = useState<AdminCareRequestListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const filters = useMemo(() => resolveFilterState(location.search), [location.search]);
   const [searchInput, setSearchInput] = useState(filters.searchText);
+
+  const sortOptions = useMemo(() => [
+    { value: "newest", label: t("adminCareRequests.filters.sortOptions.newest") },
+    { value: "oldest", label: t("adminCareRequests.filters.sortOptions.oldest") },
+    { value: "scheduled", label: t("adminCareRequests.filters.sortOptions.scheduled") },
+    { value: "status", label: t("adminCareRequests.filters.sortOptions.status") },
+    { value: "value", label: t("adminCareRequests.filters.sortOptions.value") },
+  ], [t]);
 
   useEffect(() => {
     setSearchInput(filters.searchText);
@@ -162,7 +112,7 @@ export default function AdminCareRequestsPage() {
       const response = await getAdminCareRequests(requestParams);
       setItems(response);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "No fue posible cargar las solicitudes administrativas.");
+      setError(extractApiErrorMessage(nextError, t("adminCareRequests.errors.loadFailed")));
     } finally {
       setIsLoading(false);
     }
@@ -183,19 +133,6 @@ export default function AdminCareRequestsPage() {
     [items],
   );
 
-  const navigateWithFilters = (next: Partial<typeof filters>) => {
-    const query = createQueryString({
-      view: next.view ?? filters.view,
-      sort: next.sort ?? filters.sort,
-      searchText: next.searchText ?? filters.searchText,
-      scheduledFrom: next.scheduledFrom ?? filters.scheduledFrom,
-      scheduledTo: next.scheduledTo ?? filters.scheduledTo,
-      selectedId: next.selectedId !== undefined ? next.selectedId : filters.selectedId,
-    });
-
-    navigate(`/admin/care-requests${query}`);
-  };
-
   const handleExport = async () => {
     setIsExporting(true);
     setError(null);
@@ -209,7 +146,7 @@ export default function AdminCareRequestsPage() {
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "No fue posible exportar las solicitudes.");
+      setError(extractApiErrorMessage(nextError, t("adminCareRequests.errors.exportFailed")));
     } finally {
       setIsExporting(false);
     }
@@ -217,16 +154,16 @@ export default function AdminCareRequestsPage() {
 
   return (
     <AdminPortalShell
-      eyebrow="Gestion administrativa de solicitudes"
-      title="Un modulo completo para leer, crear, asignar y decidir solicitudes desde administracion."
-      description="Esta vista amplia la cola inicial del portal hacia un modulo operativo completo, con filtros, exportacion, acceso al detalle y una ruta dedicada para crear solicitudes en nombre de clientes."
+      eyebrow={t("adminCareRequests.eyebrow")}
+      title={t("adminCareRequests.title")}
+      description={t("adminCareRequests.description")}
       actions={
         <>
           <Button variant="outlined" onClick={() => void loadItems()} disabled={isLoading}>
-            Actualizar modulo
+            {t("adminCareRequests.actions.refresh")}
           </Button>
           <Button variant="outlined" onClick={handleExport} disabled={isLoading || isExporting}>
-            Exportar CSV
+            {t("adminCareRequests.actions.export")}
           </Button>
           <Button
             variant="contained"
@@ -240,7 +177,7 @@ export default function AdminCareRequestsPage() {
               )
             }
           >
-            Crear solicitud para cliente
+            {t("adminCareRequests.actions.createForClient")}
           </Button>
         </>
       }
@@ -255,22 +192,32 @@ export default function AdminCareRequestsPage() {
             gap: 2,
           }}
         >
-          {[
-            ["Solicitudes visibles", String(summary.total)],
-            ["Pendientes", String(summary.pending)],
-            ["Sin asignar", String(summary.unassigned)],
-            ["Atrasadas o estancadas", String(summary.overdue)],
-            ["Valor visible", formatAdminCareRequestCurrency(summary.totalValue)],
-          ].map(([label, value]) => (
-            <Paper key={label} sx={{ p: 3, borderRadius: 3.5 }}>
-              <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                {label}
-              </Typography>
-              <Typography variant="h4" sx={{ mt: 1.1 }}>
-                {value}
-              </Typography>
-            </Paper>
-          ))}
+          <AdminMetricCard
+            label={t("adminCareRequests.metrics.total")}
+            value={summary.total}
+          />
+          <AdminMetricCard
+            label={t("adminCareRequests.metrics.pending")}
+            value={summary.pending}
+            isSelected={filters.view === "pending"}
+            onClick={() => navigateWithFilters({ view: "pending", selectedId: null })}
+          />
+          <AdminMetricCard
+            label={t("adminCareRequests.metrics.unassigned")}
+            value={summary.unassigned}
+            isSelected={filters.view === "unassigned"}
+            onClick={() => navigateWithFilters({ view: "unassigned", selectedId: null })}
+          />
+          <AdminMetricCard
+            label={t("adminCareRequests.metrics.overdue")}
+            value={summary.overdue}
+            isSelected={filters.view === "overdue"}
+            onClick={() => navigateWithFilters({ view: "overdue", selectedId: null })}
+          />
+          <AdminMetricCard
+            label={t("adminCareRequests.metrics.totalValue")}
+            value={formatAdminCareRequestCurrency(summary.totalValue)}
+          />
         </Box>
 
         <Paper sx={{ p: 2.5, borderRadius: 3.5 }}>
@@ -280,7 +227,7 @@ export default function AdminCareRequestsPage() {
                 <Button
                   key={option.value}
                   variant={filters.view === option.value ? "contained" : "text"}
-                  onClick={() => navigateWithFilters({ view: option.value, selectedId: null })}
+                  onClick={() => navigateWithFilters({ view: option.value as AdminCareRequestView, selectedId: null })}
                 >
                   {option.label}
                 </Button>
@@ -295,27 +242,28 @@ export default function AdminCareRequestsPage() {
               }}
             >
               <TextField
-                label="Buscar por id, cliente, enfermera, tipo o texto"
+                label={t("adminCareRequests.filters.searchLabel")}
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && navigateWithFilters({ searchText: searchInput, selectedId: null })}
               />
               <TextField
-                label="Desde fecha del servicio"
+                label={t("adminCareRequests.filters.fromLabel")}
                 type="date"
-                value={filters.scheduledFrom}
+                value={filters.scheduledFrom || ""}
                 onChange={(event) => navigateWithFilters({ scheduledFrom: event.target.value, selectedId: null })}
                 InputLabelProps={{ shrink: true }}
               />
               <TextField
-                label="Hasta fecha del servicio"
+                label={t("adminCareRequests.filters.toLabel")}
                 type="date"
-                value={filters.scheduledTo}
+                value={filters.scheduledTo || ""}
                 onChange={(event) => navigateWithFilters({ scheduledTo: event.target.value, selectedId: null })}
                 InputLabelProps={{ shrink: true }}
               />
               <TextField
                 select
-                label="Ordenar por"
+                label={t("adminCareRequests.filters.sortLabel")}
                 value={filters.sort}
                 onChange={(event) => navigateWithFilters({ sort: event.target.value as AdminCareRequestSort })}
                 SelectProps={{ native: true }}
@@ -331,16 +279,16 @@ export default function AdminCareRequestsPage() {
                   variant="contained"
                   onClick={() => navigateWithFilters({ searchText: searchInput, selectedId: null })}
                 >
-                  Buscar
+                  {t("adminCareRequests.filters.searchButton")}
                 </Button>
                 <Button
                   variant="text"
                   onClick={() => {
                     setSearchInput("");
-                    navigate("/admin/care-requests");
+                    clearFilters();
                   }}
                 >
-                  Limpiar
+                  {t("adminCareRequests.filters.clearButton")}
                 </Button>
               </Stack>
             </Box>
@@ -348,9 +296,9 @@ export default function AdminCareRequestsPage() {
         </Paper>
 
         <Stack spacing={1.5}>
-          {!isLoading && items.length === 0 && (
+          {(!isLoading && items.length === 0) && (
             <Alert severity="info" variant="outlined">
-              No hay solicitudes para los filtros actuales.
+              {t("adminCareRequests.list.empty")}
             </Alert>
           )}
 
@@ -380,14 +328,14 @@ export default function AdminCareRequestsPage() {
                     <Box sx={{ minWidth: 0 }}>
                       <Typography variant="h5">{item.careRequestDescription}</Typography>
                       <Typography color="text.secondary" sx={{ mt: 0.8 }}>
-                        Solicitud {item.id}
+                        {item.id}
                       </Typography>
                     </Box>
 
                     <Stack direction="row" spacing={1} flexWrap="wrap">
                       {selected && (
                         <Chip
-                          label="En foco"
+                          label={t("adminCareRequests.list.inFocus")}
                           sx={{
                             bgcolor: "rgba(15, 49, 69, 0.1)",
                             color: "#173042",
@@ -405,7 +353,7 @@ export default function AdminCareRequestsPage() {
                       />
                       {item.isOverdueOrStale && (
                         <Chip
-                          label="Requiere atencion"
+                          label={t("adminCareRequests.list.attention")}
                           sx={{
                             bgcolor: "rgba(183, 79, 77, 0.12)",
                             color: "#9a3f3d",
@@ -424,23 +372,23 @@ export default function AdminCareRequestsPage() {
                     }}
                   >
                     {[
-                      ["Cliente", `${item.clientDisplayName} · ${item.clientEmail}`],
+                      [t("adminCareRequests.list.labels.client"), `${item.clientDisplayName} · ${item.clientEmail}`],
                       [
-                        "Enfermera asignada",
+                        t("adminCareRequests.list.labels.nurse"),
                         item.assignedNurseDisplayName
-                          ? `${item.assignedNurseDisplayName} · ${item.assignedNurseEmail ?? "Sin correo"}`
-                          : "Sin asignar",
+                          ? `${item.assignedNurseDisplayName} · ${item.assignedNurseEmail ?? t("adminCareRequests.list.noEmail")}`
+                          : t("adminCareRequests.list.unassigned"),
                       ],
                       [
-                        "Tipo",
+                        t("adminCareRequests.list.labels.type"),
                         formatAdminCareRequestTypeLabel(item.careRequestType, catalogDisplayMaps?.careRequestType),
                       ],
-                      ["Total", formatAdminCareRequestCurrency(item.total)],
-                      ["Fecha del servicio", item.careRequestDate ?? "Sin fecha"],
-                      ["Creada", formatAdminCareRequestDateTime(item.createdAtUtc)],
-                      ["Actualizada", formatAdminCareRequestDateTime(item.updatedAtUtc)],
+                      [t("adminCareRequests.list.labels.total"), formatAdminCareRequestCurrency(item.total)],
+                      [t("adminCareRequests.list.labels.scheduled"), item.careRequestDate ?? t("adminCareRequests.list.noDate")],
+                      [t("adminCareRequests.list.labels.created"), formatAdminCareRequestDateTime(item.createdAtUtc)],
+                      [t("adminCareRequests.list.labels.updated"), formatAdminCareRequestDateTime(item.updatedAtUtc)],
                       [
-                        "Unidad",
+                        t("adminCareRequests.list.labels.unit"),
                         `${item.unit} ${formatAdminCareRequestUnitTypeLabel(item.unitType, catalogDisplayMaps?.unitType)}`,
                       ],
                     ].map(([label, value]) => (
@@ -458,13 +406,11 @@ export default function AdminCareRequestsPage() {
                       variant="contained"
                       onClick={() =>
                         navigate(`/admin/care-requests/${item.id}${createQueryString({
-                          ...filters,
-                          searchText: filters.searchText,
                           selectedId: item.id,
                         })}`)
                       }
                     >
-                      Ver detalle
+                      {t("adminCareRequests.list.viewDetail")}
                     </Button>
                   </Stack>
                 </Stack>

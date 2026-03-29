@@ -63,6 +63,433 @@
     "logout": "Cerrar sesión",
     "activeModule": "Módulo activo"
   },
+  "adminDashboard": {
+    "eyebrow": "Panel administrativo central",
+    "title": "Coordina, aprueba y supervisa la operacion de NursingCare desde un punto unico.",
+    "description": "Este panel consolida los indicadores criticos que requieren atencion inmediata de administracion, permitiendo una transicion rapida hacia los modulos especializados.",
+    "actionQueue": "Abrir cola de acciones",
+    "notifications": "Abrir notificaciones",
+    "auditLogs": "Abrir auditoria",
+    "reports": "Abrir reportes",
+    "stats": {
+      "pendingNurses": "Perfiles de enfermeria pendientes",
+      "unassignedRequests": "Solicitudes sin asignar",
+      "pendingApprovals": "Solicitudes pendientes de aprobacion",
+      "unreadNotifications": "Notificaciones administrativas sin leer",
+      "helper": {
+        "pendingNurses": "Estos perfiles requieren revision de credenciales para poder operar.",
+        "unassignedRequests": "Solicitudes que ya han sido aprobadas pero todavia no tienen enfermera.",
+        "pendingApprovals": "Solicitudes que esperan una decision administrativa sobre su viabilidad.",
+        "unreadNotifications": "Alertas y avisos generales del sistema que no han sido revisados."
+      }
+    }
+  },
+  "adminUsers": {
+    "eyebrow": "Usuarios y acceso",
+    "title": "Gobierna cuentas, roles y estados de acceso desde un modulo administrativo completo.",
+    "description": "Esta vista centraliza la busqueda de usuarios, el seguimiento del onboarding y el acceso al detalle completo de cada cuenta sin mezclar la consola administrativa con los flujos operativos.",
+    "actions": {
+      "createAdmin": "Crear administrador",
+      "refresh": "Actualizar modulo"
+    },
+    "metrics": {
+      "total": "Usuarios visibles",
+      "active": "Cuentas activas",
+      "review": "En revision administrativa",
+      "manual": "Intervencion manual"
+    },
+    "filters": {
+      "searchLabel": "Buscar por correo, nombre, cedula o telefono",
+      "roleLabel": "Rol",
+      "profileTypeLabel": "Tipo de perfil",
+      "statusLabel": "Estado",
+      "searchButton": "Buscar",
+      "clearButton": "Limpiar filtros",
+      "allRoles": "Todos los roles",
+      "allProfiles": "Todos los perfiles",
+      "allStatuses": "Todos los estados"
+    },
+    "list": {
+      "empty": "No hay cuentas que coincidan con los filtros seleccionados en este momento.",
+      "viewAccount": "Ver cuenta",
+      "identification": "Cedula",
+      "phone": "Telefono",
+      "roles": "Roles",
+      "created": "Creada",
+      "status": {
+        "incomplete": "Perfil incompleto",
+        "reviewRequired": "Requiere revision",
+        "manualRequired": "Requiere intervencion"
+      }
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar los usuarios administrativos."
+    }
+  },
+  "adminClients": {
+    "eyebrow": "Clientes",
+    "title": "Administra la base de clientes desde un modulo propio del portal.",
+    "description": "Esta vista centraliza busqueda, alta manual, activacion comercial y acceso al historial basico de solicitudes sin mezclar el seguimiento de clientes con la gobernanza general de usuarios.",
+    "actions": {
+      "createClient": "Crear cliente",
+      "refresh": "Actualizar modulo"
+    },
+    "metrics": {
+      "total": "Clientes visibles",
+      "active": "Activos",
+      "inactive": "Inactivos",
+      "history": "Con historial"
+    },
+    "filters": {
+      "searchLabel": "Buscar por correo, nombre, cedula o telefono",
+      "statusLabel": "Estado",
+      "searchButton": "Buscar",
+      "clearButton": "Limpiar filtros",
+      "allStatuses": "Todos los estados",
+      "active": "Activos",
+      "inactive": "Inactivos"
+    },
+    "list": {
+      "empty": {
+        "title": "No hay clientes para los filtros actuales.",
+        "description": "Ajusta la busqueda o crea un cliente manual para iniciar la base administrativa."
+      },
+      "viewClient": "Ver cliente",
+      "identification": "Cedula",
+      "phone": "Telefono",
+      "lastActivity": "Ultima actividad",
+      "created": "Creado"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar los clientes."
+    }
+  },
+  "adminNurseProfiles": {
+    "eyebrow": "Administracion de enfermeria",
+    "title": "Coordina revision, activacion y carga de enfermeria desde un modulo unico.",
+    "description": "La vista separa pendientes, plantilla activa e inactivas para que administracion pueda completar perfiles, editar identidad, controlar acceso operativo y leer carga basica antes de asignar solicitudes.",
+    "actions": {
+      "createNurse": "Crear enfermera",
+      "refresh": "Actualizar modulo"
+    },
+    "metrics": {
+      "pending": "Pendientes",
+      "active": "Activas",
+      "inactive": "Inactivas",
+      "pendingDesc": "Perfiles que todavia requieren revision administrativa.",
+      "activeDesc": "Perfiles completos y listos para operar.",
+      "inactiveDesc": "Perfiles completos sin acceso operativo vigente."
+    },
+    "filters": {
+      "searchLabel": "Buscar enfermera",
+      "searchPlaceholder": "Nombre, correo o especialidad",
+      "viewPending": "Cola pendiente",
+      "viewActive": "Plantilla activa",
+      "viewInactive": "Plantilla inactiva"
+    },
+    "list": {
+      "empty": {
+        "title": "No hay perfiles para esta vista.",
+        "description": "Ajusta la busqueda o cambia de vista para seguir revisando el modulo.",
+        "loading": "Cargando administracion de enfermeria..."
+      },
+      "pendingReview": "Pendiente de revision",
+      "noSpecialty": "Especialidad por confirmar",
+      "registeredOn": "Registrada {{date}}.",
+      "completeReview": "Completar revision",
+      "viewDetail": "Ver detalle",
+      "editProfile": "Editar perfil",
+      "noCatalog": "Sin catalogacion visible"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar la administracion de enfermeria."
+    }
+  },
+  "adminCareRequests": {
+    "eyebrow": "Gestion administrativa de solicitudes",
+    "title": "Un modulo completo para leer, crear, asignar y decidir solicitudes desde administracion.",
+    "description": "Esta vista amplia la cola inicial del portal hacia un modulo operativo completo, con filtros, exportacion, acceso al detalle y una ruta dedicada para crear solicitudes en nombre de clientes.",
+    "actions": {
+      "refresh": "Actualizar modulo",
+      "export": "Exportar CSV",
+      "createForClient": "Crear solicitud para cliente"
+    },
+    "metrics": {
+      "total": "Solicitudes visibles",
+      "pending": "Pendientes",
+      "unassigned": "Sin asignar",
+      "overdue": "Atrasadas o estancadas",
+      "totalValue": "Valor visible"
+    },
+    "filters": {
+      "searchLabel": "Buscar por id, cliente, enfermera, tipo o texto",
+      "fromLabel": "Desde fecha del servicio",
+      "toLabel": "Hasta fecha del servicio",
+      "sortLabel": "Ordenar por",
+      "searchButton": "Buscar",
+      "clearButton": "Limpiar",
+      "sortOptions": {
+        "newest": "Mas recientes",
+        "oldest": "Mas antiguas",
+        "scheduled": "Fecha del servicio",
+        "status": "Estado",
+        "value": "Mayor valor"
+      }
+    },
+    "list": {
+      "empty": "No hay solicitudes para los filtros actuales.",
+      "inFocus": "En foco",
+      "attention": "Requiere atencion",
+      "viewDetail": "Ver detalle",
+      "labels": {
+        "client": "Cliente",
+        "nurse": "Enfermera asignada",
+        "type": "Tipo",
+        "total": "Total",
+        "scheduled": "Fecha del servicio",
+        "created": "Creada",
+        "updated": "Actualizada",
+        "unit": "Unidad"
+      },
+      "unassigned": "Sin asignar",
+      "noDate": "Sin fecha",
+      "noEmail": "Sin correo"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar las solicitudes administrativas.",
+      "exportFailed": "No fue posible exportar las solicitudes."
+    }
+  },
+  "adminActionQueue": {
+    "eyebrow": "Acciones actuales",
+    "title": "Una cola administrativa separada para lo que si requiere intervencion.",
+    "description": "Esta bandeja no replica notificaciones generales. Reune solo elementos operativos, cuentas y situaciones del sistema que exigen una accion concreta desde administracion.",
+    "actions": {
+      "back": "Volver al panel principal",
+      "refresh": "Actualizar cola"
+    },
+    "metrics": {
+      "total": "Elementos visibles",
+      "unread": "No leidas",
+      "pending": "Pendientes",
+      "high": "Alta severidad"
+    },
+    "filters": {
+      "severityLabel": "Filtrar por severidad",
+      "stateLabel": "Filtrar por estado",
+      "severity": {
+        "all": "Todas",
+        "high": "Alta",
+        "medium": "Media",
+        "low": "Baja"
+      },
+      "state": {
+        "all": "Todas",
+        "unread": "No leidas",
+        "pending": "Pendientes"
+      }
+    },
+    "list": {
+      "empty": "No hay elementos en la cola para los filtros seleccionados en este momento."
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar la cola de acciones."
+    }
+  },
+  "adminNotifications": {
+    "eyebrow": "Centro de notificaciones",
+    "title": "Unifica avisos operativos y de gobierno en una sola bandeja administrativa.",
+    "description": "Incluye severidad, categoria, origen, estado de lectura y enlaces directos a la entidad relacionada para reducir tiempos de respuesta.",
+    "actions": {
+      "back": "Volver al panel",
+      "refresh": "Actualizar bandeja",
+      "unreadOnly": "Mostrando solo no leidas",
+      "filterUnread": "Filtrar no leidas",
+      "includingArchived": "Incluyendo archivadas",
+      "showArchived": "Mostrar archivadas"
+    },
+    "metrics": {
+      "total": "Notificaciones visibles",
+      "unread": "Sin leer",
+      "unreadHigh": "Alta severidad sin leer"
+    },
+    "list": {
+      "empty": "No hay notificaciones para los filtros seleccionados.",
+      "severity": {
+        "label": "Severidad {{label}}",
+        "high": "Alta",
+        "medium": "Media",
+        "low": "Baja"
+      },
+      "readStatus": {
+        "read": "Leida",
+        "unread": "No leida"
+      },
+      "source": "Origen: {{source}}",
+      "openRelated": "Abrir entidad relacionada",
+      "markUnread": "Marcar como no leida",
+      "markRead": "Marcar como leida",
+      "dismiss": "Descartar",
+      "archive": "Archivar"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar las notificaciones.",
+      "updateFailed": "No fue posible actualizar la notificacion."
+    }
+  },
+  "adminAuditLog": {
+    "eyebrow": "Registro de auditoria",
+    "title": "Historial completo de acciones administrativas sensibles",
+    "description": "Busca, filtra e inspecciona eventos de auditoria para cumplimiento, seguridad y propositos operativos.",
+    "actions": {
+      "back": "Volver al panel",
+      "refresh": "Actualizar"
+    },
+    "filters": {
+      "title": "Filtros de busqueda",
+      "action": "Accion",
+      "entityType": "Tipo de entidad",
+      "entityId": "ID de entidad",
+      "fromDate": "Desde fecha",
+      "toDate": "Hasta fecha",
+      "search": "Buscar",
+      "clear": "Limpiar filtros",
+      "placeholders": {
+        "action": "Ej: AdminAccountCreated",
+        "entityType": "Ej: User",
+        "entityId": "Ej: guid"
+      }
+    },
+    "table": {
+      "timestamp": "Fecha y hora",
+      "actor": "Actor",
+      "role": "Rol",
+      "action": "Accion",
+      "entityType": "Tipo de entidad",
+      "entityId": "ID de entidad",
+      "notes": "Notas",
+      "actions": "Acciones",
+      "viewDetail": "Ver detalle",
+      "loading": "Cargando registros de auditoria...",
+      "empty": "No se encontraron registros de auditoria.",
+      "pagination": {
+        "rowsPerPage": "Filas por pagina:",
+        "displayedRows": "{{from}}-{{to}} de {{count}}"
+      }
+    },
+    "detail": {
+      "title": "Detalle de auditoria",
+      "id": "ID",
+      "timestamp": "Fecha y hora",
+      "actor": "Actor",
+      "actorRole": "Rol del actor",
+      "action": "Accion",
+      "entityType": "Tipo de entidad",
+      "entityId": "ID de entidad",
+      "notes": "Notas",
+      "metadata": "Metadata (JSON)",
+      "close": "Cerrar",
+      "system": "Sistema"
+    },
+    "roles": {
+      "admin": "Administrador",
+      "client": "Cliente",
+      "nurse": "Enfermera"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar los registros de auditoria.",
+      "detailFailed": "No fue posible cargar el detalle."
+    }
+  },
+  "adminReports": {
+    "eyebrow": "Centro de Reportes",
+    "title": "Analisis operativo y exportacion de datos",
+    "description": "Selecciona un reporte, filtra por fechas y visualiza los indicadores clave del negocio. Puedes exportar los resultados a CSV para analisis externo.",
+    "actions": {
+      "selectReport": "Seleccionar reporte",
+      "filtersTitle": "Filtros y acciones",
+      "from": "Desde",
+      "to": "Hasta",
+      "refresh": "Actualizar",
+      "export": "Exportar CSV"
+    },
+    "list": {
+      "empty": "No hay datos disponibles para el periodo seleccionado.",
+      "unknown": "Reporte desconocido",
+      "pipeline": {
+        "label": "Estado general de solicitudes",
+        "description": "Distribucion de solicitudes por estado (Pendiente, Aprobada, Completada, etc).",
+        "pending": "Pendientes",
+        "approved": "Aprobadas",
+        "completed": "Completadas",
+        "rejected": "Rechazadas",
+        "unassigned": "Sin asignar",
+        "overdue": "Vencidas"
+      },
+      "backlog": {
+        "label": "Pendientes de asignacion y aprobacion",
+        "description": "Mide el retraso en la gestion de solicitudes que esperan enfermera o aprobacion.",
+        "unassigned": "Sin enfermera",
+        "awaitingApproval": "Esperando aprobacion",
+        "avgWaitDays": "Dias promedio en espera"
+      },
+      "onboarding": {
+        "label": "Registro y activacion de enfermeras",
+        "description": "Seguimiento del embudo de registro de personal clinico.",
+        "total": "Total registradas",
+        "pending": "Pendientes de revision",
+        "active": "Activas",
+        "inactive": "Inactivas",
+        "period": "Activadas en periodo"
+      },
+      "users": {
+        "label": "Usuarios activos e inactivos",
+        "description": "Conteo de usuarios por rol y estado de cuenta.",
+        "profile": "Perfil",
+        "active": "Activas",
+        "inactive": "Inactivas"
+      },
+      "utilization": {
+        "label": "Productividad por enfermera",
+        "description": "Tasa de cumplimiento y carga de trabajo por profesional.",
+        "nurse": "Enfermera",
+        "totalAssigned": "Total Asignadas",
+        "completed": "Completadas",
+        "pending": "Pendientes",
+        "completionRate": "Tasa de Cierre"
+      },
+      "completion": {
+        "label": "Servicios completados",
+        "description": "Analisis de cierre de servicios y tiempos promedio de atencion.",
+        "total": "Total completadas",
+        "avgDays": "Cierre promedio",
+        "periodTitle": "Completadas por periodo",
+        "range": "Mes / Periodo"
+      },
+      "pricing": {
+        "label": "Resumen de facturacion y servicios",
+        "description": "Distribucion de ingresos por tipo de servicio y factores de complejidad.",
+        "topServices": "Top tipos de servicio",
+        "service": "Servicio",
+        "count": "Conteo",
+        "avgTicket": "Ticket Promedio",
+        "totalRevenue": "Ingresos Totales",
+        "distanceFactors": "Factores de distancia comunes",
+        "complexityLevels": "Niveles de complejidad comunes"
+      },
+      "notifications": {
+        "label": "Volumen de notificaciones y alertas",
+        "description": "Estadisticas de comunicacion administrativa y acciones pendientes.",
+        "total": "Total notificaciones",
+        "unread": "Sin leer",
+        "pendingActions": "Acciones pendientes",
+        "byCategory": "Volumen por categoria"
+      }
+    },
+    "errors": {
+      "loadFailed": "Error al cargar el reporte."
+    }
+  },
   "dashboard": {
     "title": "El portal administrativo ya tiene un punto de entrada propio y visible.",
     "desc": "Esta primera entrega organiza la experiencia administrativa como un espacio separado del trabajo operativo de clientes y enfermería, con un tablero inicial, módulos ancla y rutas protegidas para administración.",

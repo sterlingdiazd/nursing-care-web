@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -19,7 +20,10 @@ import {
   type AdminClientListParams,
   type AdminClientListStatus,
 } from "../api/adminClients";
+import { extractApiErrorMessage } from "../api/errorMessage";
+import AdminMetricCard from "../components/admin/AdminMetricCard";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { useAdminTableFilters, type FilterState } from "../hooks/useAdminTableFilters";
 import {
   formatAdminClientCareRequestCount,
   formatAdminClientDateTime,
@@ -29,41 +33,26 @@ import {
 
 type StatusFilter = "all" | AdminClientListStatus;
 
-const statusOptions: Array<{ value: StatusFilter; label: string }> = [
-  { value: "all", label: "Todos los estados" },
-  { value: "active", label: "Activos" },
-  { value: "inactive", label: "Inactivos" },
-];
-
-function resolveFilters(search: string) {
-  const params = new URLSearchParams(search);
-  const status = params.get("status");
-
-  return {
-    searchText: params.get("search") ?? "",
-    status: statusOptions.some((option) => option.value === status) ? (status as StatusFilter) : "all",
-  };
-}
-
-function createQueryString(filters: { searchText: string; status: StatusFilter }) {
-  const params = new URLSearchParams();
-
-  if (filters.searchText.trim()) {
-    params.set("search", filters.searchText.trim());
-  }
-
-  if (filters.status !== "all") {
-    params.set("status", filters.status);
-  }
-
-  const query = params.toString();
-  return query.length > 0 ? `?${query}` : "";
+interface AdminClientFilters extends FilterState {
+  status: StatusFilter;
 }
 
 export default function AdminClientsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const filters = useMemo(() => resolveFilters(location.search), [location.search]);
+
+  const {
+    filters,
+    navigateWithFilters,
+    clearFilters,
+  } = useAdminTableFilters<AdminClientFilters>({
+    path: "/admin/clients",
+    defaultView: "all",
+    defaultSort: "newest",
+    availableViews: ["all"],
+  });
+
   const [searchInput, setSearchInput] = useState(filters.searchText);
   const [items, setItems] = useState<AdminClientListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,7 +75,7 @@ export default function AdminClientsPage() {
       const response = await getAdminClients(requestParams);
       setItems(response);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "No fue posible cargar los clientes.");
+      setError(extractApiErrorMessage(nextError, t("adminClients.errors.loadFailed")));
     } finally {
       setIsLoading(false);
     }
@@ -103,27 +92,18 @@ export default function AdminClientsPage() {
     withHistory: items.filter((item) => item.ownedCareRequestsCount > 0).length,
   }), [items]);
 
-  const navigateWithFilters = (next: Partial<typeof filters>) => {
-    const query = createQueryString({
-      searchText: next.searchText ?? filters.searchText,
-      status: next.status ?? filters.status,
-    });
-
-    navigate(`/admin/clients${query}`);
-  };
-
   return (
     <AdminPortalShell
-      eyebrow="Clientes"
-      title="Administra la base de clientes desde un modulo propio del portal."
-      description="Esta vista centraliza busqueda, alta manual, activacion comercial y acceso al historial basico de solicitudes sin mezclar el seguimiento de clientes con la gobernanza general de usuarios."
+      eyebrow={t("adminClients.eyebrow")}
+      title={t("adminClients.title")}
+      description={t("adminClients.description")}
       actions={(
         <>
           <Button variant="contained" onClick={() => navigate("/admin/clients/new")}>
-            Crear cliente
+            {t("adminClients.actions.createClient")}
           </Button>
           <Button variant="outlined" onClick={() => void loadItems()} disabled={isLoading}>
-            Actualizar modulo
+            {t("adminClients.actions.refresh")}
           </Button>
         </>
       )}
@@ -138,21 +118,26 @@ export default function AdminClientsPage() {
             gap: 2,
           }}
         >
-          {[
-            ["Clientes visibles", String(summary.total)],
-            ["Activos", String(summary.active)],
-            ["Inactivos", String(summary.inactive)],
-            ["Con historial", String(summary.withHistory)],
-          ].map(([label, value]) => (
-            <Paper key={label} sx={{ p: 3, borderRadius: 3.5 }}>
-              <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                {label}
-              </Typography>
-              <Typography variant="h3" sx={{ mt: 1.1 }}>
-                {value}
-              </Typography>
-            </Paper>
-          ))}
+          <AdminMetricCard
+            label={t("adminClients.metrics.total")}
+            value={summary.total}
+          />
+          <AdminMetricCard
+            label={t("adminClients.metrics.active")}
+            value={summary.active}
+            isSelected={filters.status === "active"}
+            onClick={() => navigateWithFilters({ status: "active" })}
+          />
+          <AdminMetricCard
+            label={t("adminClients.metrics.inactive")}
+            value={summary.inactive}
+            isSelected={filters.status === "inactive"}
+            onClick={() => navigateWithFilters({ status: "inactive" })}
+          />
+          <AdminMetricCard
+            label={t("adminClients.metrics.history")}
+            value={summary.withHistory}
+          />
         </Box>
 
         <Paper sx={{ p: 2.5, borderRadius: 3.5 }}>
@@ -165,37 +150,36 @@ export default function AdminClientsPage() {
               }}
             >
               <TextField
-                label="Buscar por correo, nombre, cedula o telefono"
+                label={t("adminClients.filters.searchLabel")}
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && navigateWithFilters({ searchText: searchInput })}
                 fullWidth
               />
               <TextField
                 select
-                label="Estado"
+                label={t("adminClients.filters.statusLabel")}
                 value={filters.status}
                 onChange={(event) => navigateWithFilters({ status: event.target.value as StatusFilter })}
               >
-                {statusOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
+                <MenuItem value="all">{t("adminClients.filters.allStatuses")}</MenuItem>
+                <MenuItem value="active">{t("adminClients.filters.active")}</MenuItem>
+                <MenuItem value="inactive">{t("adminClients.filters.inactive")}</MenuItem>
               </TextField>
             </Box>
 
             <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
               <Button variant="contained" onClick={() => navigateWithFilters({ searchText: searchInput })}>
-                Buscar
+                {t("adminClients.filters.searchButton")}
               </Button>
               <Button
                 variant="text"
                 onClick={() => {
                   setSearchInput("");
-                  navigate("/admin/clients");
+                  clearFilters();
                 }}
               >
-                Limpiar filtros
+                {t("adminClients.filters.clearButton")}
               </Button>
             </Stack>
           </Stack>
@@ -212,9 +196,9 @@ export default function AdminClientsPage() {
 
           {!isLoading && items.length === 0 && (
             <Paper sx={{ p: 4, borderRadius: 3.5 }}>
-              <Typography variant="h5">No hay clientes para los filtros actuales.</Typography>
+              <Typography variant="h5">{t("adminClients.list.empty.title")}</Typography>
               <Typography color="text.secondary" sx={{ mt: 1 }}>
-                Ajusta la busqueda o crea un cliente manual para iniciar la base administrativa.
+                {t("adminClients.list.empty.description")}
               </Typography>
             </Paper>
           )}
@@ -255,10 +239,10 @@ export default function AdminClientsPage() {
                     }}
                   >
                     {[
-                      ["Cedula", item.identificationNumber ?? "Sin cedula"],
-                      ["Telefono", item.phone ?? "Sin telefono"],
-                      ["Ultima actividad", formatAdminClientDateTime(item.lastCareRequestAtUtc)],
-                      ["Creado", formatAdminClientDateTime(item.createdAtUtc)],
+                      [t("adminClients.list.identification"), item.identificationNumber ?? "-"],
+                      [t("adminClients.list.phone"), item.phone ?? "-"],
+                      [t("adminClients.list.lastActivity"), formatAdminClientDateTime(item.lastCareRequestAtUtc)],
+                      [t("adminClients.list.created"), formatAdminClientDateTime(item.createdAtUtc)],
                     ].map(([label, value]) => (
                       <Box key={label}>
                         <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
@@ -276,7 +260,7 @@ export default function AdminClientsPage() {
                         state: { from: `/admin/clients${location.search}` },
                       })}
                     >
-                      Ver cliente
+                      {t("adminClients.list.viewClient")}
                     </Button>
                   </Stack>
                 </Stack>

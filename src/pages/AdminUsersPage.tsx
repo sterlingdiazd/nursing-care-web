@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Alert,
   Box,
@@ -21,7 +22,10 @@ import {
   type AdminUserProfileType,
   type AdminUserRoleName,
 } from "../api/adminUsers";
+import { extractApiErrorMessage } from "../api/errorMessage";
+import AdminMetricCard from "../components/admin/AdminMetricCard";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { useAdminTableFilters, type FilterState } from "../hooks/useAdminTableFilters";
 import {
   adminUserProfileTypeOptions,
   adminUserRoleOptions,
@@ -37,54 +41,28 @@ type RoleFilter = "all" | AdminUserRoleName;
 type ProfileTypeFilter = "all" | AdminUserProfileType;
 type StatusFilter = "all" | AdminUserAccountStatus;
 
-function resolveFilters(search: string) {
-  const params = new URLSearchParams(search);
-  const role = params.get("role");
-  const profileType = params.get("profileType");
-  const status = params.get("status");
-
-  return {
-    searchText: params.get("search") ?? "",
-    role: adminUserRoleOptions.some((option) => option.value === role) ? (role as RoleFilter) : "all",
-    profileType: adminUserProfileTypeOptions.some((option) => option.value === profileType)
-      ? (profileType as ProfileTypeFilter)
-      : "all",
-    status: adminUserStatusOptions.some((option) => option.value === status) ? (status as StatusFilter) : "all",
-  };
-}
-
-function createQueryString(filters: {
-  searchText: string;
+interface AdminUserFilters extends FilterState {
   role: RoleFilter;
   profileType: ProfileTypeFilter;
   status: StatusFilter;
-}) {
-  const params = new URLSearchParams();
-
-  if (filters.searchText.trim()) {
-    params.set("search", filters.searchText.trim());
-  }
-
-  if (filters.role !== "all") {
-    params.set("role", filters.role);
-  }
-
-  if (filters.profileType !== "all") {
-    params.set("profileType", filters.profileType);
-  }
-
-  if (filters.status !== "all") {
-    params.set("status", filters.status);
-  }
-
-  const query = params.toString();
-  return query.length > 0 ? `?${query}` : "";
 }
 
 export default function AdminUsersPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const filters = useMemo(() => resolveFilters(location.search), [location.search]);
+
+  const {
+    filters,
+    navigateWithFilters,
+    clearFilters,
+  } = useAdminTableFilters<AdminUserFilters>({
+    path: "/admin/users",
+    defaultView: "all",
+    defaultSort: "newest",
+    availableViews: ["all"],
+  });
+
   const [searchInput, setSearchInput] = useState(filters.searchText);
   const [items, setItems] = useState<AdminUserListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,7 +87,7 @@ export default function AdminUsersPage() {
       const response = await getAdminUsers(requestParams);
       setItems(response);
     } catch (nextError) {
-      setError(nextError instanceof Error ? nextError.message : "No fue posible cargar los usuarios administrativos.");
+      setError(extractApiErrorMessage(nextError, t("adminUsers.errors.loadFailed")));
     } finally {
       setIsLoading(false);
     }
@@ -126,29 +104,18 @@ export default function AdminUsersPage() {
     manual: items.filter((item) => item.accountStatus === "ManualIntervention").length,
   }), [items]);
 
-  const navigateWithFilters = (next: Partial<typeof filters>) => {
-    const query = createQueryString({
-      searchText: next.searchText ?? filters.searchText,
-      role: next.role ?? filters.role,
-      profileType: next.profileType ?? filters.profileType,
-      status: next.status ?? filters.status,
-    });
-
-    navigate(`/admin/users${query}`);
-  };
-
   return (
     <AdminPortalShell
-      eyebrow="Usuarios y acceso"
-      title="Gobierna cuentas, roles y estados de acceso desde un modulo administrativo completo."
-      description="Esta vista centraliza la busqueda de usuarios, el seguimiento del onboarding y el acceso al detalle completo de cada cuenta sin mezclar la consola administrativa con los flujos operativos."
+      eyebrow={t("adminUsers.eyebrow")}
+      title={t("adminUsers.title")}
+      description={t("adminUsers.description")}
       actions={
         <>
           <Button variant="contained" onClick={() => navigate("/admin/users/create-admin")}>
-            Crear administrador
+            {t("adminUsers.actions.createAdmin")}
           </Button>
           <Button variant="outlined" onClick={() => void loadItems()} disabled={isLoading}>
-            Actualizar modulo
+            {t("adminUsers.actions.refresh")}
           </Button>
         </>
       }
@@ -163,21 +130,26 @@ export default function AdminUsersPage() {
             gap: 2,
           }}
         >
-          {[
-            ["Usuarios visibles", String(summary.total)],
-            ["Cuentas activas", String(summary.active)],
-            ["En revision administrativa", String(summary.review)],
-            ["Intervencion manual", String(summary.manual)],
-          ].map(([label, value]) => (
-            <Paper key={label} sx={{ p: 3, borderRadius: 3.5 }}>
-              <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                {label}
-              </Typography>
-              <Typography variant="h3" sx={{ mt: 1.1 }}>
-                {value}
-              </Typography>
-            </Paper>
-          ))}
+          <AdminMetricCard
+            label={t("adminUsers.metrics.total")}
+            value={summary.total}
+          />
+          <AdminMetricCard
+            label={t("adminUsers.metrics.active")}
+            value={summary.active}
+          />
+          <AdminMetricCard
+            label={t("adminUsers.metrics.review")}
+            value={summary.review}
+            isSelected={filters.status === "AdminReview"}
+            onClick={() => navigateWithFilters({ status: "AdminReview" })}
+          />
+          <AdminMetricCard
+            label={t("adminUsers.metrics.manual")}
+            value={summary.manual}
+            isSelected={filters.status === "ManualIntervention"}
+            onClick={() => navigateWithFilters({ status: "ManualIntervention" })}
+          />
         </Box>
 
         <Paper sx={{ p: 2.5, borderRadius: 3.5 }}>
@@ -190,18 +162,19 @@ export default function AdminUsersPage() {
               }}
             >
               <TextField
-                label="Buscar por correo, nombre, cedula o telefono"
+                label={t("adminUsers.filters.searchLabel")}
                 value={searchInput}
                 onChange={(event) => setSearchInput(event.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && navigateWithFilters({ searchText: searchInput })}
                 fullWidth
               />
               <TextField
                 select
-                label="Rol"
+                label={t("adminUsers.filters.roleLabel")}
                 value={filters.role}
                 onChange={(event) => navigateWithFilters({ role: event.target.value as RoleFilter })}
               >
-                <MenuItem value="all">Todos los roles</MenuItem>
+                <MenuItem value="all">{t("adminUsers.filters.allRoles")}</MenuItem>
                 {adminUserRoleOptions.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
@@ -210,11 +183,11 @@ export default function AdminUsersPage() {
               </TextField>
               <TextField
                 select
-                label="Tipo de perfil"
+                label={t("adminUsers.filters.profileTypeLabel")}
                 value={filters.profileType}
                 onChange={(event) => navigateWithFilters({ profileType: event.target.value as ProfileTypeFilter })}
               >
-                <MenuItem value="all">Todos los perfiles</MenuItem>
+                <MenuItem value="all">{t("adminUsers.filters.allProfiles")}</MenuItem>
                 {adminUserProfileTypeOptions.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
@@ -223,11 +196,11 @@ export default function AdminUsersPage() {
               </TextField>
               <TextField
                 select
-                label="Estado"
+                label={t("adminUsers.filters.statusLabel")}
                 value={filters.status}
                 onChange={(event) => navigateWithFilters({ status: event.target.value as StatusFilter })}
               >
-                <MenuItem value="all">Todos los estados</MenuItem>
+                <MenuItem value="all">{t("adminUsers.filters.allStatuses")}</MenuItem>
                 {adminUserStatusOptions.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
@@ -241,16 +214,16 @@ export default function AdminUsersPage() {
                 variant="contained"
                 onClick={() => navigateWithFilters({ searchText: searchInput })}
               >
-                Buscar
+                {t("adminUsers.filters.searchButton")}
               </Button>
               <Button
                 variant="text"
                 onClick={() => {
                   setSearchInput("");
-                  navigate("/admin/users");
+                  clearFilters();
                 }}
               >
-                Limpiar filtros
+                {t("adminUsers.filters.clearButton")}
               </Button>
             </Stack>
           </Stack>
@@ -267,7 +240,7 @@ export default function AdminUsersPage() {
 
           {!isLoading && items.length === 0 && (
             <Alert severity="info" variant="outlined">
-              No hay cuentas que coincidan con los filtros seleccionados en este momento.
+              {t("adminUsers.list.empty")}
             </Alert>
           )}
 
@@ -312,7 +285,7 @@ export default function AdminUsersPage() {
                       variant="contained"
                       onClick={() => navigate(`/admin/users/${item.id}${location.search}`)}
                     >
-                      Ver cuenta
+                      {t("adminUsers.list.viewAccount")}
                     </Button>
                   </Stack>
 
@@ -324,10 +297,10 @@ export default function AdminUsersPage() {
                     }}
                   >
                     {[
-                      ["Cedula", item.identificationNumber ?? "Sin cedula"],
-                      ["Telefono", item.phone ?? "Sin telefono"],
-                      ["Roles", formatRoleLabels(item.roleNames)],
-                      ["Creada", formatAdminUserDateTime(item.createdAtUtc)],
+                      [t("adminUsers.list.identification"), item.identificationNumber ?? "-"],
+                      [t("adminUsers.list.phone"), item.phone ?? "-"],
+                      [t("adminUsers.list.roles"), formatRoleLabels(item.roleNames)],
+                      [t("adminUsers.list.created"), formatAdminUserDateTime(item.createdAtUtc)],
                     ].map(([label, value]) => (
                       <Box key={label}>
                         <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
@@ -340,14 +313,14 @@ export default function AdminUsersPage() {
 
                   <Stack direction="row" spacing={1} flexWrap="wrap">
                     {item.requiresProfileCompletion && (
-                      <Chip label="Perfil incompleto" variant="outlined" />
+                      <Chip label={t("adminUsers.list.status.incomplete")} variant="outlined" />
                     )}
                     {item.requiresAdminReview && (
-                      <Chip label="Requiere revision" variant="outlined" />
+                      <Chip label={t("adminUsers.list.status.reviewRequired")} variant="outlined" />
                     )}
                     {item.requiresManualIntervention && (
                       <Chip
-                        label="Requiere intervencion"
+                        label={t("adminUsers.list.status.manualRequired")}
                         sx={{
                           bgcolor: "rgba(183, 79, 77, 0.12)",
                           color: "#8b3635",
