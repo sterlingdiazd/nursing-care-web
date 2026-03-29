@@ -59,7 +59,7 @@ export async function createCareRequest(
     const headers = correlationId
       ? new AxiosHeaders({ "X-Correlation-ID": correlationId })
       : undefined;
-    const response = await httpClient.post("/care-requests", request, { headers });
+    const response = await httpClient.post("care-requests", request, { headers });
     return response.data;
   } catch (error) {
     const errorMessage = extractApiErrorMessage(error, "No fue posible crear la solicitud.");
@@ -80,7 +80,7 @@ export async function createCareRequest(
 
 export async function getCareRequests() {
   try {
-    const response = await httpClient.get<CareRequest[]>("/care-requests");
+    const response = await httpClient.get<CareRequest[]>("care-requests");
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible cargar las solicitudes."));
@@ -89,7 +89,7 @@ export async function getCareRequests() {
 
 export async function getCareRequestById(id: string) {
   try {
-    const response = await httpClient.get<CareRequest>(`/care-requests/${id}`);
+    const response = await httpClient.get<CareRequest>(`care-requests/${id}`);
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible cargar la solicitud."));
@@ -101,7 +101,7 @@ export async function transitionCareRequest(
   action: CareRequestTransitionAction,
 ) {
   try {
-    const response = await httpClient.post<CareRequest>(`/care-requests/${id}/${action}`);
+    const response = await httpClient.post<CareRequest>(`care-requests/${id}/${action}`);
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible actualizar la solicitud."));
@@ -113,7 +113,7 @@ export async function assignCareRequestNurse(
   request: AssignCareRequestNurseRequest,
 ) {
   try {
-    const response = await httpClient.put<CareRequest>(`/care-requests/${id}/assignment`, request);
+    const response = await httpClient.put<CareRequest>(`care-requests/${id}/assignment`, request);
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible asignar la enfermera."));

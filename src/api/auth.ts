@@ -50,7 +50,7 @@ export async function registerUser(
       profileType,
     };
 
-    const response = await httpClient.post<AuthResponse>("/auth/register", request);
+    const response = await httpClient.post<AuthResponse>("auth/register", request);
     
     logClientEvent("web.auth", "User registration successful", {
       email,
@@ -84,7 +84,7 @@ export async function completeProfile(
   phone: string
 ): Promise<AuthResponse> {
   try {
-    const response = await httpClient.post<AuthResponse>("/auth/complete-profile", {
+    const response = await httpClient.post<AuthResponse>("auth/complete-profile", {
       name,
       lastName,
       identificationNumber,
@@ -112,7 +112,7 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
       password,
     };
 
-    const response = await httpClient.post<AuthResponse>("/auth/login", request);
+    const response = await httpClient.post<AuthResponse>("auth/login", request);
 
     logClientEvent("web.auth", "User login successful", {
       email,
@@ -139,7 +139,7 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
 
 export async function refreshAuthToken(refreshToken: string): Promise<AuthResponse> {
   const response = await httpClient.post<AuthResponse>(
-    "/auth/refresh",
+    "auth/refresh",
     { refreshToken },
     {
       skipAuthRefresh: true,

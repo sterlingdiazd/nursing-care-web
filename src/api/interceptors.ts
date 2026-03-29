@@ -13,7 +13,9 @@ httpClient.interceptors.request.use(
         ? config.headers["X-Correlation-ID"]
         : undefined;
     const correlationId = configuredCorrelationId ?? createCorrelationId();
-    const requestUrl = new URL(config.url ?? "", config.baseURL).toString();
+    const requestUrl = config.baseURL
+      ? `${config.baseURL.replace(/\/$/, "")}/${(config.url ?? "").replace(/^\//, "")}`
+      : config.url ?? "";
     const session = getAuthSession();
     const storedToken = session?.token ?? null;
     const headers = AxiosHeaders.from(config.headers);
@@ -45,7 +47,9 @@ httpClient.interceptors.response.use(
     logClientEvent("web.http", "Request completed", {
       correlationId: response.headers["x-correlation-id"],
       method: response.config.method?.toUpperCase(),
-      url: new URL(response.config.url ?? "", response.config.baseURL).toString(),
+      url: response.config.baseURL
+        ? `${response.config.baseURL.replace(/\/$/, "")}/${(response.config.url ?? "").replace(/^\//, "")}`
+        : response.config.url ?? "",
       status: response.status,
     });
 
@@ -118,7 +122,11 @@ httpClient.interceptors.response.use(
         correlationId:
           error.response?.headers?.["x-correlation-id"] ?? error.config?.headers?.["X-Correlation-ID"],
         method: error.config?.method?.toUpperCase(),
-        url: error.config ? new URL(error.config.url ?? "", error.config.baseURL).toString() : undefined,
+        url: error.config
+          ? error.config.baseURL
+            ? `${error.config.baseURL.replace(/\/$/, "")}/${(error.config.url ?? "").replace(/^\//, "")}`
+            : error.config.url ?? ""
+          : undefined,
         status: error.response?.status,
         response: error.response?.data,
         message: error.message,
