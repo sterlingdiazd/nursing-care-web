@@ -178,12 +178,14 @@ const theme = createTheme({
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, requiresProfileCompletion } = useAuth();
+  const { isAuthenticated, requiresProfileCompletion, roles } = useAuth();
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiresProfileCompletion) {
+  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
+
+  if (requiresProfileCompletion || !isFullyRegistered) {
     return <Navigate to="/register" replace />;
   }
 
@@ -191,13 +193,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function OperationalRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, profileType, requiresAdminReview, requiresProfileCompletion } = useAuth();
+  const { isAuthenticated, profileType, requiresAdminReview, requiresProfileCompletion, roles } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiresProfileCompletion) {
+  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
+
+  if (requiresProfileCompletion || !isFullyRegistered) {
     return <Navigate to="/register" replace />;
   }
 
@@ -215,7 +219,9 @@ function CareRequestCreateRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiresProfileCompletion) {
+  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
+
+  if (requiresProfileCompletion || !isFullyRegistered) {
     return <Navigate to="/register" replace />;
   }
 
@@ -237,7 +243,9 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiresProfileCompletion) {
+  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
+
+  if (requiresProfileCompletion || !isFullyRegistered) {
     return <Navigate to="/register" replace />;
   }
 
@@ -249,7 +257,9 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 function getDefaultAuthenticatedPath(roles: string[], requiresProfileCompletion: boolean) {
-  if (requiresProfileCompletion) {
+  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
+
+  if (requiresProfileCompletion || !isFullyRegistered) {
     return "/register";
   }
 
@@ -263,7 +273,9 @@ function HomeRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiresProfileCompletion) {
+  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
+
+  if (requiresProfileCompletion || !isFullyRegistered) {
     return <Navigate to="/register" replace />;
   }
 

@@ -79,7 +79,7 @@ export default function LoginPage() {
       .map((role) => role.trim())
       .filter(Boolean);
 
-    if (!token || !refreshToken || !emailFromRedirect || roles.length === 0) {
+    if (!token || !refreshToken || !emailFromRedirect) {
       setError("El inicio de sesion con Google finalizo, pero la sesion recibida estaba incompleta.");
       clearHash();
       return;

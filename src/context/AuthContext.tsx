@@ -85,11 +85,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resolveProfileType = (response: AuthResponse, fallbackProfileType?: UserProfileType | null) => {
+    if (response.roles.includes("ADMIN")) {
+      return UserProfileType.ADMIN;
+    }
     if (response.roles.includes("NURSE")) {
       return UserProfileType.NURSE;
     }
+    if (response.roles.includes("CLIENT")) {
+      return UserProfileType.CLIENT;
+    }
 
-    return fallbackProfileType ?? UserProfileType.CLIENT;
+    return fallbackProfileType ?? null;
   };
 
   const applyAuthResponse = (response: AuthResponse, fallbackProfileType?: UserProfileType | null) => {
@@ -100,12 +106,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("No fue posible resolver el identificador del usuario autenticado.");
     }
 
+    const finalRequiresProfileCompletion = response.requiresProfileCompletion || response.roles.length === 0;
+
     setToken(response.token);
     setUserId(resolvedUserId);
     setEmail(response.email);
     setRoles(response.roles);
     setProfileType(detectedProfileType);
-    setRequiresProfileCompletion(response.requiresProfileCompletion);
+    setRequiresProfileCompletion(finalRequiresProfileCompletion);
     setRequiresAdminReview(response.requiresAdminReview);
     setIsAuthenticated(Boolean(response.token));
 
@@ -117,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: response.email,
       roles: response.roles,
       profileType: detectedProfileType,
-      requiresProfileCompletion: response.requiresProfileCompletion,
+      requiresProfileCompletion: finalRequiresProfileCompletion,
       requiresAdminReview: response.requiresAdminReview,
     });
   };
