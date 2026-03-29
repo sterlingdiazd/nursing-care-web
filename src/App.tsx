@@ -7,6 +7,8 @@ import { logClientEvent } from "./logging/clientLogger";
 // Pages
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import HomePage from "./pages/HomePage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminActionQueuePage from "./pages/AdminActionQueuePage";
@@ -307,6 +309,26 @@ function AppRoutes() {
             <Navigate to={defaultAuthenticatedPath} replace />
           ) : (
             <RegisterPage />
+          )
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          isAuthenticated && !needsRegistration ? (
+            <Navigate to={defaultAuthenticatedPath} replace />
+          ) : (
+            <ForgotPasswordPage />
+          )
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          isAuthenticated && !needsRegistration ? (
+            <Navigate to={defaultAuthenticatedPath} replace />
+          ) : (
+            <ResetPasswordPage />
           )
         }
       />

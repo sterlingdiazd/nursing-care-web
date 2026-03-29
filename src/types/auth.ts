@@ -54,6 +54,7 @@ export interface AuthContextType {
   register: (data: RegisterRequest) => Promise<void>;
   completeProfile: (data: Omit<RegisterRequest, "email" | "password" | "confirmPassword" | "profileType">) => Promise<void>;
   login: (data: LoginRequest) => Promise<void>;
+  applyAuthResponse: (response: AuthResponse, forcedProfileType?: UserProfileType) => void;
   completeOAuthLogin: (response: AuthResponse) => void;
   logout: () => void;
   clearError: () => void;

@@ -179,3 +179,28 @@ export function validatePassword(password: string): {
     message: "Contrasena valida",
   };
 }
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  try {
+    const response = await httpClient.post<{ message: string }>("auth/forgot-password", { email });
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible solicitar el restablecimiento."));
+  }
+}
+
+export async function resetPassword(
+  email: string,
+  code: string,
+  newPassword: string
+): Promise<AuthResponse> {
+  try {
+    const response = await httpClient.post<AuthResponse>("auth/reset-password", {
+      email,
+      code,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible restablecer la contrasena."));
+  }
+}

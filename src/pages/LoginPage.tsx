@@ -6,11 +6,18 @@ import {
   Button,
   CircularProgress,
   Divider,
+  IconButton,
+  InputAdornment,
   Link,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
+import {
+  Lock as LockIcon,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 
 import { getGoogleOAuthStartUrl, validateEmail } from "../api/auth";
 import AuthScene from "../components/layout/AuthScene";
@@ -22,6 +29,7 @@ export default function LoginPage() {
   const { login, completeOAuthLogin, isLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isEmailValid = validateEmail(email.trim());
@@ -135,14 +143,42 @@ export default function LoginPage() {
             />
 
             <TextField
-              fullWidth
               label="Contrasena"
-              type="password"
+              type={showPassword ? "text" : "password"}
+              variant="outlined"
+              fullWidth
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
-              helperText="La contrasena se valida contra el backend."
+              autoComplete="current-password"
+              InputProps={{
+                startAdornment: (
+                  <LockIcon color="action" sx={{ mr: 1, fontSize: 20 }} />
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
+
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: -1 }}>
+              <Link
+                component={RouterLink}
+                to="/forgot-password"
+                style={{
+                  textDecoration: "none",
+                  color: "var(--mui-palette-primary-main)",
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </Box>
 
             <Button type="submit" variant="contained" size="large" disabled={!canSubmit}>
               {isLoading ? (

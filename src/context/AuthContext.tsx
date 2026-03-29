@@ -251,6 +251,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     completeProfile,
     login,
+    applyAuthResponse,
     completeOAuthLogin,
     logout,
     clearError,
