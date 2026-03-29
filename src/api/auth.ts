@@ -31,7 +31,7 @@ export async function registerUser(
     logClientEvent("web.auth", "User registration submitted", {
       email,
       identificationNumber,
-      profileType: profileType === UserProfileType.Nurse ? "Nurse" : "Client",
+      profileType: profileType === UserProfileType.NURSE ? "NURSE" : "CLIENT",
     });
 
     const request: RegisterRequest = {
@@ -54,7 +54,7 @@ export async function registerUser(
     
     logClientEvent("web.auth", "User registration successful", {
       email,
-      profileType: profileType === UserProfileType.Nurse ? "Nurse" : "Client",
+      profileType: profileType === UserProfileType.NURSE ? "NURSE" : "CLIENT",
       hasToken: !!response.data.token,
     });
 

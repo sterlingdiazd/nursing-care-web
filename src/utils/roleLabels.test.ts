@@ -4,8 +4,8 @@ import { formatRoleLabels, getRoleLabel } from "./roleLabels";
 
 describe("roleLabels", () => {
   it("maps backend role codes to Spanish labels", () => {
-    expect(formatRoleLabels(["Admin", "Client", "Nurse"])).toBe(
-      "Administracion, Cliente, Enfermeria",
+    expect(formatRoleLabels(["ADMIN", "CLIENT", "NURSE"])).toBe(
+      "Administración, Cliente, Enfermería",
     );
   });
 

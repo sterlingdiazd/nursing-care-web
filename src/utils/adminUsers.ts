@@ -6,27 +6,29 @@ import type {
 import { getRoleLabel } from "./roleLabels";
 
 const profileTypeLabelMap: Record<AdminUserProfileType, string> = {
-  Client: "Cliente",
-  Nurse: "Enfermeria",
+  ADMIN: "Administración",
+  CLIENT: "Cliente",
+  NURSE: "Enfermería",
 };
 
 const statusLabelMap: Record<AdminUserAccountStatus, string> = {
   Active: "Activa",
   Inactive: "Inactiva",
   ProfileIncomplete: "Perfil incompleto",
-  AdminReview: "En revision administrativa",
-  ManualIntervention: "Intervencion manual",
+  AdminReview: "En revisión administrativa",
+  ManualIntervention: "Intervención manual",
 };
 
 export const adminUserRoleOptions: Array<{ value: AdminUserRoleName; label: string }> = [
-  { value: "Admin", label: getRoleLabel("Admin") },
-  { value: "Client", label: getRoleLabel("Client") },
-  { value: "Nurse", label: getRoleLabel("Nurse") },
+  { value: "ADMIN", label: getRoleLabel("ADMIN") },
+  { value: "CLIENT", label: getRoleLabel("CLIENT") },
+  { value: "NURSE", label: getRoleLabel("NURSE") },
 ];
 
 export const adminUserProfileTypeOptions: Array<{ value: AdminUserProfileType; label: string }> = [
-  { value: "Client", label: profileTypeLabelMap.Client },
-  { value: "Nurse", label: profileTypeLabelMap.Nurse },
+  { value: "ADMIN", label: profileTypeLabelMap.ADMIN },
+  { value: "CLIENT", label: profileTypeLabelMap.CLIENT },
+  { value: "NURSE", label: profileTypeLabelMap.NURSE },
 ];
 
 export const adminUserStatusOptions: Array<{ value: AdminUserAccountStatus; label: string }> = [

@@ -321,7 +321,7 @@ export default function AdminCreateAdminPage() {
                 <Typography variant="h5">
                   Cuenta creada
                 </Typography>
-                <Chip label={getRoleLabel("Admin")} color="primary" />
+                <Chip label={getRoleLabel("ADMIN")} color="primary" />
               </Stack>
 
               <Typography color="text.secondary">

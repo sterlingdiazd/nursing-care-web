@@ -114,7 +114,7 @@ function saveSession(roles: string[]) {
       userId: "11111111-1111-1111-1111-111111111111",
       email: "admin@example.com",
       roles,
-      profileType: UserProfileType.Client,
+      profileType: "CLIENT",
       requiresProfileCompletion: false,
       requiresAdminReview: false,
     }),
@@ -132,7 +132,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("renders the admin dashboard on admin sessions", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin");
 
     render(<App />);
@@ -143,7 +143,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("redirects non-admin sessions away from admin routes", async () => {
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin");
 
     render(<App />);
@@ -156,7 +156,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("protects the dedicated admin action queue route", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/action-items");
 
     const adminView = render(<App />);
@@ -167,7 +167,7 @@ describe("App.adminRoutes", () => {
 
     adminView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/action-items");
 
     render(<App />);
@@ -178,7 +178,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("renders admin care-request detail routes only for admin sessions", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/care-requests/request-1");
 
     const adminView = render(<App />);
@@ -189,7 +189,7 @@ describe("App.adminRoutes", () => {
 
     adminView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/care-requests/request-1");
 
     render(<App />);
@@ -200,7 +200,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("protects the admin care-request creation route", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/care-requests/new");
 
     const adminView = render(<App />);
@@ -211,7 +211,7 @@ describe("App.adminRoutes", () => {
 
     adminView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/care-requests/new");
 
     render(<App />);
@@ -222,7 +222,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("renders the admin users list route only for admin sessions", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/users");
 
     const adminView = render(<App />);
@@ -233,7 +233,7 @@ describe("App.adminRoutes", () => {
 
     adminView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/users");
 
     render(<App />);
@@ -244,7 +244,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("protects the admin create-admin route", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/users/create-admin");
 
     const adminView = render(<App />);
@@ -255,7 +255,7 @@ describe("App.adminRoutes", () => {
 
     adminView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/users/create-admin");
 
     render(<App />);
@@ -266,7 +266,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("protects the client administration routes", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/clients");
 
     const adminView = render(<App />);
@@ -295,7 +295,7 @@ describe("App.adminRoutes", () => {
 
     detailView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/clients");
 
     render(<App />);
@@ -306,7 +306,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("protects the nurse administration create route", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/nurse-profiles/new");
 
     const adminView = render(<App />);
@@ -317,7 +317,7 @@ describe("App.adminRoutes", () => {
 
     adminView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/nurse-profiles/new");
 
     render(<App />);
@@ -328,7 +328,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("protects nurse administration detail and workflow routes", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/nurse-profiles/nurse-1");
 
     const adminView = render(<App />);
@@ -357,7 +357,7 @@ describe("App.adminRoutes", () => {
 
     reviewView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/nurse-profiles/nurse-1");
 
     render(<App />);
@@ -368,7 +368,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("protects the admin user detail route", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/users/user-1");
 
     const adminView = render(<App />);
@@ -379,7 +379,7 @@ describe("App.adminRoutes", () => {
 
     adminView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/users/user-1");
 
     render(<App />);
@@ -390,7 +390,7 @@ describe("App.adminRoutes", () => {
   });
 
   it("protects the admin notifications route", async () => {
-    saveSession(["Admin"]);
+    saveSession(["ADMIN"]);
     window.history.pushState({}, "", "/admin/notifications");
 
     const adminView = render(<App />);
@@ -400,7 +400,7 @@ describe("App.adminRoutes", () => {
 
     adminView.unmount();
     window.localStorage.clear();
-    saveSession(["Client"]);
+    saveSession(["CLIENT"]);
     window.history.pushState({}, "", "/admin/notifications");
 
     render(<App />);

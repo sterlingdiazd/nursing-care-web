@@ -23,9 +23,9 @@ const baseDetail = {
   lastName: "Lopez",
   identificationNumber: "00122334455",
   phone: "8095550177",
-  profileType: "Client" as const,
-  roleNames: ["Client"] as const,
-  allowedRoleNames: ["Admin", "Client"] as const,
+  profileType: "CLIENT" as const,
+  roleNames: ["CLIENT"] as const,
+  allowedRoleNames: ["ADMIN", "CLIENT"] as const,
   isActive: true,
   accountStatus: "Active" as const,
   requiresProfileCompletion: false,
@@ -42,7 +42,7 @@ const baseDetail = {
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigate,
-  useLocation: () => ({ pathname: "/admin/users/user-1", search: "?role=Client" }),
+  useLocation: () => ({ pathname: "/admin/users/user-1", search: "?role=CLIENT" }),
   useParams: () => ({ id: "user-1" }),
 }));
 
@@ -60,8 +60,8 @@ vi.mock("../context/AuthContext", () => ({
     token: "token",
     userId: "11111111-1111-1111-1111-111111111111",
     email: "admin@example.com",
-    roles: ["Admin"],
-    profileType: 0,
+    roles: ["ADMIN"],
+    profileType: "ADMIN",
     requiresProfileCompletion: false,
     requiresAdminReview: false,
     isLoading: false,
@@ -93,7 +93,7 @@ describe("AdminUserDetailPage", () => {
     });
     vi.mocked(updateAdminUserRoles).mockResolvedValue({
       ...baseDetail,
-      roleNames: ["Admin", "Client"],
+      roleNames: ["ADMIN", "CLIENT"],
     });
     vi.mocked(updateAdminUserActiveState).mockResolvedValue({
       ...baseDetail,
@@ -132,11 +132,11 @@ describe("AdminUserDetailPage", () => {
       }));
     });
 
-    fireEvent.click(screen.getByLabelText("Administracion"));
+    fireEvent.click(screen.getByLabelText("Administración"));
     fireEvent.click(screen.getByRole("button", { name: "Guardar roles" }));
 
     await waitFor(() => {
-      expect(updateAdminUserRoles).toHaveBeenCalledWith("user-1", ["Admin", "Client"]);
+      expect(updateAdminUserRoles).toHaveBeenCalledWith("user-1", ["ADMIN", "CLIENT"]);
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Desactivar cuenta" }));
@@ -152,6 +152,6 @@ describe("AdminUserDetailPage", () => {
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Volver al listado" }));
-    expect(navigate).toHaveBeenCalledWith("/admin/users?role=Client");
+    expect(navigate).toHaveBeenCalledWith("/admin/users?role=CLIENT");
   }, 20000);
 });

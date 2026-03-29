@@ -3,8 +3,9 @@
  */
 
 export enum UserProfileType {
-  Client = 0,
-  Nurse = 1,
+  ADMIN = "ADMIN",
+  NURSE = "NURSE",
+  CLIENT = "CLIENT",
 }
 
 export interface RegisterRequest {

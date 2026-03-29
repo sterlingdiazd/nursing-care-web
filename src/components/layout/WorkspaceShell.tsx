@@ -55,10 +55,10 @@ export default function WorkspaceShell({
   const { email, logout, roles } = useAuth();
   const navigationItems = [
     ...baseNavigationItems,
-    ...(roles.includes("Client") || roles.includes("Admin")
+    ...(roles.includes("CLIENT") || roles.includes("ADMIN")
       ? [{ label: "Nueva solicitud", path: "/care-request" }]
       : []),
-    ...(roles.includes("Admin")
+    ...(roles.includes("ADMIN")
       ? [{ label: "Perfiles de enfermeria", path: "/admin/nurse-profiles" }]
       : []),
   ];

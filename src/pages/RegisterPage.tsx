@@ -58,7 +58,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [profileType, setProfileType] = useState<UserProfileType>(UserProfileType.Client);
+  const [profileType, setProfileType] = useState<UserProfileType>(UserProfileType.CLIENT);
   const [hireDate, setHireDate] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [licenseId, setLicenseId] = useState("");
@@ -74,7 +74,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const isProfileCompletionMode = isAuthenticated && requiresProfileCompletion;
-  const isNurseRegistration = !isProfileCompletionMode && profileType === UserProfileType.Nurse;
+  const isNurseRegistration = !isProfileCompletionMode && profileType === UserProfileType.NURSE;
   const effectiveEmail = isProfileCompletionMode ? authEmail ?? "" : email;
 
   const passwordValidation = useMemo(() => validatePassword(password), [password]);
@@ -161,7 +161,7 @@ export default function RegisterPage() {
 
         await register(payload);
         setSuccessMessage(
-          profileType === UserProfileType.Nurse
+          profileType === UserProfileType.NURSE
             ? "Registro completado. Tu panel mostrara que administracion debe completar tu perfil de enfermeria antes de habilitar el acceso operativo."
             : "Registro completado. Tu cuenta ya entro al espacio autenticado."
         );
@@ -300,19 +300,19 @@ export default function RegisterPage() {
                 <FormControl>
                   <FormLabel sx={{ mb: 1, color: "text.primary" }}>Registrarse como</FormLabel>
                   <RadioGroup
-                    value={String(profileType)}
+                    value={profileType}
                     onChange={(event) =>
-                      setProfileType(Number(event.target.value) as UserProfileType)
+                      setProfileType(event.target.value as UserProfileType)
                     }
                   >
                     <PaperOption
-                      value={String(UserProfileType.Client)}
+                      value={UserProfileType.CLIENT}
                       control={<Radio />}
                       label="Cliente"
                       description="Acceso inmediato despues del registro."
                     />
                     <PaperOption
-                      value={String(UserProfileType.Nurse)}
+                      value={UserProfileType.NURSE}
                       control={<Radio />}
                       label="Enfermeria"
                       description="Inicia sesion de inmediato, pero espera la completacion administrativa del perfil."
@@ -326,17 +326,17 @@ export default function RegisterPage() {
                     p: 2.25,
                     borderRadius: 2.5,
                     bgcolor:
-                      profileType === UserProfileType.Nurse
+                      profileType === UserProfileType.NURSE
                         ? "rgba(31, 75, 110, 0.04)"
                         : "rgba(44, 122, 100, 0.06)",
                   }}
                 >
                   <Stack spacing={1}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
-                      {profileType === UserProfileType.Nurse ? "Perfil de enfermeria" : "Perfil de cliente"}
+                      {profileType === UserProfileType.NURSE ? "Perfil de enfermeria" : "Perfil de cliente"}
                     </Typography>
                     <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                      {profileType === UserProfileType.Nurse ? nurseProfileCopy : clientProfileCopy}
+                      {profileType === UserProfileType.NURSE ? nurseProfileCopy : clientProfileCopy}
                     </Typography>
                   </Stack>
                 </Paper>

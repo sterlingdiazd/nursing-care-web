@@ -1,8 +1,8 @@
 import { httpClient } from "./httpClient";
 import { extractApiErrorMessage } from "./errorMessage";
 
-export type AdminUserRoleName = "Admin" | "Client" | "Nurse";
-export type AdminUserProfileType = "Client" | "Nurse";
+export type AdminUserRoleName = "ADMIN" | "CLIENT" | "NURSE";
+export type AdminUserProfileType = "ADMIN" | "CLIENT" | "NURSE";
 export type AdminUserAccountStatus =
   | "Active"
   | "Inactive"

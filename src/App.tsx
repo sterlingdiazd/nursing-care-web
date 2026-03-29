@@ -199,7 +199,7 @@ function OperationalRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/register" replace />;
   }
 
-  if (requiresAdminReview && profileType === UserProfileType.Nurse) {
+  if (requiresAdminReview && profileType === UserProfileType.NURSE) {
     return <Navigate to="/home" replace />;
   }
 
@@ -217,11 +217,11 @@ function CareRequestCreateRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/register" replace />;
   }
 
-  if (requiresAdminReview && profileType === UserProfileType.Nurse) {
+  if (requiresAdminReview && profileType === UserProfileType.NURSE) {
     return <Navigate to="/home" replace />;
   }
 
-  if (!roles.includes("Client") && !roles.includes("Admin")) {
+  if (!roles.includes("CLIENT") && !roles.includes("ADMIN")) {
     return <Navigate to="/care-requests" replace />;
   }
 
@@ -239,7 +239,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/register" replace />;
   }
 
-  if (!roles.includes("Admin")) {
+  if (!roles.includes("ADMIN")) {
     return <Navigate to="/home" replace />;
   }
 
@@ -251,7 +251,7 @@ function getDefaultAuthenticatedPath(roles: string[], requiresProfileCompletion:
     return "/register";
   }
 
-  return roles.includes("Admin") ? "/admin" : "/home";
+  return roles.includes("ADMIN") ? "/admin" : "/home";
 }
 
 function HomeRoute() {
@@ -265,7 +265,7 @@ function HomeRoute() {
     return <Navigate to="/register" replace />;
   }
 
-  if (roles.includes("Admin")) {
+  if (roles.includes("ADMIN")) {
     return <Navigate to="/admin" replace />;
   }
 

@@ -20,8 +20,8 @@ vi.mock("../context/AuthContext", () => ({
     token: "test-token-12345678901234567890",
     userId: "11111111-1111-1111-1111-111111111111",
     email: "admin@example.com",
-    roles: ["Admin"],
-    profileType: 0,
+    roles: ["ADMIN"],
+    profileType: "ADMIN",
     requiresProfileCompletion: false,
     requiresAdminReview: false,
     isLoading: false,
@@ -59,8 +59,8 @@ describe("AccountPage", () => {
       token: "test-token-12345678901234567890",
       userId: "11111111-1111-1111-1111-111111111111",
       email: "admin@example.com",
-      roles: ["Admin"],
-      profileType: 0,
+      roles: ["ADMIN"],
+      profileType: "ADMIN",
       requiresProfileCompletion: false,
       requiresAdminReview: false,
       isLoading: false,
@@ -82,7 +82,7 @@ describe("AccountPage", () => {
 
     it("should display user roles", () => {
       renderWithTheme(<AccountPage />);
-      expect(screen.getByText("Admin")).toBeInTheDocument();
+      expect(screen.getByText("ADMIN")).toBeInTheDocument();
     });
 
     it("should display truncated token", () => {

@@ -85,11 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resolveProfileType = (response: AuthResponse, fallbackProfileType?: UserProfileType | null) => {
-    if (response.roles.includes("Nurse")) {
-      return UserProfileType.Nurse;
+    if (response.roles.includes("NURSE")) {
+      return UserProfileType.NURSE;
     }
 
-    return fallbackProfileType ?? UserProfileType.Client;
+    return fallbackProfileType ?? UserProfileType.CLIENT;
   };
 
   const applyAuthResponse = (response: AuthResponse, fallbackProfileType?: UserProfileType | null) => {
@@ -171,7 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         data.phone
       );
 
-      applyAuthResponse(response, UserProfileType.Client);
+      applyAuthResponse(response, UserProfileType.CLIENT);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "No fue posible completar el perfil.";
       setError(errorMsg);

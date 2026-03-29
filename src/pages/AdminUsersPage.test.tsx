@@ -8,7 +8,7 @@ import { getAdminUsers } from "../api/adminUsers";
 
 const navigate = vi.fn();
 const logout = vi.fn();
-let locationSearch = "?search=mario&role=Client&profileType=Client&status=Active";
+let locationSearch = "?search=mario&role=CLIENT&profileType=CLIENT&status=Active";
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigate,
@@ -25,8 +25,8 @@ vi.mock("../context/AuthContext", () => ({
     token: "token",
     userId: "11111111-1111-1111-1111-111111111111",
     email: "admin@example.com",
-    roles: ["Admin"],
-    profileType: 0,
+    roles: ["ADMIN"],
+    profileType: "ADMIN",
     requiresProfileCompletion: false,
     requiresAdminReview: false,
     isLoading: false,
@@ -47,7 +47,7 @@ function renderWithTheme(element: ReactNode) {
 describe("AdminUsersPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    locationSearch = "?search=mario&role=Client&profileType=Client&status=Active";
+    locationSearch = "?search=mario&role=CLIENT&profileType=CLIENT&status=Active";
 
     vi.mocked(getAdminUsers).mockResolvedValue([
       {
@@ -58,8 +58,8 @@ describe("AdminUsersPage", () => {
         lastName: "Lopez",
         identificationNumber: "00122334455",
         phone: "8095550177",
-        profileType: "Client",
-        roleNames: ["Client"],
+        profileType: "CLIENT",
+        roleNames: ["CLIENT"],
         isActive: true,
         accountStatus: "Active",
         requiresProfileCompletion: false,
@@ -76,8 +76,8 @@ describe("AdminUsersPage", () => {
     expect(await screen.findByText("Mario Lopez")).toBeInTheDocument();
     expect(getAdminUsers).toHaveBeenCalledWith({
       search: "mario",
-      role: "Client",
-      profileType: "Client",
+      role: "CLIENT",
+      profileType: "CLIENT",
       status: "Active",
     });
 
@@ -90,10 +90,10 @@ describe("AdminUsersPage", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Buscar" }));
 
-    expect(navigate).toHaveBeenCalledWith("/admin/users?search=sandra&role=Client&profileType=Client&status=Active");
+    expect(navigate).toHaveBeenCalledWith("/admin/users?search=sandra&role=CLIENT&profileType=CLIENT&status=Active");
 
     fireEvent.click(screen.getByRole("button", { name: "Ver cuenta" }));
 
-    expect(navigate).toHaveBeenCalledWith("/admin/users/user-1?search=mario&role=Client&profileType=Client&status=Active");
+    expect(navigate).toHaveBeenCalledWith("/admin/users/user-1?search=mario&role=CLIENT&profileType=CLIENT&status=Active");
   });
 });

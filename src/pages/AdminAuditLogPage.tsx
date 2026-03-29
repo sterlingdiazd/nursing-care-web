@@ -38,9 +38,9 @@ function formatTimestamp(value: string) {
 }
 
 function roleLabel(role: string) {
-  if (role === "Admin") return "Administrador";
-  if (role === "Client") return "Cliente";
-  if (role === "Nurse") return "Enfermera";
+  if (role === "ADMIN") return "Administrador";
+  if (role === "CLIENT") return "Cliente";
+  if (role === "NURSE") return "Enfermera";
   return role;
 }
 

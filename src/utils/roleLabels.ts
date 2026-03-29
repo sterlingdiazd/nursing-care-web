@@ -1,7 +1,7 @@
 const roleLabelMap: Record<string, string> = {
-  Admin: "Administracion",
-  Client: "Cliente",
-  Nurse: "Enfermeria",
+  ADMIN: "Administración",
+  CLIENT: "Cliente",
+  NURSE: "Enfermería",
 };
 
 export function getRoleLabel(role: string) {

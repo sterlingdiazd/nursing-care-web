@@ -18,11 +18,11 @@ export default function HomePage() {
     }
   }, [isAuthenticated, navigate]);
 
-  const canOpenBoard = !requiresAdminReview || profileType !== UserProfileType.Nurse;
-  const canCreateRequest = canOpenBoard && (roles.includes("Client") || roles.includes("Admin"));
-  const isAdmin = roles.includes("Admin");
+  const canOpenBoard = !requiresAdminReview || profileType !== UserProfileType.NURSE;
+  const canCreateRequest = canOpenBoard && (roles.includes("CLIENT") || roles.includes("ADMIN"));
+  const isAdmin = roles.includes("ADMIN");
   const profileLabel =
-    profileType === UserProfileType.Nurse ? "Perfil de enfermeria" : "Perfil de cliente";
+    profileType === UserProfileType.NURSE ? "Perfil de enfermeria" : "Perfil de cliente";
 
   const openBoard = () => {
     logClientEvent("web.ui", "Home quick action opened care request board", {
@@ -61,7 +61,7 @@ export default function HomePage() {
         }}
       >
         <Stack spacing={3}>
-          {requiresAdminReview && profileType === UserProfileType.Nurse && (
+          {requiresAdminReview && profileType === UserProfileType.NURSE && (
             <Alert severity="info" variant="outlined">
               Tu cuenta de enfermeria ya puede iniciar sesion, pero el acceso operativo sigue bloqueado hasta que administracion complete tu perfil.
             </Alert>
@@ -161,7 +161,7 @@ export default function HomePage() {
               Salud actual del espacio
             </Typography>
             <Stack spacing={1.25}>
-              {requiresAdminReview && profileType === UserProfileType.Nurse && (
+              {requiresAdminReview && profileType === UserProfileType.NURSE && (
                 <Alert severity="warning" variant="outlined">
                   Mientras administracion no complete tu perfil de enfermeria, el panel solo muestra estado de cuenta y no habilita acciones clinicas.
                 </Alert>
