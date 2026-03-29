@@ -22,6 +22,7 @@ import AdminModulePlaceholderPage from "./pages/AdminModulePlaceholderPage";
 import AdminPricingCatalogPage from "./pages/AdminPricingCatalogPage";
 import AdminNotificationsPage from "./pages/AdminNotificationsPage";
 import AdminAuditLogPage from "./pages/AdminAuditLogPage";
+import AdminReportsPage from "./pages/AdminReportsPage";
 import CareRequestPage from "./pages/CareRequestPage";
 import CareRequestsListPage from "./pages/CareRequestsListPage";
 import CareRequestDetailPage from "./pages/CareRequestDetailPage";
@@ -471,6 +472,14 @@ function AppRoutes() {
         element={
           <AdminRoute>
             <AdminAuditLogPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/reports"
+        element={
+          <AdminRoute>
+            <AdminReportsPage />
           </AdminRoute>
         }
       />

@@ -73,6 +73,11 @@ export const adminPortalNavigationItems: AdminPortalNavigationItem[] = [
     description: "Eventos criticos de alto impacto",
   },
   {
+    label: "Reportes",
+    path: "/admin/reports",
+    description: "Indicadores operativos y exportacion de datos",
+  },
+  {
     label: "Configuracion",
     path: "/admin/settings",
     description: "Parametros del portal",
