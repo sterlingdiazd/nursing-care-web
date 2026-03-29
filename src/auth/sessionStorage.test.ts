@@ -8,7 +8,7 @@ import {
 } from "./sessionStorage";
 import { UserProfileType } from "../types/auth";
 
-describe("sessionStorage helpers", () => {
+describe("sessionStorage", () => {
   beforeEach(() => {
     window.localStorage.clear();
   });

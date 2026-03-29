@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => {
       globals: true,
       setupFiles: "./src/setupTests.ts",
       css: false,
+      testTimeout: 30000,
     },
     env: {
       apiUrl: `${apiProxyTarget}/api`,

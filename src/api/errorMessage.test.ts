@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { extractApiErrorMessage } from "./errorMessage";
 
-describe("extractApiErrorMessage", () => {
+describe("errorMessage", () => {
   it("prefers problem details detail text when present", () => {
     const error = {
       isAxiosError: true,

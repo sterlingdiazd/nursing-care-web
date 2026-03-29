@@ -31,7 +31,7 @@ const sampleCatalog: CatalogOptionsResponse = {
   ],
 };
 
-describe("resolveVolumeDiscountPercent", () => {
+describe("pricingFromCatalogOptions", () => {
   it("returns zero when there are no prior requests", () => {
     expect(resolveVolumeDiscountPercent(sampleCatalog.volumeDiscountRules, 0)).toBe(0);
   });

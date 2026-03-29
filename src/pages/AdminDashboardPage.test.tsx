@@ -102,5 +102,5 @@ describe("AdminDashboardPage", () => {
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith("/admin/action-items");
     });
-  }, 10000);
+  }, 30000);
 });

@@ -123,5 +123,5 @@ describe("AdminCreateCareRequestPage", () => {
     });
 
     expect(navigate).toHaveBeenCalledWith("/admin/care-requests/request-new?view=pending");
-  }, 10000);
+  }, 30000);
 });

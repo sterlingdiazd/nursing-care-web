@@ -31,6 +31,7 @@ import AdminCreateNurseProfilePage from "./pages/AdminCreateNurseProfilePage";
 import AdminEditNurseProfilePage from "./pages/AdminEditNurseProfilePage";
 import AdminReviewNurseProfilePage from "./pages/AdminReviewNurseProfilePage";
 import AdminClientsPage from "./pages/AdminClientsPage";
+import AccountPage from "./pages/AccountPage";
 import { UserProfileType } from "./types/auth";
 
 // Create Material-UI theme
@@ -302,6 +303,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <HomeRoute />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <ProtectedRoute>
+            <AccountPage />
           </ProtectedRoute>
         }
       />

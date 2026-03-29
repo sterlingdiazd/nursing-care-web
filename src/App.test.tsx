@@ -70,7 +70,7 @@ function renderWithTheme(element: ReactNode) {
   return render(<ThemeProvider theme={theme}>{element}</ThemeProvider>);
 }
 
-describe("HomePage", () => {
+describe("App", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

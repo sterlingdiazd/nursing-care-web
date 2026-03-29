@@ -49,7 +49,7 @@ function renderWithTheme(element: ReactNode) {
   return render(<ThemeProvider theme={theme}>{element}</ThemeProvider>);
 }
 
-describe("Admin nurse profiles page", () => {
+describe("AdminNurseProfilesPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

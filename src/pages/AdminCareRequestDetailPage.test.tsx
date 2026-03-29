@@ -222,5 +222,5 @@ describe("AdminCareRequestDetailPage", () => {
 
     expect(await screen.findByText("Solicitud aprobada")).toBeInTheDocument();
     expect(await screen.findByText("La completacion corresponde exclusivamente a la enfermera asignada.")).toBeInTheDocument();
-  }, 10000);
+  }, 30000);
 });

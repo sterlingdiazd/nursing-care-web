@@ -48,7 +48,7 @@ function renderWithTheme(element: ReactNode) {
   return render(<ThemeProvider theme={theme}>{element}</ThemeProvider>);
 }
 
-describe("Admin review nurse profile page", () => {
+describe("AdminReviewNurseProfilePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

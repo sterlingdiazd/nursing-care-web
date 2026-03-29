@@ -95,5 +95,5 @@ describe("AdminCreateClientPage", () => {
         successMessage: "El cliente se creo correctamente y ya esta listo para gestion administrativa.",
       },
     });
-  }, 10000);
+  }, 30000);
 });

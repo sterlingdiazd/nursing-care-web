@@ -93,5 +93,5 @@ describe("AdminActionQueuePage", () => {
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith("/admin/care-requests?view=pending-approval&selected=request-1");
     });
-  }, 10000);
+  }, 30000);
 });

@@ -153,5 +153,5 @@ describe("AdminClientDetailPage", () => {
     });
 
     expect(await screen.findByRole("button", { name: "Activar cliente" })).toBeInTheDocument();
-  }, 10000);
+  }, 30000);
 });

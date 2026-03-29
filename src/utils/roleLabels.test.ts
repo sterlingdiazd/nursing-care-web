@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { formatRoleLabels, getRoleLabel } from "./roleLabels";
 
-describe("formatRoleLabels", () => {
+describe("roleLabels", () => {
   it("maps backend role codes to Spanish labels", () => {
     expect(formatRoleLabels(["Admin", "Client", "Nurse"])).toBe(
       "Administracion, Cliente, Enfermeria",

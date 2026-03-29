@@ -84,7 +84,7 @@ function renderWithTheme(element: ReactNode) {
   return render(<ThemeProvider theme={theme}>{element}</ThemeProvider>);
 }
 
-describe("Care request pages", () => {
+describe("CareRequestsPages", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

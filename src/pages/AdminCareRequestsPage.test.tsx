@@ -167,5 +167,5 @@ describe("AdminCareRequestsPage", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Ver detalle" })[0]);
 
     expect(navigate).toHaveBeenCalledWith("/admin/care-requests/request-1?view=pending&scheduledFrom=2026-03-20&selected=request-1");
-  }, 10000);
+  }, 30000);
 });

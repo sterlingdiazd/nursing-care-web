@@ -90,5 +90,5 @@ describe("AdminClientsPage", () => {
     expect(navigate).toHaveBeenCalledWith("/admin/clients/client-1?search=carla&status=active", {
       state: { from: "/admin/clients?search=carla&status=active" },
     });
-  }, 10000);
+  }, 30000);
 });

@@ -121,7 +121,7 @@ function saveSession(roles: string[]) {
   );
 }
 
-describe("Admin route boundaries", () => {
+describe("App.adminRoutes", () => {
   beforeEach(() => {
     window.localStorage.clear();
     window.history.pushState({}, "", "/");
