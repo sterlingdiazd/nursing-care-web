@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Alert,
@@ -13,12 +13,48 @@ import { ArrowBack as ArrowBackIcon, Mail as MailIcon } from "@mui/icons-materia
 import AuthScene from "../components/layout/AuthScene";
 import { forgotPassword, validateEmail } from "../api/auth";
 
+const RESEND_COOLDOWN_SECONDS = 60;
+
+function formatCountdown(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+
+  useEffect(() => {
+    if (cooldownRemaining <= 0) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setCooldownRemaining((current) => (current <= 1 ? 0 : current - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [cooldownRemaining]);
+
+  const requestRecoveryCode = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await forgotPassword(email.trim());
+      setIsSuccess(true);
+      setCooldownRemaining(RESEND_COOLDOWN_SECONDS);
+    } catch (err: any) {
+      setError(err.message || "Ocurrió un error al procesar tu solicitud.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,18 +62,7 @@ export default function ForgotPasswordPage() {
       setError("Por favor ingresa un correo electrónico válido.");
       return;
     }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      await forgotPassword(email);
-      setIsSuccess(true);
-    } catch (err: any) {
-      setError(err.message || "Ocurrió un error al procesar tu solicitud.");
-    } finally {
-      setIsLoading(false);
-    }
+    await requestRecoveryCode();
   };
 
   const formContent = (
@@ -50,6 +75,10 @@ export default function ForgotPasswordPage() {
           <Typography variant="body2" sx={{ color: "text.secondary", textAlign: "center" }}>
             Revisa tu bandeja de entrada y spam. El código expira en 15 minutos.
           </Typography>
+          <Alert severity="info" sx={{ borderRadius: 2 }}>
+            ¿No recibiste el código? Verifica que el correo esté bien escrito, revisa promociones o spam y espera unos minutos
+            antes de solicitar uno nuevo. Si después de varios intentos sigues sin recibirlo, contacta al soporte del sistema.
+          </Alert>
           <Button
             variant="contained"
             fullWidth
@@ -65,6 +94,31 @@ export default function ForgotPasswordPage() {
           >
             Ingresar código y nueva contraseña
           </Button>
+          <Button
+            variant="outlined"
+            fullWidth
+            size="large"
+            onClick={() => {
+              void requestRecoveryCode();
+            }}
+            disabled={isLoading || cooldownRemaining > 0}
+            sx={{
+              py: 1.4,
+              borderRadius: 2.5,
+              textTransform: "none",
+              fontSize: "1rem",
+              fontWeight: 600,
+            }}
+          >
+            {cooldownRemaining > 0
+              ? `Reenviar código en ${formatCountdown(cooldownRemaining)}`
+              : "Reenviar código"}
+          </Button>
+          <Typography variant="body2" sx={{ color: "text.secondary", textAlign: "center" }}>
+            {cooldownRemaining > 0
+              ? `Podrás solicitar otro código en ${formatCountdown(cooldownRemaining)}.`
+              : "Si no recibiste el correo, ya puedes solicitar un nuevo código con el mismo correo."}
+          </Typography>
         </Stack>
       ) : (
         <form onSubmit={handleSubmit}>

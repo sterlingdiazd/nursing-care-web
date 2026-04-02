@@ -1,5 +1,5 @@
 import { httpClient } from "./httpClient";
-import { AuthResponse, RegisterRequest, LoginRequest, UserProfileType } from "../types/auth";
+import { AuthResponse, PasswordResetResponse, RegisterRequest, LoginRequest, UserProfileType } from "../types/auth";
 import { logClientEvent } from "../logging/clientLogger";
 import { API_BASE_URL } from "../config/env";
 import { extractApiErrorMessage } from "./errorMessage";
@@ -192,9 +192,9 @@ export async function resetPassword(
   email: string,
   code: string,
   newPassword: string
-): Promise<AuthResponse> {
+): Promise<PasswordResetResponse> {
   try {
-    const response = await httpClient.post<AuthResponse>("auth/reset-password", {
+    const response = await httpClient.post<PasswordResetResponse>("auth/reset-password", {
       email,
       code,
       newPassword,

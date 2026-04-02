@@ -20,12 +20,10 @@ import {
 } from "@mui/icons-material";
 import AuthScene from "../components/layout/AuthScene";
 import { resetPassword, validateEmail, validatePassword } from "../api/auth";
-import { useAuth } from "../context/AuthContext";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { applyAuthResponse } = useAuth();
   
   const [email, setEmail] = useState(state?.email || "");
   const [code, setCode] = useState("");
@@ -36,6 +34,9 @@ export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(
+    "Tu contraseña fue actualizada correctamente. Redirigiendo al inicio de sesión..."
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,16 +67,13 @@ export default function ResetPasswordPage() {
 
     try {
       const response = await resetPassword(email, code, newPassword);
-      applyAuthResponse(response);
+      setSuccessMessage(
+        response.message || "Tu contraseña fue actualizada correctamente. Redirigiendo al inicio de sesión..."
+      );
       setSuccess(true);
 
-      // Determine the correct destination based on returned roles
-      const isAdmin = response.roles.includes("ADMIN");
-      const destination = isAdmin ? "/admin" : "/home";
-
-      // Brief delay so the user sees the success message, then redirect
       setTimeout(() => {
-        navigate(destination, { replace: true });
+        navigate("/login", { replace: true });
       }, 2000);
 
     } catch (err: any) {
@@ -90,9 +88,12 @@ export default function ResetPasswordPage() {
       {success ? (
         <Stack spacing={3} alignItems="center">
           <Alert severity="success" sx={{ borderRadius: 2, width: '100%' }}>
-            Tu contraseña ha sido restablecida exitosamente. Iniciando sesión...
+            {successMessage}
           </Alert>
           <CircularProgress size={24} sx={{ mt: 2 }} />
+          <Typography variant="body2" sx={{ color: "text.secondary", textAlign: "center" }}>
+            Usa tu nueva contraseña para iniciar sesión de forma segura.
+          </Typography>
         </Stack>
       ) : (
         <form onSubmit={handleSubmit}>
@@ -128,6 +129,9 @@ export default function ResetPasswordPage() {
               placeholder="123456"
               helperText="El código de 6 dígitos que recibiste por correo."
             />
+            <Typography variant="body2" sx={{ color: "text.secondary", mt: -1 }}>
+              ¿No recibiste el código? Revisa spam o promociones y, si hace falta, vuelve a solicitar uno nuevo.
+            </Typography>
 
             <TextField
               label="Nueva contraseña"
@@ -185,7 +189,7 @@ export default function ResetPasswordPage() {
               {isLoading ? (
                 <CircularProgress size={24} color="inherit" />
               ) : (
-                "Restablecer Contraseña"
+                "Restablecer contraseña"
               )}
             </Button>
           </Stack>

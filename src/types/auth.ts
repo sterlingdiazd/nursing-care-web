@@ -40,6 +40,10 @@ export interface AuthResponse {
   requiresAdminReview: boolean;
 }
 
+export interface PasswordResetResponse {
+  message: string;
+}
+
 export interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
