@@ -64,7 +64,18 @@ The Nursing Care Web Portal is a comprehensive administrative and client-facing 
    ```
 
 2. **Configure environment**:
-   Copy .env.example to .env.local and set VITE_API_BASE_URL to your backend instance (e.g., http://localhost:5050/api).
+   Vite reads environment files by mode. Use `development-docker` when the Docker/Nginx proxy is running on HTTPS, `development-direct` when you run the .NET API directly on HTTP, `.env.staging` for staging, and `.env.production` for production. If your machine needs a private override for Docker dev, use `.env.development-docker.local`.
+
+   Typical local Docker setup:
+   `VITE_API_BASE_URL=/api`
+   `VITE_API_PROXY_TARGET=https://localhost:5050`
+
+   Typical direct API setup:
+   `VITE_API_BASE_URL=/api`
+   `VITE_API_PROXY_TARGET=http://localhost:5050`
+
+   Typical production setup:
+   `VITE_API_BASE_URL=https://api.yourdomain.com/api`
 
 3. **Start the development server**:
    ```bash
@@ -73,6 +84,23 @@ The Nursing Care Web Portal is a comprehensive administrative and client-facing 
 
 ### URLs
 - **Local Dev**: http://localhost:3000
+
+### VS Code Environment Picker
+
+Use the workspace launch/task configuration if you want to choose the target environment from the IDE GUI:
+
+- Run task: `web-run-selected-environment`
+- Build task: `web-build-selected-environment`
+- Launch profile: `Launch NursingCare Web`
+
+When you start one of those, VS Code shows a picker for `development-docker`, `development-direct`, `staging`, or `production`.
+
+- `development-docker` uses the Docker/Nginx local endpoint on `https://localhost:5050`
+- `development-direct` uses the .NET API directly on `http://localhost:5050`
+- `staging` maps to `.env.staging`
+- `production` maps to `.env.production`
+
+If you see `400 The plain HTTP request was sent to HTTPS port`, you selected the direct HTTP target while the Docker/Nginx HTTPS proxy is running on port `5050`. In that case use `development-docker`.
 
 ---
 
