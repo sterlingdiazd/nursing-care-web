@@ -53,6 +53,8 @@ const pendingDetail = {
     medicalSuppliesCost: 0,
     total: 4200,
   },
+  payrollCompensation: null,
+  shifts: [],
   timeline: [
     {
       id: "created:request-1",

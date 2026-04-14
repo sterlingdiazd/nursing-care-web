@@ -66,6 +66,59 @@ export interface AdminCareRequestTimelineEvent {
   occurredAtUtc: string;
 }
 
+export interface AdminShiftChange {
+  id: string;
+  previousNurseUserId: string | null;
+  previousNurseDisplayName: string | null;
+  previousNurseEmail: string | null;
+  newNurseUserId: string | null;
+  newNurseDisplayName: string | null;
+  newNurseEmail: string | null;
+  reason: string;
+  effectiveAtUtc: string;
+  createdAtUtc: string;
+}
+
+export interface AdminShiftRecord {
+  id: string;
+  nurseUserId: string | null;
+  nurseDisplayName: string | null;
+  nurseEmail: string | null;
+  scheduledStartUtc: string | null;
+  scheduledEndUtc: string | null;
+  actualStartUtc: string | null;
+  actualEndUtc: string | null;
+  status: string;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  changes: AdminShiftChange[];
+}
+
+export interface AdminPayrollCompensationSnapshot {
+  employmentType: string;
+  serviceVariant: string;
+  executedAtUtc: string;
+  serviceDate: string;
+  baseCompensation: number;
+  transportIncentive: number;
+  complexityBonus: number;
+  medicalSuppliesCompensation: number;
+  adjustmentsTotal: number;
+  deductionsTotal: number;
+  grossCompensation: number;
+  netCompensation: number;
+  ruleBaseCompensationPercent: number;
+  ruleFixedAmountPerUnit: number;
+  ruleTransportIncentivePercent: number;
+  ruleComplexityBonusPercent: number;
+  ruleMedicalSuppliesPercent: number;
+  ruleVariantPercent: number;
+  careRequestSubtotalBeforeSupplies: number;
+  careRequestMedicalSuppliesCost: number;
+  careRequestTotal: number;
+  notes: string | null;
+}
+
 export interface AdminCareRequestDetail {
   id: string;
   clientUserId: string;
@@ -95,6 +148,8 @@ export interface AdminCareRequestDetail {
   completedAtUtc: string | null;
   isOverdueOrStale: boolean;
   pricingBreakdown: AdminCareRequestPricingBreakdown;
+  payrollCompensation: AdminPayrollCompensationSnapshot | null;
+  shifts: AdminShiftRecord[];
   timeline: AdminCareRequestTimelineEvent[];
 }
 
@@ -173,6 +228,39 @@ export async function getAdminCareRequestClients(search?: string) {
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible cargar los clientes disponibles."));
+  }
+}
+
+export interface RegisterAdminCareRequestShiftPayload {
+  nurseUserId?: string | null;
+  scheduledStartUtc?: string | null;
+  scheduledEndUtc?: string | null;
+}
+
+export interface RecordAdminCareRequestShiftChangePayload {
+  newNurseUserId?: string | null;
+  reason: string;
+  effectiveAtUtc?: string | null;
+}
+
+export async function registerAdminCareRequestShift(careRequestId: string, payload: RegisterAdminCareRequestShiftPayload) {
+  try {
+    const response = await httpClient.post<{ shiftId: string }>(`/admin/care-requests/${careRequestId}/shifts`, payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible registrar el turno."));
+  }
+}
+
+export async function recordAdminCareRequestShiftChange(
+  careRequestId: string,
+  shiftId: string,
+  payload: RecordAdminCareRequestShiftChangePayload,
+) {
+  try {
+    await httpClient.post(`/admin/care-requests/${careRequestId}/shifts/${shiftId}/changes`, payload);
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible registrar el cambio de turno."));
   }
 }
 
