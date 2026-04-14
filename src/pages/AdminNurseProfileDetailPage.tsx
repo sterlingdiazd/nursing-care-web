@@ -107,7 +107,7 @@ export default function AdminNurseProfileDetailPage() {
         </>
       )}
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-nurse-detail-page">
         {error && <Alert severity="error">{error}</Alert>}
         {successMessage && <Alert severity="success">{successMessage}</Alert>}
         {detail?.hasHistoricalCareRequests && (

@@ -101,7 +101,7 @@ export default function AdminActionQueuePage() {
         </>
       }
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-action-queue-page">
         {error && <Alert severity="error">{error}</Alert>}
 
         <Box

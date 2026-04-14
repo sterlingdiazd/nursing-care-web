@@ -22,6 +22,7 @@ import {
 import { getActiveNurseProfiles, type ActiveNurseProfileSummary } from "../api/adminNurseProfiles";
 import WorkspaceShell from "../components/layout/WorkspaceShell";
 import { useAuth } from "../context/AuthContext";
+import { careRequestTestIds } from "../testing/careRequestTestIds";
 
 function getStatusStyles(status: CareRequest["status"]) {
   switch (status) {
@@ -154,16 +155,25 @@ export default function CareRequestDetailPage() {
       description="Usa esta vista para inspeccionar identificadores, marcas de tiempo y las acciones disponibles segun el rol actual."
       actions={
         <>
-          <Button variant="outlined" onClick={() => navigate("/care-requests")}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/care-requests")}
+            data-testid={careRequestTestIds.detail.backButton}
+          >
             Volver a la cola
           </Button>
-          <Button variant="outlined" onClick={loadCareRequest} disabled={isLoading || isActing}>
+          <Button
+            variant="outlined"
+            onClick={loadCareRequest}
+            disabled={isLoading || isActing}
+            data-testid={careRequestTestIds.detail.refreshButton}
+          >
             Actualizar
           </Button>
         </>
       }
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid={careRequestTestIds.detail.page}>
         {error && <Alert severity="error">{error}</Alert>}
 
         {careRequest && (
@@ -173,8 +183,9 @@ export default function CareRequestDetailPage() {
               gridTemplateColumns: { xs: "1fr", xl: "1.25fr 0.75fr" },
               gap: 3,
             }}
+            data-testid={careRequestTestIds.detail.mainGrid}
           >
-            <Paper sx={{ p: 4, borderRadius: 3 }}>
+            <Paper sx={{ p: 4, borderRadius: 3 }} data-testid={careRequestTestIds.detail.infoSection}>
               <Stack spacing={3}>
                 <Stack
                   direction={{ xs: "column", sm: "row" }}
@@ -189,6 +200,7 @@ export default function CareRequestDetailPage() {
                         color: statusStyles.color,
                         fontWeight: 700,
                       }}
+                      data-testid={careRequestTestIds.detail.statusChip}
                     />
                   )}
                   <Typography color="text.secondary">
@@ -204,6 +216,7 @@ export default function CareRequestDetailPage() {
                     gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
                     gap: 2,
                   }}
+                  data-testid={careRequestTestIds.detail.fieldsGrid}
                 >
                   {[
                     ["ID de usuario", careRequest.userID],
@@ -229,7 +242,7 @@ export default function CareRequestDetailPage() {
             </Paper>
 
             <Stack spacing={3}>
-              <Paper sx={{ p: 3, borderRadius: 2.5 }}>
+              <Paper sx={{ p: 3, borderRadius: 2.5 }} data-testid={careRequestTestIds.detail.transitionsSection}>
                 <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
                   Historial de transiciones
                 </Typography>
@@ -250,7 +263,7 @@ export default function CareRequestDetailPage() {
               </Paper>
 
               {canManageAssignment && (
-                <Paper sx={{ p: 3, borderRadius: 2.5 }}>
+                <Paper sx={{ p: 3, borderRadius: 2.5 }} data-testid={careRequestTestIds.detail.assignmentSection}>
                   <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
                     Asignacion de enfermeria
                   </Typography>
@@ -264,6 +277,7 @@ export default function CareRequestDetailPage() {
                       SelectProps={{ native: true }}
                       disabled={isActing}
                       helperText="Solo administracion puede asignar o reasignar la solicitud."
+                      data-testid={careRequestTestIds.detail.assignmentSelect}
                     >
                       <option value="">Selecciona una enfermera activa</option>
                       {activeNurses.map((nurse) => {
@@ -281,6 +295,7 @@ export default function CareRequestDetailPage() {
                       variant="contained"
                       onClick={runAssignment}
                       disabled={isActing || !assignedNurseId}
+                      data-testid={careRequestTestIds.detail.assignmentButton}
                     >
                       {careRequest?.assignedNurse ? "Reasignar enfermera" : "Asignar enfermera"}
                     </Button>
@@ -288,7 +303,7 @@ export default function CareRequestDetailPage() {
                 </Paper>
               )}
 
-              <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }}>
+              <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }} data-testid={careRequestTestIds.detail.actionsPanel}>
                 <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
                   Acciones disponibles
                 </Typography>
@@ -300,6 +315,7 @@ export default function CareRequestDetailPage() {
                         color="success"
                         onClick={() => runAction("approve")}
                         disabled={isActing || !canApprove}
+                        data-testid={careRequestTestIds.detail.approveButton}
                       >
                         Aprobar solicitud
                       </Button>
@@ -308,6 +324,7 @@ export default function CareRequestDetailPage() {
                         color="error"
                         onClick={() => runAction("reject")}
                         disabled={isActing}
+                        data-testid={careRequestTestIds.detail.rejectButton}
                       >
                         Rechazar solicitud
                       </Button>
@@ -319,6 +336,7 @@ export default function CareRequestDetailPage() {
                       variant="contained"
                       onClick={() => runAction("complete")}
                       disabled={isActing}
+                      data-testid={careRequestTestIds.detail.completeButton}
                     >
                       Marcar como completada
                     </Button>

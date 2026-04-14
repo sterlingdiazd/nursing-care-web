@@ -33,6 +33,7 @@ import {
   sanitizeDigitsOnlyInput,
   sanitizeTextOnlyInput,
 } from "../utils/identityValidation";
+import { authTestIds } from "../testing/authTestIds";
 
 const clientProfileCopy =
   "Perfil de cliente seleccionado. No hay campos adicionales por completar en esta etapa y el acceso operativo queda disponible cuando termine el registro.";
@@ -188,10 +189,10 @@ export default function RegisterPage() {
       asideTitle="Complecion administrativa"
       asideBody="La cuenta de enfermeria puede iniciar sesion desde el registro, pero las acciones clinicas quedan bloqueadas hasta que administracion complete el perfil."
       form={
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit} data-testid={authTestIds.register.form}>
           <Stack spacing={2.25}>
-            {error && <Alert severity="error">{error}</Alert>}
-            {successMessage && <Alert severity="success">{successMessage}</Alert>}
+            {error && <Alert severity="error" data-testid={authTestIds.register.errorBanner}>{error}</Alert>}
+            {successMessage && <Alert severity="success" data-testid={authTestIds.register.successBanner}>{successMessage}</Alert>}
 
             <TextField
               fullWidth
@@ -203,6 +204,7 @@ export default function RegisterPage() {
                 setNameInputError(getRejectedTextOnlyInputError(nextValue, "El nombre"));
               }}
               disabled={isLoading}
+              inputProps={{ "data-testid": authTestIds.register.nameInput }}
               error={!!displayedNameError}
               helperText={displayedNameError || "Campo obligatorio. Solo letras y espacios."}
             />
@@ -217,6 +219,7 @@ export default function RegisterPage() {
                 setLastNameInputError(getRejectedTextOnlyInputError(nextValue, "El apellido"));
               }}
               disabled={isLoading}
+              inputProps={{ "data-testid": authTestIds.register.lastNameInput }}
               error={!!displayedLastNameError}
               helperText={displayedLastNameError || "Campo obligatorio. Solo letras y espacios."}
             />
@@ -231,9 +234,9 @@ export default function RegisterPage() {
                 setIdentificationNumberInputError(getRejectedDigitsOnlyInputError(nextValue, "La cedula", 11));
               }}
               disabled={isLoading}
+              inputProps={{ "data-testid": authTestIds.register.identificationInput, inputMode: "numeric", pattern: "\\d*", maxLength: 11 }}
               error={!!displayedIdentificationNumberError}
               helperText={displayedIdentificationNumberError || "Debe tener exactamente 11 digitos."}
-              inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 11 }}
             />
 
             <TextField
@@ -246,9 +249,9 @@ export default function RegisterPage() {
                 setPhoneInputError(getRejectedDigitsOnlyInputError(nextValue, "El telefono", 10));
               }}
               disabled={isLoading}
+              inputProps={{ "data-testid": authTestIds.register.phoneInput, inputMode: "numeric", pattern: "\\d*", maxLength: 10 }}
               error={!!displayedPhoneError}
               helperText={displayedPhoneError || "Debe tener exactamente 10 digitos."}
-              inputProps={{ inputMode: "numeric", pattern: "\\d*", maxLength: 10 }}
             />
 
             <TextField
@@ -259,6 +262,7 @@ export default function RegisterPage() {
               onChange={(event) => setEmail(event.target.value)}
               placeholder="nombre@centro.org"
               disabled={isLoading || isProfileCompletionMode}
+              inputProps={{ "data-testid": authTestIds.register.emailInput }}
               error={effectiveEmail.length > 0 && !isEmailValid}
               helperText={
                 effectiveEmail.length > 0 && !isEmailValid
@@ -278,6 +282,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   disabled={isLoading}
+                  inputProps={{ "data-testid": authTestIds.register.passwordInput }}
                   error={password.length > 0 && !passwordValidation.isValid}
                   helperText={password.length > 0 ? passwordValidation.message : "Minimo 6 caracteres"}
                 />
@@ -289,6 +294,7 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   disabled={isLoading}
+                  inputProps={{ "data-testid": authTestIds.register.confirmPasswordInput }}
                   error={confirmPassword.length > 0 && !passwordsMatch}
                   helperText={
                     confirmPassword.length > 0 && !passwordsMatch
@@ -310,12 +316,14 @@ export default function RegisterPage() {
                       control={<Radio />}
                       label="Cliente"
                       description="Acceso inmediato despues del registro."
+                      testId={authTestIds.register.clientOption}
                     />
                     <PaperOption
                       value={UserProfileType.NURSE}
                       control={<Radio />}
                       label="Enfermeria"
                       description="Inicia sesion de inmediato, pero espera la completacion administrativa del perfil."
+                      testId={authTestIds.register.nurseOption}
                     />
                   </RadioGroup>
                 </FormControl>
@@ -434,7 +442,7 @@ export default function RegisterPage() {
               </>
             )}
 
-            <Button type="submit" variant="contained" size="large" disabled={!canSubmit}>
+            <Button type="submit" variant="contained" size="large" disabled={!canSubmit} data-testid={authTestIds.register.submitButton}>
               {isLoading ? (
                 <>
                   <CircularProgress size={18} sx={{ mr: 1, color: "inherit" }} />
@@ -455,6 +463,7 @@ export default function RegisterPage() {
                   size="large"
                   disabled={isLoading}
                   onClick={handleGoogleSignIn}
+                  data-testid={authTestIds.register.googleButton}
                 >
                   Continuar con Google
                 </Button>
@@ -471,7 +480,7 @@ export default function RegisterPage() {
               ) : (
                 <>
                   ¿Ya tienes acceso?{" "}
-                  <Link component={RouterLink} to="/login" underline="hover" sx={{ fontWeight: 700 }}>
+                  <Link component={RouterLink} to="/login" underline="hover" sx={{ fontWeight: 700 }} data-testid={authTestIds.register.loginLink}>
                     Inicia sesion aqui
                   </Link>
                 </>
@@ -489,11 +498,13 @@ function PaperOption({
   control,
   label,
   description,
+  testId,
 }: {
   value: string;
   control: React.ReactElement;
   label: string;
   description: string;
+  testId: string;
 }) {
   return (
     <Box
@@ -509,6 +520,7 @@ function PaperOption({
       <FormControlLabel
         value={value}
         control={control}
+        data-testid={testId}
         label={
           <Box>
             <Typography sx={{ fontWeight: 700 }}>{label}</Typography>

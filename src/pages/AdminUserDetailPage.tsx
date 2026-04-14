@@ -319,7 +319,7 @@ export default function AdminUserDetailPage() {
         </>
       }
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-user-detail-page">
         {error && <Alert severity="error">{error}</Alert>}
         {successMessage && <Alert severity="success">{successMessage}</Alert>}
 

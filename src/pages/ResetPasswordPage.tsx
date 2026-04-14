@@ -20,6 +20,7 @@ import {
 } from "@mui/icons-material";
 import AuthScene from "../components/layout/AuthScene";
 import { resetPassword, validateEmail, validatePassword } from "../api/auth";
+import { authTestIds } from "../testing/authTestIds";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -87,7 +88,7 @@ export default function ResetPasswordPage() {
     <Stack spacing={3.5}>
       {success ? (
         <Stack spacing={3} alignItems="center">
-          <Alert severity="success" sx={{ borderRadius: 2, width: '100%' }}>
+          <Alert severity="success" sx={{ borderRadius: 2, width: '100%' }} data-testid={authTestIds.resetPassword.successBanner}>
             {successMessage}
           </Alert>
           <CircularProgress size={24} sx={{ mt: 2 }} />
@@ -96,10 +97,10 @@ export default function ResetPasswordPage() {
           </Typography>
         </Stack>
       ) : (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} data-testid={authTestIds.resetPassword.form}>
           <Stack spacing={3}>
             {error && (
-              <Alert severity="error" sx={{ borderRadius: 2 }}>
+              <Alert severity="error" sx={{ borderRadius: 2 }} data-testid={authTestIds.resetPassword.errorBanner}>
                 {error}
               </Alert>
             )}
@@ -111,6 +112,7 @@ export default function ResetPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading || !!state?.email}
+              inputProps={{ "data-testid": authTestIds.resetPassword.emailInput }}
               placeholder="ejemplo@correo.com"
             />
 
@@ -121,6 +123,7 @@ export default function ResetPasswordPage() {
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
               disabled={isLoading}
+              inputProps={{ "data-testid": authTestIds.resetPassword.codeInput }}
               InputProps={{
                 startAdornment: (
                   <PasswordIcon color="action" sx={{ mr: 1, fontSize: 20 }} />
@@ -141,6 +144,7 @@ export default function ResetPasswordPage() {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               disabled={isLoading}
+              inputProps={{ "data-testid": authTestIds.resetPassword.passwordInput }}
               InputProps={{
                 startAdornment: (
                   <LockIcon color="action" sx={{ mr: 1, fontSize: 20 }} />
@@ -164,6 +168,7 @@ export default function ResetPasswordPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={isLoading}
+              inputProps={{ "data-testid": authTestIds.resetPassword.confirmPasswordInput }}
               InputProps={{
                 startAdornment: (
                   <LockIcon color="action" sx={{ mr: 1, fontSize: 20 }} />
@@ -177,6 +182,7 @@ export default function ResetPasswordPage() {
               fullWidth
               size="large"
               disabled={isLoading || !code || !newPassword}
+              data-testid={authTestIds.resetPassword.submitButton}
               sx={{
                 py: 1.6,
                 borderRadius: 2.5,
@@ -199,6 +205,7 @@ export default function ResetPasswordPage() {
       <Box sx={{ textAlign: "center" }}>
         <Link
           to="/forgot-password"
+          data-testid={authTestIds.resetPassword.requestAnotherCodeLink}
           style={{
             textDecoration: "none",
             display: "inline-flex",

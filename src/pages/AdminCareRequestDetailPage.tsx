@@ -132,7 +132,7 @@ export default function AdminCareRequestDetailPage() {
         </>
       }
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-care-detail-page">
         {error && <Alert severity="error">{error}</Alert>}
 
         {detail && (

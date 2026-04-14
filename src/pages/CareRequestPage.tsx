@@ -16,6 +16,7 @@ import { createCareRequest, getCareRequests } from "../api/careRequests";
 import WorkspaceShell from "../components/layout/WorkspaceShell";
 import { useAuth } from "../context/AuthContext";
 import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
+import { careRequestTestIds } from "../testing/careRequestTestIds";
 import {
   clearClientLogs,
   createCorrelationId,
@@ -263,9 +264,10 @@ export default function CareRequestPage() {
           gridTemplateColumns: { xs: "1fr", xl: "1.15fr 0.85fr" },
           gap: 3,
         }}
+        data-testid={careRequestTestIds.create.page}
       >
         <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
-          <Box component="form" onSubmit={handleSubmit}>
+          <Box component="form" onSubmit={handleSubmit} data-testid={careRequestTestIds.create.form}>
             <Stack spacing={2.5}>
               <Box>
                 <Typography variant="h4">Formulario de solicitud</Typography>
@@ -283,7 +285,11 @@ export default function CareRequestPage() {
                 </Stack>
               )}
 
-              {feedback && <Alert severity={feedback.type}>{feedback.message}</Alert>}
+              {feedback && (
+                <Alert severity={feedback.type} data-testid={careRequestTestIds.create.feedbackBanner}>
+                  {feedback.message}
+                </Alert>
+              )}
 
               {!userId && (
                 <Alert severity="warning">
@@ -302,6 +308,7 @@ export default function CareRequestPage() {
                 placeholder="Describe el cuidado requerido, urgencia, detalles clinicos relevantes y cualquier indicacion operativa para la aprobacion."
                 disabled={isLoading || catalogLoading}
                 helperText={`${descriptionCount} caracteres`}
+                data-testid={careRequestTestIds.create.descriptionField}
               />
 
               <TextField
@@ -312,6 +319,7 @@ export default function CareRequestPage() {
                 placeholder="Nombre de la enfermera que el cliente prefiere"
                 disabled={isLoading || catalogLoading}
                 helperText="Administracion decidira si asigna esta sugerencia u otra enfermera."
+                data-testid={careRequestTestIds.create.suggestedNurseField}
               />
 
               <TextField
@@ -339,6 +347,7 @@ export default function CareRequestPage() {
                 onChange={(event) => setCareRequestType(event.target.value)}
                 disabled={isLoading || catalogLoading}
                 SelectProps={{ native: true }}
+                data-testid={careRequestTestIds.create.serviceTypeSelect}
               >
                 {(catalogOptions?.careRequestTypes ?? []).map((row) => (
                   <option key={row.code} value={row.code}>
@@ -433,7 +442,11 @@ export default function CareRequestPage() {
                 />
               )}
 
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: "#f7fff9", mt: 2 }}>
+              <Paper
+                variant="outlined"
+                sx={{ p: 2, borderRadius: 2, bgcolor: "#f7fff9", mt: 2 }}
+                data-testid={careRequestTestIds.create.pricingEstimate}
+              >
                 <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
                   Estimacion en vivo
                 </Typography>
@@ -463,7 +476,13 @@ export default function CareRequestPage() {
               </Paper>
 
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
-                <Button type="submit" variant="contained" size="large" disabled={!canSubmit}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  disabled={!canSubmit}
+                  data-testid={careRequestTestIds.create.submitButton}
+                >
                   {isLoading ? (
                     <>
                       <CircularProgress size={18} sx={{ mr: 1, color: "inherit" }} />
@@ -484,6 +503,7 @@ export default function CareRequestPage() {
                     setCareRequestDate("");
                     setFeedback(null);
                   }}
+                  data-testid={careRequestTestIds.create.clearButton}
                 >
                   Limpiar formulario
                 </Button>
@@ -493,7 +513,10 @@ export default function CareRequestPage() {
         </Paper>
 
         <Stack spacing={3}>
-          <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }}>
+          <Paper
+            sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }}
+            data-testid={careRequestTestIds.create.submissionChecklist}
+          >
             <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
               Checklist de envio
             </Typography>

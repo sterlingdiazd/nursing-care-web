@@ -13,6 +13,7 @@ import {
 import { CareRequest, getCareRequests } from "../api/careRequests";
 import WorkspaceShell from "../components/layout/WorkspaceShell";
 import { useAuth } from "../context/AuthContext";
+import { careRequestTestIds } from "../testing/careRequestTestIds";
 
 function getStatusStyles(status: CareRequest["status"]) {
   switch (status) {
@@ -81,19 +82,29 @@ export default function CareRequestsListPage() {
       description="La cola permite leer el estado de cada solicitud de un vistazo, mientras el detalle concentra contexto y acciones."
       actions={
         <>
-          <Button variant="outlined" onClick={loadCareRequests} disabled={isLoading}>
+          <Button
+            variant="outlined"
+            onClick={loadCareRequests}
+            disabled={isLoading}
+            data-testid={careRequestTestIds.list.refreshButton}
+          >
             Actualizar cola
           </Button>
           {(roles.includes("CLIENT") || roles.includes("ADMIN")) && (
-            <Button variant="contained" onClick={() => navigate("/care-request")}>
+            <Button
+              variant="contained"
+              onClick={() => navigate("/care-request")}
+              data-testid={careRequestTestIds.list.createButton}
+            >
               Nueva solicitud
             </Button>
           )}
         </>
       }
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid={careRequestTestIds.list.page}>
         <Box
+          data-testid={careRequestTestIds.list.summaryGrid}
           sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr", md: "repeat(4, minmax(0, 1fr))" },
@@ -105,8 +116,17 @@ export default function CareRequestsListPage() {
             ["Pendientes de revision", String(summary.pending)],
             ["Aprobadas", String(summary.approved)],
             ["Completadas", String(summary.completed)],
-          ].map(([label, value]) => (
-            <Paper key={label} sx={{ p: 3, borderRadius: 2.5 }}>
+          ].map(([label, value], index) => (
+            <Paper
+              key={label}
+              sx={{ p: 3, borderRadius: 2.5 }}
+              data-testid={[
+                careRequestTestIds.list.summaryTotalCard,
+                careRequestTestIds.list.summaryPendingCard,
+                careRequestTestIds.list.summaryApprovedCard,
+                careRequestTestIds.list.summaryCompletedCard,
+              ][index]}
+            >
               <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
                 {label}
               </Typography>
@@ -117,12 +137,12 @@ export default function CareRequestsListPage() {
           ))}
         </Box>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && <Alert severity="error" data-testid={careRequestTestIds.list.errorBanner}>{error}</Alert>}
 
-        <Paper sx={{ p: 2, borderRadius: 3 }}>
+        <Paper sx={{ p: 2, borderRadius: 3 }} data-testid={careRequestTestIds.list.board}>
           <Stack spacing={1.5}>
             {careRequests.length === 0 && !isLoading ? (
-              <Box sx={{ p: 3 }}>
+              <Box sx={{ p: 3 }} data-testid={careRequestTestIds.list.emptyState}>
                 <Typography variant="h6">Todavia no hay solicitudes</Typography>
                 <Typography color="text.secondary" sx={{ mt: 1 }}>
                   Crea la primera solicitud para iniciar el flujo operativo.
@@ -136,6 +156,7 @@ export default function CareRequestsListPage() {
                 return (
                   <Paper
                     key={careRequest.id}
+                    data-testid={careRequestTestIds.list.requestRow(careRequest.id)}
                     sx={{
                       p: 3,
                       borderRadius: 2.5,
@@ -180,6 +201,7 @@ export default function CareRequestsListPage() {
                         <Button
                           variant="outlined"
                           onClick={() => navigate(`/care-requests/${careRequest.id}`)}
+                          data-testid={careRequestTestIds.list.requestDetailButton(careRequest.id)}
                         >
                           Ver detalle
                         </Button>

@@ -150,7 +150,7 @@ export default function AdminNurseProfilesPage() {
         </>
       )}
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-nurse-list-page">
         {error && <Alert severity="error">{error}</Alert>}
 
         <Box

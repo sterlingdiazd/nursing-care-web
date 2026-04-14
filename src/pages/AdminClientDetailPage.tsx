@@ -164,7 +164,7 @@ export default function AdminClientDetailPage() {
         </>
       )}
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-client-detail-page">
         {error && <Alert severity="error">{error}</Alert>}
         {successMessage && <Alert severity="success">{successMessage}</Alert>}
         {detail?.hasHistoricalCareRequests && (

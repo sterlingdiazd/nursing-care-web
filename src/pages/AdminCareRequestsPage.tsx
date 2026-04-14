@@ -182,7 +182,7 @@ export default function AdminCareRequestsPage() {
         </>
       }
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-care-list-page">
         {error && <Alert severity="error">{error}</Alert>}
 
         <Box

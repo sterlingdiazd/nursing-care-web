@@ -108,7 +108,7 @@ export default function AdminClientsPage() {
         </>
       )}
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-clients-page">
         {error && <Alert severity="error">{error}</Alert>}
 
         <Box

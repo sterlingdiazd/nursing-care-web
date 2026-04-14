@@ -20,6 +20,7 @@ import { useAuth } from "../context/AuthContext";
 import { logClientEvent } from "../logging/clientLogger";
 import { formatRoleLabels } from "../utils/roleLabels";
 import { API_BASE_URL } from "../config/env";
+import { authTestIds } from "../testing/authTestIds";
 
 export default function AccountPage() {
   const { email, isAuthenticated, logout, roles, token } = useAuth();
@@ -94,7 +95,7 @@ export default function AccountPage() {
       </Typography>
 
       {/* Session Card */}
-      <Card sx={{ mb: 3 }}>
+      <Card sx={{ mb: 3 }} data-testid={authTestIds.account.sessionCard}>
         <CardContent>
           <Typography
             variant="overline"
@@ -120,7 +121,7 @@ export default function AccountPage() {
               ? "Tu sesion esta activa."
               : "No hay una sesion activa."}
           </Typography>
-          <Typography variant="body1" sx={{ color: "text.secondary", mb: 1 }}>
+          <Typography variant="body1" sx={{ color: "text.secondary", mb: 1 }} data-testid={authTestIds.account.emailValue}>
             {email ?? "No hay correo cargado."}
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
@@ -147,7 +148,7 @@ export default function AccountPage() {
       </Card>
 
       {/* Access Card */}
-      <Card>
+      <Card data-testid={authTestIds.account.accessCard}>
         <CardContent>
           <Typography
             variant="overline"
@@ -182,6 +183,7 @@ export default function AccountPage() {
             startIcon={<GoogleIcon />}
             onClick={handleGoogleLogin}
             fullWidth
+            data-testid={authTestIds.account.googleButton}
             sx={{
               mb: 2,
               py: 1.5,
@@ -203,6 +205,7 @@ export default function AccountPage() {
                 startIcon={<LoginIcon />}
                 onClick={handleLogin}
                 fullWidth
+                data-testid={authTestIds.account.loginButton}
                 sx={{
                   mb: 2,
                   py: 1.5,
@@ -216,6 +219,7 @@ export default function AccountPage() {
                 startIcon={<PersonAddIcon />}
                 onClick={handleRegister}
                 fullWidth
+                data-testid={authTestIds.account.registerButton}
                 sx={{
                   py: 1.5,
                   fontWeight: 700,
@@ -234,6 +238,7 @@ export default function AccountPage() {
               onClick={handleLogout}
               disabled={isLoggingOut}
               fullWidth
+              data-testid={authTestIds.account.logoutButton}
               sx={{
                 mt: 2,
                 py: 1.5,

@@ -23,6 +23,7 @@ import { getGoogleOAuthStartUrl, validateEmail } from "../api/auth";
 import AuthScene from "../components/layout/AuthScene";
 import { useAuth } from "../context/AuthContext";
 import { AuthResponse } from "../types/auth";
+import { authTestIds } from "../testing/authTestIds";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -122,9 +123,9 @@ export default function LoginPage() {
       asideTitle="Comportamiento de la sesion"
       asideBody="El cliente web restaura la ultima sesion activa y renueva el token automaticamente cuando el backend lo permite."
       form={
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit} data-testid={authTestIds.login.form}>
           <Stack spacing={2.25}>
-            {error && <Alert severity="error">{error}</Alert>}
+            {error && <Alert severity="error" data-testid={authTestIds.login.errorBanner}>{error}</Alert>}
 
             <TextField
               fullWidth
@@ -135,6 +136,7 @@ export default function LoginPage() {
               placeholder="nombre@centro.org"
               disabled={isLoading}
               error={email.length > 0 && !isEmailValid}
+              inputProps={{ "data-testid": authTestIds.login.emailInput }}
               helperText={
                 email.length > 0 && !isEmailValid
                   ? "Use a valid email format."
@@ -151,6 +153,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               autoComplete="current-password"
+              inputProps={{ "data-testid": authTestIds.login.passwordInput }}
               InputProps={{
                 startAdornment: (
                   <LockIcon color="action" sx={{ mr: 1, fontSize: 20 }} />
@@ -169,6 +172,7 @@ export default function LoginPage() {
               <Link
                 component={RouterLink}
                 to="/forgot-password"
+                data-testid={authTestIds.login.forgotPasswordLink}
                 style={{
                   textDecoration: "none",
                   color: "var(--mui-palette-primary-main)",
@@ -180,7 +184,7 @@ export default function LoginPage() {
               </Link>
             </Box>
 
-            <Button type="submit" variant="contained" size="large" disabled={!canSubmit}>
+            <Button type="submit" variant="contained" size="large" disabled={!canSubmit} data-testid={authTestIds.login.submitButton}>
               {isLoading ? (
                 <>
                   <CircularProgress size={18} sx={{ mr: 1, color: "inherit" }} />
@@ -199,13 +203,14 @@ export default function LoginPage() {
               size="large"
               disabled={isLoading}
               onClick={handleGoogleSignIn}
+              data-testid={authTestIds.login.googleButton}
             >
               Continuar con Google
             </Button>
 
             <Typography color="text.secondary" sx={{ textAlign: "center" }}>
               ¿Aun no tienes cuenta?{" "}
-              <Link component={RouterLink} to="/register" underline="hover" sx={{ fontWeight: 700 }}>
+              <Link component={RouterLink} to="/register" underline="hover" sx={{ fontWeight: 700 }} data-testid={authTestIds.login.registerLink}>
                 Crear cuenta
               </Link>
             </Typography>

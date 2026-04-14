@@ -12,6 +12,7 @@ import {
 import { ArrowBack as ArrowBackIcon, Mail as MailIcon } from "@mui/icons-material";
 import AuthScene from "../components/layout/AuthScene";
 import { forgotPassword, validateEmail } from "../api/auth";
+import { authTestIds } from "../testing/authTestIds";
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -69,7 +70,7 @@ export default function ForgotPasswordPage() {
     <Stack spacing={3.5}>
       {isSuccess ? (
         <Stack spacing={3}>
-          <Alert severity="success" sx={{ borderRadius: 2 }}>
+          <Alert severity="success" sx={{ borderRadius: 2 }} data-testid={authTestIds.forgotPassword.successBanner}>
             Si el correo está registrado, hemos enviado un código de 6 dígitos para restablecer tu contraseña.
           </Alert>
           <Typography variant="body2" sx={{ color: "text.secondary", textAlign: "center" }}>
@@ -84,6 +85,7 @@ export default function ForgotPasswordPage() {
             fullWidth
             size="large"
             onClick={() => navigate("/reset-password", { state: { email } })}
+            data-testid={authTestIds.forgotPassword.enterCodeButton}
             sx={{
               py: 1.6,
               borderRadius: 2.5,
@@ -102,6 +104,7 @@ export default function ForgotPasswordPage() {
               void requestRecoveryCode();
             }}
             disabled={isLoading || cooldownRemaining > 0}
+            data-testid={authTestIds.forgotPassword.resendButton}
             sx={{
               py: 1.4,
               borderRadius: 2.5,
@@ -121,10 +124,10 @@ export default function ForgotPasswordPage() {
           </Typography>
         </Stack>
       ) : (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} data-testid={authTestIds.forgotPassword.form}>
           <Stack spacing={3}>
             {error && (
-              <Alert severity="error" sx={{ borderRadius: 2 }}>
+              <Alert severity="error" sx={{ borderRadius: 2 }} data-testid={authTestIds.forgotPassword.errorBanner}>
                 {error}
               </Alert>
             )}
@@ -136,6 +139,7 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
+              inputProps={{ "data-testid": authTestIds.forgotPassword.emailInput }}
               InputProps={{
                 startAdornment: (
                   <MailIcon color="action" sx={{ mr: 1, fontSize: 20 }} />
@@ -150,6 +154,7 @@ export default function ForgotPasswordPage() {
               fullWidth
               size="large"
               disabled={isLoading || !email}
+              data-testid={authTestIds.forgotPassword.submitButton}
               sx={{
                 py: 1.6,
                 borderRadius: 2.5,
@@ -172,6 +177,7 @@ export default function ForgotPasswordPage() {
       <Box sx={{ textAlign: "center" }}>
         <Link
           to="/login"
+          data-testid={authTestIds.forgotPassword.backToLoginLink}
           style={{
             textDecoration: "none",
             display: "inline-flex",

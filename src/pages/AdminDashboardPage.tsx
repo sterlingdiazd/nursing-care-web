@@ -244,7 +244,7 @@ export default function AdminDashboardPage() {
         </>
       }
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-dashboard-page">
         {error && <Alert severity="error">{error}</Alert>}
 
         <Paper
