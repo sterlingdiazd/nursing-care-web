@@ -65,6 +65,25 @@ describe("AdminReportsPage", () => {
     expect(screen.getAllByText(/Estado general de solicitudes/)[0]).toBeInTheDocument();
   });
 
+  it("selects payroll quincena report and shows payroll panel", async () => {
+    const payrollData = {
+      startDate: "2026-04-01",
+      endDate: "2026-04-15",
+      cutoffDate: "2026-04-13",
+      paymentDate: "2026-04-15",
+      staff: [],
+      services: [],
+    };
+    vi.mocked(adminReportsApi.getAdminReport).mockResolvedValueOnce(mockReportData);
+    vi.mocked(adminReportsApi.getAdminReport).mockResolvedValueOnce(payrollData);
+
+    renderPage();
+    await screen.findByText("5");
+    fireEvent.click(screen.getByTestId("admin-report-option-payroll-summary"));
+    expect(await screen.findByTestId("admin-payroll-report-panel")).toBeInTheDocument();
+    expect(screen.getByText("Resumen por enfermera")).toBeInTheDocument();
+  });
+
   it("changes report and loads new data", async () => {
     const mockUtilizationData = {
       rows: [{ nurseId: "1", nurseName: "Maria", totalAssigned: 10, completed: 8, pending: 2, completionRate: 0.8 }],

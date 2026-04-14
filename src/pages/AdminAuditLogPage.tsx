@@ -147,7 +147,7 @@ export default function AdminAuditLogPage() {
         </>
       )}
     >
-      <Stack spacing={3}>
+      <Stack spacing={3} data-testid="admin-audit-log-page">
         {error && <Alert severity="error">{error}</Alert>}
 
         <Paper sx={{ p: 2.5, borderRadius: 3 }}>
@@ -231,7 +231,7 @@ export default function AdminAuditLogPage() {
                   </TableRow>
                 ) : (
                   items.map((item) => (
-                    <TableRow key={item.id} hover>
+                    <TableRow key={item.id} hover data-testid="admin-audit-log-row">
                       <TableCell>{formatTimestamp(item.createdAtUtc)}</TableCell>
                       <TableCell>{item.actorName || t("adminAuditLog.detail.system")}</TableCell>
                       <TableCell>
@@ -244,7 +244,7 @@ export default function AdminAuditLogPage() {
                       </TableCell>
                       <TableCell>{item.notes || "-"}</TableCell>
                       <TableCell align="right">
-                        <Button size="small" onClick={() => void handleViewDetail(item.id)}>
+                        <Button data-testid="admin-audit-log-view-detail-button" size="small" onClick={() => void handleViewDetail(item.id)}>
                           {t("adminAuditLog.table.viewDetail")}
                         </Button>
                       </TableCell>
@@ -270,7 +270,7 @@ export default function AdminAuditLogPage() {
         </Paper>
       </Stack>
 
-      <Dialog open={detailDialogOpen} onClose={handleCloseDetail} maxWidth="md" fullWidth>
+      <Dialog data-testid="admin-audit-log-detail-dialog" open={detailDialogOpen} onClose={handleCloseDetail} maxWidth="md" fullWidth>
         <DialogTitle>{t("adminAuditLog.detail.title")}</DialogTitle>
         <DialogContent>
           {selectedDetail && (

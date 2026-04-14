@@ -33,6 +33,7 @@ import {
   type CareRequestCompletionReport,
   type PriceUsageSummaryReport,
   type NotificationVolumeReport,
+  type PayrollSummaryReport,
 } from "../api/adminReports";
 import { extractApiErrorMessage } from "../api/errorMessage";
 
@@ -85,6 +86,11 @@ export default function AdminReportsPage() {
       label: t("adminReports.list.notifications.label"),
       description: t("adminReports.list.notifications.description"),
     },
+    {
+      key: "payroll-summary",
+      label: "Nomina por quincena",
+      description: "Consolida servicios ejecutados, desglose pagable y neto por enfermera usando el snapshot comercial persistido.",
+    },
   ], [t]);
 
   const [selectedReportKey, setSelectedReportKey] = useState<string>(REPORTS[0].key);
@@ -135,6 +141,7 @@ export default function AdminReportsPage() {
       title={t("adminReports.title")}
       description={t("adminReports.description")}
     >
+      <Box data-testid="admin-reports-page" sx={{ width: "100%" }}>
       <Stack spacing={4}>
         {error && <Alert severity="error">{error}</Alert>}
 
@@ -154,6 +161,7 @@ export default function AdminReportsPage() {
                 return (
                   <Card
                     key={report.key}
+                    data-testid={`admin-report-option-${report.key}`}
                     onClick={() => setSelectedReportKey(report.key)}
                     sx={{
                       cursor: "pointer",
@@ -233,6 +241,7 @@ export default function AdminReportsPage() {
           </Box>
         </Box>
       </Stack>
+      </Box>
     </AdminPortalShell>
   );
 }
@@ -256,6 +265,8 @@ function ReportVisualizer({ reportKey, data }: { reportKey: string; data: AdminR
       return <PriceVisualizer data={data as PriceUsageSummaryReport} />;
     case "notification-volume":
       return <NotificationsVisualizer data={data as NotificationVolumeReport} />;
+    case "payroll-summary":
+      return <PayrollVisualizer data={data as PayrollSummaryReport} />;
     default:
       return <Typography>{t("adminReports.list.unknown")}</Typography>;
   }
@@ -310,6 +321,97 @@ function BacklogVisualizer({ data }: { data: AssignmentApprovalBacklogReport }) 
         <MetricCard label={t("adminReports.list.backlog.avgWaitDays")} value={`${data.averageDaysPending.toFixed(1)} dias`} />
       </Box>
     </Box>
+  );
+}
+
+function PayrollVisualizer({ data }: { data: PayrollSummaryReport }) {
+  return (
+    <Stack data-testid="admin-payroll-report-panel" spacing={3}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "repeat(4, 1fr)" },
+          gap: 2,
+        }}
+      >
+        <MetricCard label="Inicio" value={data.startDate} />
+        <MetricCard label="Fin" value={data.endDate} />
+        <MetricCard label="Corte" value={data.cutoffDate} />
+        <MetricCard label="Pago" value={data.paymentDate} />
+      </Box>
+
+      <Stack spacing={1}>
+        <Typography variant="h6">Resumen por enfermera</Typography>
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Enfermera</TableCell>
+                <TableCell align="right">Servicios</TableCell>
+                <TableCell align="right">Bruto</TableCell>
+                <TableCell align="right">Transporte</TableCell>
+                <TableCell align="right">Ajustes</TableCell>
+                <TableCell align="right">Deducciones</TableCell>
+                <TableCell align="right">Neto</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.staff.map((row) => (
+                <TableRow key={row.nurseId}>
+                  <TableCell>{row.nurseName}</TableCell>
+                  <TableCell align="right">{row.serviceCount}</TableCell>
+                  <TableCell align="right">{row.grossCompensation.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.transportIncentives.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.adjustmentsTotal.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.deductionsTotal.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.netCompensation.toFixed(2)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Stack>
+
+      <Stack spacing={1}>
+        <Typography variant="h6">Servicios incluidos</Typography>
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Enfermera</TableCell>
+                <TableCell>Solicitud</TableCell>
+                <TableCell>Tipo</TableCell>
+                <TableCell>Variante</TableCell>
+                <TableCell align="right">Total servicio</TableCell>
+                <TableCell align="right">Base</TableCell>
+                <TableCell align="right">Transporte</TableCell>
+                <TableCell align="right">Complejidad</TableCell>
+                <TableCell align="right">Insumos</TableCell>
+                <TableCell align="right">Deducciones</TableCell>
+                <TableCell align="right">Neto</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.services.map((row) => (
+                <TableRow key={`${row.nurseId}-${row.careRequestId}`}>
+                  <TableCell>{row.nurseName}</TableCell>
+                  <TableCell>{row.careRequestId}</TableCell>
+                  <TableCell>{row.careRequestType}</TableCell>
+                  <TableCell>{row.serviceVariant}</TableCell>
+                  <TableCell align="right">{row.careRequestTotal.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.baseCompensation.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.transportIncentive.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.complexityBonus.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.medicalSuppliesCompensation.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.deductionsTotal.toFixed(2)}</TableCell>
+                  <TableCell align="right">{row.netCompensation.toFixed(2)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Stack>
+    </Stack>
   );
 }
 

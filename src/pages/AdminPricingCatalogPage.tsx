@@ -148,13 +148,13 @@ export default function AdminPricingCatalogPage() {
             }
             label="Mostrar inactivos"
           />
-          <Button variant="outlined" onClick={() => void reloadAll()}>
+          <Button data-testid="admin-catalog-reload-button" variant="outlined" onClick={() => void reloadAll()}>
             Recargar
           </Button>
         </Stack>
       }
     >
-      <Stack spacing={2.5}>
+      <Stack spacing={2.5} data-testid="admin-catalog-page">
         {flash && <Alert severity="success">{flash}</Alert>}
         {error && <Alert severity="error">{error}</Alert>}
 
@@ -172,8 +172,8 @@ export default function AdminPricingCatalogPage() {
             <Tab label="Complejidad" value="complexity" />
             <Tab label="Descuentos volumen" value="volume" />
             <Tab label="Especialidades" value="spec" />
-            <Tab label="Categorias enfermeria" value="ncat" />
-            <Tab label="Vista previa precios" value="preview" />
+            <Tab data-testid="admin-catalog-tab-nurse-categories" label="Categorias enfermeria" value="ncat" />
+            <Tab data-testid="admin-catalog-tab-pricing-preview" label="Vista previa precios" value="preview" />
           </Tabs>
         </Paper>
 
@@ -351,7 +351,7 @@ function CategorySection({
               <TableCell>{row.displayOrder}</TableCell>
               <TableCell>{row.isActive ? "Si" : "No"}</TableCell>
               <TableCell align="right">
-                <Button size="small" onClick={() => startEdit(row)}>
+                <Button data-testid="admin-catalog-nurse-category-edit-button" size="small" onClick={() => startEdit(row)}>
                   Editar
                 </Button>
               </TableCell>
@@ -360,7 +360,7 @@ function CategorySection({
         </TableBody>
       </Table>
 
-      <Dialog open={open} onClose={() => !saving && setOpen(false)} fullWidth maxWidth="sm">
+      <Dialog data-testid="admin-catalog-nurse-category-dialog" open={open} onClose={() => !saving && setOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>{edit ? "Editar categoria" : "Nueva categoria"}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
@@ -551,7 +551,12 @@ function TypeSection({
             {!edit && (
               <TextField label="Codigo" value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} />
             )}
-            <TextField label="Nombre visible" value={form.displayName} onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))} />
+            <TextField
+              label="Nombre visible"
+              value={form.displayName}
+              onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
+              slotProps={{ htmlInput: { "data-testid": "admin-catalog-nurse-category-name-input" } }}
+            />
             <TextField select label="Categoria" value={form.careRequestCategoryCode} SelectProps={{ native: true }} onChange={(e) => setForm((f) => ({ ...f, careRequestCategoryCode: e.target.value }))}>
               {categoryCodes.map((c) => (
                 <option key={c} value={c}>
@@ -575,7 +580,7 @@ function TypeSection({
           <Button onClick={() => setOpen(false)} disabled={saving}>
             Cancelar
           </Button>
-          <Button onClick={() => void submit()} variant="contained" disabled={saving}>
+          <Button data-testid="admin-catalog-nurse-category-save-button" onClick={() => void submit()} variant="contained" disabled={saving}>
             Guardar
           </Button>
         </DialogActions>
@@ -640,7 +645,7 @@ function UnitSection({
   };
 
   return (
-    <Paper sx={{ p: 3, borderRadius: 3 }}>
+    <Paper sx={{ p: 3, borderRadius: 3 }} data-testid="admin-catalog-pricing-preview-panel">
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <Typography variant="h6">Tipos de unidad</Typography>
         <Button variant="contained" onClick={startCreate}>
@@ -1141,7 +1146,7 @@ function NurseSpecialtySection({
     <Paper sx={{ p: 3, borderRadius: 3 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <Typography variant="h6">Especialidades de enfermeria</Typography>
-        <Button variant="contained" onClick={startCreate}>
+        <Button data-testid="admin-catalog-nurse-category-create-button" variant="contained" onClick={startCreate}>
           Nueva
         </Button>
       </Stack>
@@ -1176,7 +1181,14 @@ function NurseSpecialtySection({
         <DialogTitle>{edit ? "Editar especialidad" : "Nueva especialidad"}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            {!edit && <TextField label="Codigo" value={form.code} onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))} />}
+            {!edit && (
+              <TextField
+                label="Codigo"
+                value={form.code}
+                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value }))}
+                slotProps={{ htmlInput: { "data-testid": "admin-catalog-nurse-category-code-input" } }}
+              />
+            )}
             <TextField label="Nombre visible" value={form.displayName} onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))} />
             <TextField
               label="Alias (opcional)"
@@ -1412,7 +1424,13 @@ function PricingPreviewPanel({ options }: { options: CatalogOptionsResponse }) {
             </option>
           ))}
         </TextField>
-        <TextField label="Unidades" type="number" value={unit} onChange={(e) => setUnit(Math.max(1, Number(e.target.value)))} />
+        <TextField
+          label="Unidades"
+          type="number"
+          value={unit}
+          onChange={(e) => setUnit(Math.max(1, Number(e.target.value)))}
+          slotProps={{ htmlInput: { "data-testid": "admin-catalog-pricing-preview-unit-input" } }}
+        />
         <TextField
           label="Ajuste de precio base (opcional)"
           type="number"
@@ -1464,11 +1482,11 @@ function PricingPreviewPanel({ options }: { options: CatalogOptionsResponse }) {
             <TextField label="Precio base propuesto" type="number" value={proposedBase} onChange={(e) => setProposedBase(e.target.value === "" ? "" : Number(e.target.value))} />
           </Stack>
         )}
-        <Button variant="contained" onClick={() => void runPreview()} disabled={loading}>
+        <Button data-testid="admin-catalog-pricing-preview-run-button" variant="contained" onClick={() => void runPreview()} disabled={loading}>
           {loading ? "Calculando..." : "Calcular vista previa"}
         </Button>
         {result && (
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: "rgba(247,244,238,0.9)" }}>
+          <Box data-testid="admin-catalog-pricing-preview-result" sx={{ p: 2, borderRadius: 2, bgcolor: "rgba(247,244,238,0.9)" }}>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Resultado
             </Typography>

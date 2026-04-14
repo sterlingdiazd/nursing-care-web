@@ -75,6 +75,46 @@ export interface NotificationVolumeReport {
   pendingActionItemsCount: number;
 }
 
+export interface PayrollServiceRow {
+  nurseId: string;
+  nurseName: string;
+  careRequestId: string;
+  careRequestType: string;
+  pricingCategoryCode: string;
+  employmentType: string;
+  serviceVariant: string;
+  executedAtUtc: string;
+  careRequestTotal: number;
+  baseCompensation: number;
+  transportIncentive: number;
+  complexityBonus: number;
+  medicalSuppliesCompensation: number;
+  adjustmentsTotal: number;
+  deductionsTotal: number;
+  netCompensation: number;
+}
+
+export interface PayrollSummaryStaffRow {
+  nurseId: string;
+  nurseName: string;
+  serviceCount: number;
+  grossCompensation: number;
+  transportIncentives: number;
+  adjustmentsTotal: number;
+  deductionsTotal: number;
+  netCompensation: number;
+}
+
+export interface PayrollSummaryReport {
+  periodLabel: string;
+  startDate: string;
+  endDate: string;
+  cutoffDate: string;
+  paymentDate: string;
+  staff: PayrollSummaryStaffRow[];
+  services: PayrollServiceRow[];
+}
+
 export type AdminReportResponse =
   | CareRequestPipelineReport
   | AssignmentApprovalBacklogReport
@@ -83,7 +123,8 @@ export type AdminReportResponse =
   | NurseUtilizationReport
   | CareRequestCompletionReport
   | PriceUsageSummaryReport
-  | NotificationVolumeReport;
+  | NotificationVolumeReport
+  | PayrollSummaryReport;
 
 export interface GetAdminReportParams {
   from?: string;
