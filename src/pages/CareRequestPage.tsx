@@ -32,20 +32,33 @@ import { estimateCareRequestPricingFromCatalog } from "../utils/pricingFromCatal
 export default function CareRequestPage() {
   const navigate = useNavigate();
   const { userId } = useAuth();
-  const { data: catalogOptions, isLoading: catalogLoading, error: catalogError } =
-    useCareRequestCatalogOptions();
-  const { data: availableNurses, isLoading: nursesLoading, error: nursesError } =
-    useAvailableNurses();
+  const {
+    data: catalogOptions,
+    isLoading: catalogLoading,
+    error: catalogError,
+  } = useCareRequestCatalogOptions();
+  const {
+    data: availableNurses,
+    isLoading: nursesLoading,
+    error: nursesError,
+  } = useAvailableNurses();
   const [careRequestDescription, setCareRequestDescription] = useState("");
-  const [selectedNurse, setSelectedNurse] = useState<AvailableNurse | null>(null);
+  const [selectedNurse, setSelectedNurse] = useState<AvailableNurse | null>(
+    null,
+  );
   const [careRequestDate, setCareRequestDate] = useState("");
   const [careRequestType, setCareRequestType] = useState<string>("");
   const [unit, setUnit] = useState<number>(1);
   const [distanceFactor, setDistanceFactor] = useState<string>("local");
   const [complexityLevel, setComplexityLevel] = useState<string>("estandar");
-  const [clientBasePriceOverride, setClientBasePriceOverride] = useState<number | "">("");
-  const [medicalSuppliesCost, setMedicalSuppliesCost] = useState<number | "">("");
-  const [existingSameUnitTypeCount, setExistingSameUnitTypeCount] = useState<number>(0);
+  const [clientBasePriceOverride, setClientBasePriceOverride] = useState<
+    number | ""
+  >("");
+  const [medicalSuppliesCost, setMedicalSuppliesCost] = useState<number | "">(
+    "",
+  );
+  const [existingSameUnitTypeCount, setExistingSameUnitTypeCount] =
+    useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
@@ -59,7 +72,10 @@ export default function CareRequestPage() {
     }
 
     setCareRequestType((prev) => {
-      if (prev && catalogOptions.careRequestTypes.some((t) => t.code === prev)) {
+      if (
+        prev &&
+        catalogOptions.careRequestTypes.some((t) => t.code === prev)
+      ) {
         return prev;
       }
       return catalogOptions.careRequestTypes[0]?.code ?? "";
@@ -70,13 +86,16 @@ export default function CareRequestPage() {
   const descriptionCount = trimmedDescription.length;
   const latestLogs = useMemo(() => logs.slice(0, 4), [logs]);
 
-  const selectedService = catalogOptions?.careRequestTypes.find((t) => t.code === careRequestType);
+  const selectedService = catalogOptions?.careRequestTypes.find(
+    (t) => t.code === careRequestType,
+  );
   const selectedCategory = selectedService?.careRequestCategoryCode ?? "";
   const derivedUnitType = selectedService?.unitTypeCode ?? "";
 
   const categoryDisplayName =
-    catalogOptions?.careRequestCategories.find((c) => c.code === selectedCategory)?.displayName ??
-    selectedCategory;
+    catalogOptions?.careRequestCategories.find(
+      (c) => c.code === selectedCategory,
+    )?.displayName ?? selectedCategory;
 
   const catalogBasePrice = selectedService?.basePrice ?? 0;
   const basePrice =
@@ -94,16 +113,19 @@ export default function CareRequestPage() {
         careRequestTypeCode: careRequestType,
         unit,
         clientBasePriceOverride:
-          typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
+          typeof clientBasePriceOverride === "number" &&
+          clientBasePriceOverride > 0
             ? clientBasePriceOverride
             : undefined,
-        distanceFactorCode: selectedCategory === "domicilio" ? distanceFactor : undefined,
+        distanceFactorCode:
+          selectedCategory === "domicilio" ? distanceFactor : undefined,
         complexityLevelCode:
           selectedCategory === "hogar" || selectedCategory === "domicilio"
             ? complexityLevel
             : undefined,
         medicalSuppliesCost:
-          selectedCategory === "medicos" && typeof medicalSuppliesCost === "number"
+          selectedCategory === "medicos" &&
+          typeof medicalSuppliesCost === "number"
             ? medicalSuppliesCost
             : undefined,
         existingSameUnitTypeCount,
@@ -128,7 +150,9 @@ export default function CareRequestPage() {
   const isMedicos = selectedCategory === "medicos";
 
   const medicalSupplies =
-    isMedicos && typeof medicalSuppliesCost === "number" && medicalSuppliesCost >= 0
+    isMedicos &&
+    typeof medicalSuppliesCost === "number" &&
+    medicalSuppliesCost >= 0
       ? medicalSuppliesCost
       : 0;
 
@@ -137,15 +161,15 @@ export default function CareRequestPage() {
   const volumeDiscount = pricingEstimate?.volumeDiscountPercent ?? 0;
 
   const canSubmit =
-    !isLoading
-    && !catalogLoading
-    && !nursesLoading
-    && Boolean(catalogOptions)
-    && Boolean(userId)
-    && trimmedDescription.length > 0
-    && unit > 0
-    && Boolean(selectedService)
-    && Boolean(pricingEstimate);
+    !isLoading &&
+    !catalogLoading &&
+    !nursesLoading &&
+    Boolean(catalogOptions) &&
+    Boolean(userId) &&
+    trimmedDescription.length > 0 &&
+    unit > 0 &&
+    Boolean(selectedService) &&
+    Boolean(pricingEstimate);
 
   useEffect(() => {
     if (!userId || !derivedUnitType) {
@@ -157,7 +181,9 @@ export default function CareRequestPage() {
     void getCareRequests()
       .then((list) => {
         const count = list.filter(
-          (request) => request.userID === userId && (request.unitType ?? "") === currentUnitType,
+          (request) =>
+            request.userID === userId &&
+            (request.unitType ?? "") === currentUnitType,
         ).length;
         setExistingSameUnitTypeCount(count);
       })
@@ -170,7 +196,8 @@ export default function CareRequestPage() {
     if (!userId) {
       setFeedback({
         type: "error",
-        message: "No se pudo identificar al usuario autenticado. Vuelve a iniciar sesion.",
+        message:
+          "No se pudo identificar al usuario autenticado. Vuelve a iniciar sesion.",
       });
       return;
     }
@@ -201,14 +228,19 @@ export default function CareRequestPage() {
           careRequestDescription: trimmedDescription,
           careRequestType,
           unit,
-          ...(selectedNurse ? { suggestedNurse: selectedNurse.displayName } : {}),
+          ...(selectedNurse
+            ? { suggestedNurse: selectedNurse.displayName }
+            : {}),
           ...(careRequestDate ? { careRequestDate } : {}),
-          ...(typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
+          ...(typeof clientBasePriceOverride === "number" &&
+          clientBasePriceOverride > 0
             ? { clientBasePriceOverride }
             : {}),
           ...(isDomicilio ? { distanceFactor } : {}),
           ...(isHogarOrDomicilio ? { complexityLevel } : {}),
-          ...(isMedicos && typeof medicalSuppliesCost === "number" ? { medicalSuppliesCost } : {}),
+          ...(isMedicos && typeof medicalSuppliesCost === "number"
+            ? { medicalSuppliesCost }
+            : {}),
         },
         correlationId,
       );
@@ -228,7 +260,8 @@ export default function CareRequestPage() {
       setCareRequestDate("");
       navigate(`/care-requests/${response.id}`);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Error desconocido";
+      const message =
+        error instanceof Error ? error.message : "Error desconocido";
       logClientEvent(
         "web.ui",
         "La creacion de la solicitud mostro un error en la interfaz",
@@ -274,13 +307,21 @@ export default function CareRequestPage() {
         data-testid={careRequestTestIds.create.page}
       >
         <Paper sx={{ p: { xs: 3, md: 4 }, borderRadius: 3 }}>
-          <Box component="form" onSubmit={handleSubmit} data-testid={careRequestTestIds.create.form}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            data-testid={careRequestTestIds.create.form}
+          >
             <Stack spacing={2.5}>
               <Box>
                 <Typography variant="h4">Formulario de solicitud</Typography>
-                <Typography color="text.secondary" sx={{ mt: 1, lineHeight: 1.8 }}>
-                  La solicitud se vinculara automaticamente con el usuario autenticado actual.
-                  Describe el cuidado requerido con el detalle suficiente para triage y aprobacion.
+                <Typography
+                  color="text.secondary"
+                  sx={{ mt: 1, lineHeight: 1.8 }}
+                >
+                  La solicitud se vinculara automaticamente con el usuario
+                  autenticado actual. Describe el cuidado requerido con el
+                  detalle suficiente para triage y aprobacion.
                 </Typography>
               </Box>
 
@@ -288,20 +329,25 @@ export default function CareRequestPage() {
               {catalogLoading && (
                 <Stack direction="row" spacing={1} alignItems="center">
                   <CircularProgress size={22} />
-                  <Typography color="text.secondary">Cargando catalogo de precios...</Typography>
+                  <Typography color="text.secondary">
+                    Cargando catalogo de precios...
+                  </Typography>
                 </Stack>
               )}
 
               {feedback && (
-                <Alert severity={feedback.type} data-testid={careRequestTestIds.create.feedbackBanner}>
+                <Alert
+                  severity={feedback.type}
+                  data-testid={careRequestTestIds.create.feedbackBanner}
+                >
                   {feedback.message}
                 </Alert>
               )}
 
               {!userId && (
                 <Alert severity="warning">
-                  La sesion actual no tiene un `userId` disponible. Cierra sesion e inicia sesion
-                  de nuevo antes de crear solicitudes.
+                  La sesion actual no tiene un `userId` disponible. Cierra
+                  sesion e inicia sesion de nuevo antes de crear solicitudes.
                 </Alert>
               )}
 
@@ -311,7 +357,9 @@ export default function CareRequestPage() {
                 multiline
                 rows={8}
                 value={careRequestDescription}
-                onChange={(event) => setCareRequestDescription(event.target.value)}
+                onChange={(event) =>
+                  setCareRequestDescription(event.target.value)
+                }
                 placeholder="Describe el cuidado requerido, urgencia, detalles clinicos relevantes y cualquier indicacion operativa para la aprobacion."
                 disabled={isLoading || catalogLoading}
                 helperText={`${descriptionCount} caracteres`}
@@ -320,7 +368,9 @@ export default function CareRequestPage() {
 
               <Autocomplete
                 options={availableNurses ?? []}
-                getOptionLabel={(option) => `${option.displayName} (${option.specialty})`}
+                getOptionLabel={(option) =>
+                  `${option.displayName} (${option.specialty})`
+                }
                 value={selectedNurse}
                 onChange={(_, newValue) => setSelectedNurse(newValue)}
                 openOnFocus
@@ -333,7 +383,9 @@ export default function CareRequestPage() {
                   return options.filter((option) =>
                     [option.displayName, option.specialty, option.category]
                       .filter(Boolean)
-                      .some((value) => value.toLocaleLowerCase().includes(query)),
+                      .some((value) =>
+                        value.toLocaleLowerCase().includes(query),
+                      ),
                   );
                 }}
                 loading={nursesLoading}
@@ -347,7 +399,11 @@ export default function CareRequestPage() {
                     data-testid={careRequestTestIds.create.suggestedNurseField}
                   />
                 )}
-                noOptionsText={nursesError ? "Error cargando enfermeras" : "No hay enfermeras disponibles"}
+                noOptionsText={
+                  nursesError
+                    ? "Error cargando enfermeras"
+                    : "No hay enfermeras disponibles"
+                }
               />
 
               <FormDatePicker
@@ -358,8 +414,9 @@ export default function CareRequestPage() {
                 disabled={isLoading || catalogLoading}
                 slotProps={{
                   textField: {
-                    helperText: "Si se indica una fecha futura, la enfermera asignada no podra completar la solicitud antes de ese dia."
-                  }
+                    helperText:
+                      "Si se indica una fecha futura, la enfermera asignada no podra completar la solicitud antes de ese dia.",
+                  },
                 }}
               />
 
@@ -394,7 +451,12 @@ export default function CareRequestPage() {
                 helperText={`Tipo de unidad: ${derivedUnitType}`}
               />
 
-              <TextField fullWidth label="Precio base" value={catalogBasePrice} disabled />
+              <TextField
+                fullWidth
+                label="Precio base"
+                value={catalogBasePrice}
+                disabled
+              />
 
               <TextField
                 fullWidth
@@ -402,7 +464,9 @@ export default function CareRequestPage() {
                 type="number"
                 value={unit}
                 inputProps={{ min: 1 }}
-                onChange={(event) => setUnit(Math.max(1, Number(event.target.value)))}
+                onChange={(event) =>
+                  setUnit(Math.max(1, Number(event.target.value)))
+                }
                 disabled={isLoading || catalogLoading}
               />
 
@@ -481,26 +545,35 @@ export default function CareRequestPage() {
                   Estimacion en vivo
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Precio unitario = base x categoria x distancia x complejidad x (1 - descuento)
+                  Precio unitario = base x categoria x distancia x complejidad x
+                  (1 - descuento)
                 </Typography>
                 {pricingEstimate ? (
                   <>
                     <Typography variant="body2" sx={{ mt: 1 }}>
-                      base: {basePrice} x categoria: {pricingEstimate.categoryFactor} x distancia:{" "}
-                      {pricingEstimate.distanceMultiplier} x complejidad: {pricingEstimate.complexityMultiplier} x (1 -{" "}
+                      base: {basePrice} x categoria:{" "}
+                      {pricingEstimate.categoryFactor} x distancia:{" "}
+                      {pricingEstimate.distanceMultiplier} x complejidad:{" "}
+                      {pricingEstimate.complexityMultiplier} x (1 -{" "}
                       {volumeDiscount}%)
                     </Typography>
                     <Typography variant="body2" sx={{ mt: 1 }}>
-                      Precio unitario: {unitPrice.toFixed(2)} • Cantidad: {unit} • Insumos:{" "}
-                      {medicalSupplies.toFixed(2)}
+                      Precio unitario: {unitPrice.toFixed(2)} • Cantidad: {unit}{" "}
+                      • Insumos: {medicalSupplies.toFixed(2)}
                     </Typography>
                     <Typography variant="h6" sx={{ mt: 0.5 }}>
                       Total estimado: {estimatedTotal.toFixed(2)}
                     </Typography>
                   </>
                 ) : (
-                  <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
-                    {catalogLoading ? "Calculando..." : "Selecciona un tipo de solicitud valido para ver la estimacion."}
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 1 }}
+                    color="text.secondary"
+                  >
+                    {catalogLoading
+                      ? "Calculando..."
+                      : "Selecciona un tipo de solicitud valido para ver la estimacion."}
                   </Typography>
                 )}
               </Paper>
@@ -515,7 +588,10 @@ export default function CareRequestPage() {
                 >
                   {isLoading ? (
                     <>
-                      <CircularProgress size={18} sx={{ mr: 1, color: "inherit" }} />
+                      <CircularProgress
+                        size={18}
+                        sx={{ mr: 1, color: "inherit" }}
+                      />
                       Creando solicitud
                     </>
                   ) : (
@@ -547,34 +623,56 @@ export default function CareRequestPage() {
             sx={{ p: 3, borderRadius: 2.5, bgcolor: "#eff5f3" }}
             data-testid={careRequestTestIds.create.submissionChecklist}
           >
-            <Typography variant="overline" sx={{ color: "#789588", letterSpacing: "0.16em" }}>
+            <Typography
+              variant="overline"
+              sx={{ color: "#789588", letterSpacing: "0.16em" }}
+            >
               Checklist de envio
             </Typography>
             <Stack spacing={1.25} sx={{ mt: 2 }}>
-              <Alert severity={userId ? "success" : "warning"} variant="outlined">
-                {userId ? "Usuario autenticado identificado" : "Falta el identificador del usuario autenticado"}
+              <Alert
+                severity={userId ? "success" : "warning"}
+                variant="outlined"
+              >
+                {!userId && "Falta el identificador del usuario autenticado"}
               </Alert>
-              <Alert severity={trimmedDescription.length > 24 ? "success" : "info"} variant="outlined">
+              <Alert
+                severity={trimmedDescription.length > 24 ? "success" : "info"}
+                variant="outlined"
+              >
                 {trimmedDescription.length > 24
-                  ? "La descripcion tiene suficiente contexto para triage"
+                  ? "La descripcion tiene suficiente detalle"
                   : "Agrega una descripcion mas especifica"}
               </Alert>
-              <Alert severity={selectedService ? "success" : "error"} variant="outlined">
+              <Alert
+                severity={selectedService ? "success" : "error"}
+                variant="outlined"
+              >
                 Tipo de servicio listo para calcular
               </Alert>
             </Stack>
           </Paper>
 
           <Paper sx={{ p: 3, borderRadius: 2.5 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
               <Typography variant="h6">Logs recientes del cliente</Typography>
-              <Button size="small" variant="outlined" onClick={() => clearClientLogs()}>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => clearClientLogs()}
+              >
                 Limpiar
               </Button>
             </Stack>
             <Stack spacing={1.4} sx={{ mt: 2 }}>
               {latestLogs.length === 0 ? (
-                <Typography color="text.secondary">Todavia no hay logs capturados.</Typography>
+                <Typography color="text.secondary">
+                  Todavia no hay logs capturados.
+                </Typography>
               ) : (
                 latestLogs.map((log) => (
                   <Box
@@ -587,10 +685,16 @@ export default function CareRequestPage() {
                     }}
                   >
                     <>
-                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                        {log.timestamp} • {log.source} • {log.level.toUpperCase()} • {log.correlationId}
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        {log.timestamp} • {log.source} •{" "}
+                        {log.level.toUpperCase()} • {log.correlationId}
                       </Typography>
-                      <Typography sx={{ mt: 0.6, fontWeight: 700 }}>{log.message}</Typography>
+                      <Typography sx={{ mt: 0.6, fontWeight: 700 }}>
+                        {log.message}
+                      </Typography>
                       {log.data && (
                         <>
                           <Divider sx={{ my: 1 }} />
@@ -601,7 +705,8 @@ export default function CareRequestPage() {
                               whiteSpace: "pre-wrap",
                               fontSize: 12,
                               color: "text.secondary",
-                              fontFamily: '"IBM Plex Mono", "SFMono-Regular", monospace',
+                              fontFamily:
+                                '"IBM Plex Mono", "SFMono-Regular", monospace',
                             }}
                           >
                             {JSON.stringify(log.data, null, 2)}
