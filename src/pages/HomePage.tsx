@@ -19,7 +19,7 @@ export default function HomePage() {
   }, [isAuthenticated, navigate]);
 
   const canOpenBoard = !requiresAdminReview || profileType !== UserProfileType.NURSE;
-  const canCreateRequest = canOpenBoard && (roles.includes("CLIENT") || roles.includes("ADMIN"));
+  const canCreateRequest = true;
   const isAdmin = roles.includes("ADMIN");
   const profileLabel =
     profileType === UserProfileType.NURSE ? "Perfil de enfermeria" : "Perfil de cliente";

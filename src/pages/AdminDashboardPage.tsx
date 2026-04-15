@@ -16,6 +16,7 @@ import { getAdminActionItems, type AdminActionItem } from "../api/adminActionIte
 import { getAdminDashboard, type AdminDashboardSnapshot } from "../api/adminDashboard";
 import AdminActionItemCard from "../components/admin/AdminActionItemCard";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
 
 interface DashboardWidget {
@@ -111,6 +112,8 @@ function WidgetCard({
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { roles } = useAuth();
+  const isAlsoClient = roles.includes("CLIENT");
   const [dashboard, setDashboard] = useState<AdminDashboardSnapshot | null>(null);
   const [actionItems, setActionItems] = useState<AdminActionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -235,6 +238,11 @@ export default function AdminDashboardPage() {
       description={t('dashboard.desc')}
       actions={
         <>
+          {isAlsoClient && (
+            <Button variant="text" onClick={() => navigate("/care-request")}>
+              Crear solicitud
+            </Button>
+          )}
           <Button variant="outlined" onClick={() => navigate("/admin/action-items")}>
             {t('dashboard.openQueue')}
           </Button>
