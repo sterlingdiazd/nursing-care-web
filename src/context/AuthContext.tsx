@@ -18,6 +18,17 @@ import {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function normalizeRoles(roles: string[]) {
+  return Array.from(
+    new Set(
+      roles
+        .filter((role): role is string => typeof role === "string")
+        .map((role) => role.trim().toUpperCase())
+        .filter((role) => role.length > 0),
+    ),
+  );
+}
+
 function resolveResponseUserId(response: AuthResponse) {
   if (response.userId?.trim().length) {
     return response.userId;
@@ -85,13 +96,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resolveProfileType = (response: AuthResponse, fallbackProfileType?: UserProfileType | null) => {
-    if (response.roles.includes("ADMIN")) {
+    const normalizedRoles = normalizeRoles(response.roles);
+
+    if (normalizedRoles.includes("ADMIN")) {
       return UserProfileType.ADMIN;
     }
-    if (response.roles.includes("NURSE")) {
+    if (normalizedRoles.includes("NURSE")) {
       return UserProfileType.NURSE;
     }
-    if (response.roles.includes("CLIENT")) {
+    if (normalizedRoles.includes("CLIENT")) {
       return UserProfileType.CLIENT;
     }
 
@@ -99,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const applyAuthResponse = (response: AuthResponse, fallbackProfileType?: UserProfileType | null) => {
+    const normalizedRoles = normalizeRoles(response.roles);
     const detectedProfileType = resolveProfileType(response, fallbackProfileType);
     const resolvedUserId = resolveResponseUserId(response);
 
@@ -106,12 +120,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("No fue posible resolver el identificador del usuario autenticado.");
     }
 
-    const finalRequiresProfileCompletion = response.requiresProfileCompletion || response.roles.length === 0;
+    const finalRequiresProfileCompletion = response.requiresProfileCompletion || normalizedRoles.length === 0;
 
     setToken(response.token);
     setUserId(resolvedUserId);
     setEmail(response.email);
-    setRoles(response.roles);
+    setRoles(normalizedRoles);
     setProfileType(detectedProfileType);
     setRequiresProfileCompletion(finalRequiresProfileCompletion);
     setRequiresAdminReview(response.requiresAdminReview);
@@ -123,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       expiresAtUtc: response.expiresAtUtc,
       userId: resolvedUserId,
       email: response.email,
-      roles: response.roles,
+      roles: normalizedRoles,
       profileType: detectedProfileType,
       requiresProfileCompletion: finalRequiresProfileCompletion,
       requiresAdminReview: response.requiresAdminReview,

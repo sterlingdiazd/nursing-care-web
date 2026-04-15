@@ -15,6 +15,17 @@ export interface AuthSession {
 const STORAGE_KEY = "authSession";
 const listeners = new Set<() => void>();
 
+function normalizeRoles(roles: string[]) {
+  return Array.from(
+    new Set(
+      roles
+        .filter((role): role is string => typeof role === "string")
+        .map((role) => role.trim().toUpperCase())
+        .filter((role) => role.length > 0),
+    ),
+  );
+}
+
 function decodeBase64Url(input: string) {
   const normalized = input.replace(/-/g, "+").replace(/_/g, "/");
   const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
@@ -78,7 +89,7 @@ export function getAuthSession(): AuthSession | null {
       expiresAtUtc: parsed.expiresAtUtc ?? null,
       userId,
       email: parsed.email,
-      roles: parsed.roles,
+      roles: normalizeRoles(parsed.roles),
       profileType: parsed.profileType ?? null,
       requiresProfileCompletion: parsed.requiresProfileCompletion ?? false,
       requiresAdminReview: parsed.requiresAdminReview ?? false,
