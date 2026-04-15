@@ -33,6 +33,7 @@ import {
   getAdminCareRequestStatusLabel,
   getAdminCareRequestStatusStyles,
 } from "../utils/adminCareRequests";
+import { designTokens } from "../design-system/tokens";
 
 export default function AdminCareRequestDetailPage() {
   const navigate = useNavigate();
@@ -184,6 +185,16 @@ export default function AdminCareRequestDetailPage() {
   const statusLabel = detail ? getAdminCareRequestStatusLabel(detail.status) : "";
   const canApproveOrReject = detail?.status === "Pending";
   const canApprove = canApproveOrReject && Boolean(detail?.assignedNurseUserId ?? assignedNurseId);
+  const subduedActionButtonSx = {
+    justifyContent: "flex-start",
+    color: designTokens.color.ink.secondary,
+    borderColor: designTokens.color.border.strong,
+    bgcolor: designTokens.color.surface.secondary,
+    "&:hover": {
+      borderColor: designTokens.color.border.accent,
+      bgcolor: designTokens.color.surface.accent,
+    },
+  } as const;
 
   const formatShiftStatusLabel = (status: string) => {
     switch (status) {
@@ -612,26 +623,26 @@ export default function AdminCareRequestDetailPage() {
                 </Stack>
               </Paper>
 
-              <Paper sx={{ p: 3.5, borderRadius: 3.5, bgcolor: "#eff5f3" }}>
-                <Typography variant="overline" sx={{ color: "#789588", letterSpacing: "0.16em" }}>
+              <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
+                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
                   Acciones administrativas
                 </Typography>
                 <Stack spacing={1.25} sx={{ mt: 2.2 }}>
                   {canApproveOrReject && (
                     <>
                       <Button
-                        variant="contained"
-                        color="success"
+                        variant="outlined"
                         onClick={() => void runTransition("approve")}
                         disabled={isActing || !canApprove}
+                        sx={subduedActionButtonSx}
                       >
                         Aprobar solicitud
                       </Button>
                       <Button
                         variant="outlined"
-                        color="error"
                         onClick={() => void runTransition("reject")}
                         disabled={isActing}
+                        sx={subduedActionButtonSx}
                       >
                         Rechazar solicitud
                       </Button>

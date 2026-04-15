@@ -23,6 +23,7 @@ import {
   getNurseStatusLabel,
   getNurseStatusStyles,
 } from "../utils/adminNurseProfiles";
+import { designTokens } from "../design-system/tokens";
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("es-DO", {
@@ -90,6 +91,16 @@ export default function AdminNurseProfileDetailPage() {
   };
 
   const statusStyles = detail ? getNurseStatusStyles(detail) : null;
+  const subduedActionButtonSx = {
+    justifyContent: "flex-start",
+    color: designTokens.color.ink.secondary,
+    borderColor: designTokens.color.border.strong,
+    bgcolor: designTokens.color.surface.secondary,
+    "&:hover": {
+      borderColor: designTokens.color.border.accent,
+      bgcolor: designTokens.color.surface.accent,
+    },
+  } as const;
 
   return (
     <AdminPortalShell
@@ -201,18 +212,20 @@ export default function AdminNurseProfileDetailPage() {
                   <Stack spacing={1.5} sx={{ mt: 2.2 }}>
                     {detail.isPendingReview ? (
                       <Button
-                        variant="contained"
+                        variant="outlined"
                         fullWidth
                         onClick={() => navigate(`/admin/nurse-profiles/${detail.userId}/review`, { state: { from: listPath } })}
+                        sx={subduedActionButtonSx}
                       >
                         Completar revision
                       </Button>
                     ) : (
                       <>
                         <Button
-                          variant="contained"
+                          variant="outlined"
                           fullWidth
                           onClick={() => navigate(`/admin/nurse-profiles/${detail.userId}/edit`, { state: { from: listPath } })}
+                          sx={subduedActionButtonSx}
                         >
                           Editar perfil
                         </Button>
@@ -221,6 +234,7 @@ export default function AdminNurseProfileDetailPage() {
                           fullWidth
                           onClick={() => void handleOperationalAccessToggle()}
                           disabled={isActing}
+                          sx={subduedActionButtonSx}
                         >
                           {detail.userIsActive && detail.nurseProfileIsActive ? "Desactivar acceso operativo" : "Activar acceso operativo"}
                         </Button>

@@ -23,6 +23,7 @@ import { getActiveNurseProfiles, type ActiveNurseProfileSummary } from "../api/a
 import WorkspaceShell from "../components/layout/WorkspaceShell";
 import { useAuth } from "../context/AuthContext";
 import { careRequestTestIds } from "../testing/careRequestTestIds";
+import { designTokens } from "../design-system/tokens";
 
 function getStatusStyles(status: CareRequest["status"]) {
   switch (status) {
@@ -147,6 +148,16 @@ export default function CareRequestDetailPage() {
     careRequest.assignedNurse === userId;
   const statusStyles = careRequest ? getStatusStyles(careRequest.status) : null;
   const statusLabel = careRequest ? getStatusLabel(careRequest.status) : "";
+  const subduedActionButtonSx = {
+    justifyContent: "flex-start",
+    color: designTokens.color.ink.secondary,
+    borderColor: designTokens.color.border.strong,
+    bgcolor: designTokens.color.surface.secondary,
+    "&:hover": {
+      borderColor: designTokens.color.border.accent,
+      bgcolor: designTokens.color.surface.accent,
+    },
+  } as const;
 
   return (
     <WorkspaceShell
@@ -303,28 +314,28 @@ export default function CareRequestDetailPage() {
                 </Paper>
               )}
 
-              <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#eff5f3" }} data-testid={careRequestTestIds.detail.actionsPanel}>
-                <Typography variant="overline" sx={{ color: "#789588", letterSpacing: "0.16em" }}>
+              <Paper sx={{ p: 3, borderRadius: 2.5 }} data-testid={careRequestTestIds.detail.actionsPanel}>
+                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
                   Acciones disponibles
                 </Typography>
                 <Stack spacing={1.25} sx={{ mt: 2 }}>
                   {canApproveOrReject && (
                     <>
                       <Button
-                        variant="contained"
-                        color="success"
+                        variant="outlined"
                         onClick={() => runAction("approve")}
                         disabled={isActing || !canApprove}
                         data-testid={careRequestTestIds.detail.approveButton}
+                        sx={subduedActionButtonSx}
                       >
                         Aprobar solicitud
                       </Button>
                       <Button
                         variant="outlined"
-                        color="error"
                         onClick={() => runAction("reject")}
                         disabled={isActing}
                         data-testid={careRequestTestIds.detail.rejectButton}
+                        sx={subduedActionButtonSx}
                       >
                         Rechazar solicitud
                       </Button>
@@ -333,10 +344,11 @@ export default function CareRequestDetailPage() {
 
                   {canComplete && (
                     <Button
-                      variant="contained"
+                      variant="outlined"
                       onClick={() => runAction("complete")}
                       disabled={isActing}
                       data-testid={careRequestTestIds.detail.completeButton}
+                      sx={subduedActionButtonSx}
                     >
                       Marcar como completada
                     </Button>

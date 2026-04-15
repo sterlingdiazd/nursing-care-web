@@ -33,6 +33,7 @@ import {
   formatAdminClientStatusLabel,
   getAdminClientStatusStyles,
 } from "../utils/adminClients";
+import { designTokens } from "../design-system/tokens";
 
 function toFormValues(detail: AdminClientDetail): AdminClientFormValues {
   return {
@@ -147,6 +148,16 @@ export default function AdminClientDetailPage() {
   };
 
   const statusStyles = detail ? getAdminClientStatusStyles(detail.isActive) : null;
+  const subduedActionButtonSx = {
+    justifyContent: "flex-start",
+    color: designTokens.color.ink.secondary,
+    borderColor: designTokens.color.border.strong,
+    bgcolor: designTokens.color.surface.secondary,
+    "&:hover": {
+      borderColor: designTokens.color.border.accent,
+      bgcolor: designTokens.color.surface.accent,
+    },
+  } as const;
 
   return (
     <AdminPortalShell
@@ -269,7 +280,7 @@ export default function AdminClientDetailPage() {
                   </Typography>
                   <Stack spacing={1.5} sx={{ mt: 2.2 }}>
                     <Button
-                      variant="contained"
+                      variant="outlined"
                       fullWidth
                       onClick={() => navigate("/admin/care-requests/new", {
                         state: {
@@ -278,6 +289,7 @@ export default function AdminClientDetailPage() {
                         },
                       })}
                       disabled={!detail.canAdminCreateCareRequest}
+                      sx={subduedActionButtonSx}
                     >
                       Crear solicitud para este cliente
                     </Button>
@@ -286,6 +298,7 @@ export default function AdminClientDetailPage() {
                       fullWidth
                       onClick={() => void handleToggleActiveState()}
                       disabled={isSaving}
+                      sx={subduedActionButtonSx}
                     >
                       {detail.isActive ? "Desactivar cliente" : "Activar cliente"}
                     </Button>

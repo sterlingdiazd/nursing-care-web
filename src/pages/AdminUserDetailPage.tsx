@@ -40,6 +40,7 @@ import {
   sanitizeTextOnlyInput,
 } from "../utils/identityValidation";
 import { formatRoleLabels, getRoleLabel } from "../utils/roleLabels";
+import { designTokens } from "../design-system/tokens";
 
 interface FormState {
   name: string;
@@ -302,6 +303,16 @@ export default function AdminUserDetailPage() {
   };
 
   const statusStyles = detail ? getAdminUserStatusStyles(detail.accountStatus) : null;
+  const subduedActionButtonSx = {
+    justifyContent: "flex-start",
+    color: designTokens.color.ink.secondary,
+    borderColor: designTokens.color.border.strong,
+    bgcolor: designTokens.color.surface.secondary,
+    "&:hover": {
+      borderColor: designTokens.color.border.accent,
+      bgcolor: designTokens.color.surface.accent,
+    },
+  } as const;
 
   return (
     <AdminPortalShell
@@ -501,7 +512,12 @@ export default function AdminUserDetailPage() {
                   </Box>
 
                   <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
-                    <Button variant="contained" onClick={handleSaveIdentity} disabled={!canSaveIdentity}>
+                    <Button
+                      variant="outlined"
+                      onClick={handleSaveIdentity}
+                      disabled={!canSaveIdentity}
+                      sx={subduedActionButtonSx}
+                    >
                       Guardar informacion
                     </Button>
                   </Stack>
@@ -600,7 +616,7 @@ export default function AdminUserDetailPage() {
                     ))}
                   </FormGroup>
 
-                  <Button variant="contained" onClick={handleSaveRoles} disabled={!canSaveRoles}>
+                  <Button variant="outlined" onClick={handleSaveRoles} disabled={!canSaveRoles} sx={subduedActionButtonSx}>
                     Guardar roles
                   </Button>
                 </Stack>
@@ -623,9 +639,9 @@ export default function AdminUserDetailPage() {
 
                   <Button
                     variant="outlined"
-                    color={detail.isActive ? "warning" : "success"}
                     onClick={handleToggleActiveState}
                     disabled={isSaving}
+                    sx={subduedActionButtonSx}
                   >
                     {detail.isActive ? "Desactivar cuenta" : "Activar cuenta"}
                   </Button>
@@ -648,9 +664,10 @@ export default function AdminUserDetailPage() {
                   </Typography>
 
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     onClick={handleInvalidateSessions}
                     disabled={isSaving}
+                    sx={subduedActionButtonSx}
                   >
                     Invalidar sesiones activas
                   </Button>

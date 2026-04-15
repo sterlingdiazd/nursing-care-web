@@ -18,6 +18,7 @@ import AdminActionItemCard from "../components/admin/AdminActionItemCard";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
 import { useAuth } from "../context/AuthContext";
 import { useTranslation } from "react-i18next";
+import { designTokens } from "../design-system/tokens";
 
 interface DashboardWidget {
   label: string;
@@ -119,6 +120,16 @@ export default function AdminDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionQueueError, setActionQueueError] = useState<string | null>(null);
+  const subduedActionButtonSx = {
+    justifyContent: "flex-start",
+    color: designTokens.color.ink.secondary,
+    borderColor: designTokens.color.border.strong,
+    bgcolor: designTokens.color.surface.secondary,
+    "&:hover": {
+      borderColor: designTokens.color.border.accent,
+      bgcolor: designTokens.color.surface.accent,
+    },
+  } as const;
 
   const loadDashboard = async () => {
     setIsLoading(true);
@@ -388,7 +399,7 @@ export default function AdminDashboardPage() {
                         {alert.description}
                       </Typography>
                     </Box>
-                    <Button variant="outlined" color="error" onClick={() => navigate(alert.modulePath)}>
+                    <Button variant="outlined" sx={subduedActionButtonSx} onClick={() => navigate(alert.modulePath)}>
                       {t('dashboard.openAlert')}
                     </Button>
                   </Stack>

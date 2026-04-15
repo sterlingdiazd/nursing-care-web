@@ -21,11 +21,22 @@ import { logClientEvent } from "../logging/clientLogger";
 import { formatRoleLabels } from "../utils/roleLabels";
 import { API_BASE_URL } from "../config/env";
 import { authTestIds } from "../testing/authTestIds";
+import { designTokens } from "../design-system/tokens";
 
 export default function AccountPage() {
   const { email, isAuthenticated, logout, roles, token } = useAuth();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const subduedActionButtonSx = {
+    justifyContent: "flex-start",
+    color: designTokens.color.ink.secondary,
+    borderColor: designTokens.color.border.strong,
+    bgcolor: designTokens.color.surface.secondary,
+    "&:hover": {
+      borderColor: designTokens.color.border.accent,
+      bgcolor: designTokens.color.surface.accent,
+    },
+  } as const;
 
   const handleGoogleLogin = () => {
     logClientEvent("web.ui", "Google OAuth started from account page");
@@ -233,7 +244,6 @@ export default function AccountPage() {
           {isAuthenticated && (
             <Button
               variant="outlined"
-              color="error"
               startIcon={<LogoutIcon />}
               onClick={handleLogout}
               disabled={isLoggingOut}
@@ -243,6 +253,7 @@ export default function AccountPage() {
                 mt: 2,
                 py: 1.5,
                 fontWeight: 700,
+                ...subduedActionButtonSx,
               }}
             >
               {isLoggingOut ? "Cerrando sesion..." : "Cerrar sesion"}
