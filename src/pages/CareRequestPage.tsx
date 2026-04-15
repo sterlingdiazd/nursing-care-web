@@ -323,8 +323,21 @@ export default function CareRequestPage() {
                 getOptionLabel={(option) => `${option.displayName} (${option.specialty})`}
                 value={selectedNurse}
                 onChange={(_, newValue) => setSelectedNurse(newValue)}
+                openOnFocus
+                filterOptions={(options, { inputValue }) => {
+                  const query = inputValue.trim().toLocaleLowerCase();
+                  if (!query) {
+                    return options;
+                  }
+
+                  return options.filter((option) =>
+                    [option.displayName, option.specialty, option.category]
+                      .filter(Boolean)
+                      .some((value) => value.toLocaleLowerCase().includes(query)),
+                  );
+                }}
                 loading={nursesLoading}
-                disabled={isLoading || catalogLoading || nursesLoading}
+                disabled={isLoading || catalogLoading}
                 renderInput={(params) => (
                   <TextField
                     {...params}
