@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ThemeProvider, createTheme } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { vi } from "vitest";
 
 import AdminReviewNurseProfilePage from "./AdminReviewNurseProfilePage";
@@ -45,7 +47,13 @@ vi.mock("../context/AuthContext", () => ({
 const theme = createTheme();
 
 function renderWithTheme(element: ReactNode) {
-  return render(<ThemeProvider theme={theme}>{element}</ThemeProvider>);
+  return render(
+    <ThemeProvider theme={theme}>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        {element}
+      </LocalizationProvider>
+    </ThemeProvider>
+  );
 }
 
 describe("AdminReviewNurseProfilePage", () => {

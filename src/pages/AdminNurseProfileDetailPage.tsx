@@ -222,7 +222,7 @@ export default function AdminNurseProfileDetailPage() {
                           onClick={() => void handleOperationalAccessToggle()}
                           disabled={isActing}
                         >
-                          {detail.userIsActive && detail.nurseProfileIsActive ? "Desactivar" : "Activar"}
+                          {detail.userIsActive && detail.nurseProfileIsActive ? "Desactivar acceso operativo" : "Activar acceso operativo"}
                         </Button>
                       </>
                     )}

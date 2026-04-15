@@ -279,7 +279,7 @@ export default function AdminClientDetailPage() {
                       })}
                       disabled={!detail.canAdminCreateCareRequest}
                     >
-                      Crear solicitud
+                      Crear solicitud para este cliente
                     </Button>
                     <Button
                       variant="outlined"
@@ -287,7 +287,7 @@ export default function AdminClientDetailPage() {
                       onClick={() => void handleToggleActiveState()}
                       disabled={isSaving}
                     >
-                      {detail.isActive ? "Desactivar" : "Activar"}
+                      {detail.isActive ? "Desactivar cliente" : "Activar cliente"}
                     </Button>
                   </Stack>
                 </Paper>
