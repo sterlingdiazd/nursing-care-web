@@ -74,7 +74,7 @@ export default function WorkspaceShell({
       sx={{
         minHeight: "100vh",
         background:
-          "radial-gradient(circle at top left, rgba(33, 88, 124, 0.14), transparent 26%), linear-gradient(180deg, #f7f5ef 0%, #eef2f4 100%)",
+          "radial-gradient(circle at top left, rgba(180, 211, 220, 0.42), transparent 24%), radial-gradient(circle at 86% 14%, rgba(228, 235, 239, 0.72), transparent 18%), linear-gradient(180deg, #f8fbfc 0%, #eef4f5 58%, #eef1ef 100%)",
         py: { xs: 3, md: 4 },
       }}
     >
@@ -84,26 +84,27 @@ export default function WorkspaceShell({
             sx={{
               width: { xs: "100%", lg: 280 },
               p: 2.5,
-              borderRadius: 3,
+              borderRadius: 4,
               position: "sticky",
               top: 24,
-              bgcolor: "#123047",
-              color: "#f8fafc",
+              bgcolor: "rgba(232, 240, 243, 0.82)",
+              color: "#36505d",
               overflow: "hidden",
+              backdropFilter: "blur(18px)",
             }}
           >
             <Stack spacing={2.5}>
               <Box>
                 <Typography
                   variant="overline"
-                  sx={{ letterSpacing: "0.22em", color: "rgba(214, 234, 248, 0.72)" }}
+                  sx={{ letterSpacing: "0.22em", color: "#6f94a3" }}
                 >
                   NursingCare
                 </Typography>
-                <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: "#fffef8" }}>
+                <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: "#36505d" }}>
                   Consola operativa
                 </Typography>
-                <Typography sx={{ mt: 1, color: "rgba(232, 241, 247, 0.76)", lineHeight: 1.7 }}>
+                <Typography sx={{ mt: 1, color: "#68808c", lineHeight: 1.7 }}>
                   Gestiona captura, revision clinica y cierre desde un solo espacio de trabajo.
                 </Typography>
               </Box>
@@ -121,14 +122,14 @@ export default function WorkspaceShell({
                         justifyContent: "flex-start",
                         px: 1.6,
                         py: 1.2,
-                        borderRadius: 2,
-                        color: active ? "#102a43" : "#eff6ff",
-                        bgcolor: active ? "#f6ead7" : "rgba(255,255,255,0.04)",
+                        borderRadius: 999,
+                        color: active ? "#36505d" : "#58727f",
+                        bgcolor: active ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.42)",
                         border: active
-                          ? "1px solid rgba(246, 234, 215, 0.8)"
-                          : "1px solid rgba(255,255,255,0.08)",
+                          ? "1px solid rgba(111, 148, 163, 0.18)"
+                          : "1px solid rgba(111, 148, 163, 0.1)",
                         "&:hover": {
-                          bgcolor: active ? "#f3dfc0" : "rgba(255,255,255,0.08)",
+                          bgcolor: active ? "#ffffff" : "rgba(255,255,255,0.64)",
                         },
                       }}
                     >
@@ -138,16 +139,16 @@ export default function WorkspaceShell({
                 })}
               </Stack>
 
-              <Divider sx={{ borderColor: "rgba(255,255,255,0.12)" }} />
+              <Divider sx={{ borderColor: "rgba(111, 148, 163, 0.12)" }} />
 
               <Stack spacing={1}>
                 <Chip
                   label={email ?? "Sin correo cargado"}
                   sx={{
                     justifyContent: "flex-start",
-                    bgcolor: "rgba(255,255,255,0.08)",
-                    color: "#fffef8",
-                    borderRadius: 2,
+                    bgcolor: "rgba(255,255,255,0.62)",
+                    color: "#45616f",
+                    borderRadius: 999,
                     height: 40,
                   }}
                 />
@@ -155,9 +156,9 @@ export default function WorkspaceShell({
                   label={formatRoleLabels(roles)}
                   sx={{
                     justifyContent: "flex-start",
-                    bgcolor: "rgba(255,255,255,0.08)",
-                    color: "#dbeafe",
-                    borderRadius: 2,
+                    bgcolor: "rgba(255,255,255,0.62)",
+                    color: "#6f94a3",
+                    borderRadius: 999,
                     height: 40,
                   }}
                 />
@@ -170,11 +171,11 @@ export default function WorkspaceShell({
                   navigate("/login");
                 }}
                 sx={{
-                  color: "#fffef8",
-                  borderColor: "rgba(255,255,255,0.24)",
+                  color: "#58727f",
+                  borderColor: "rgba(111, 148, 163, 0.2)",
                   "&:hover": {
-                    borderColor: "rgba(255,255,255,0.46)",
-                    bgcolor: "rgba(255,255,255,0.06)",
+                    borderColor: "rgba(111, 148, 163, 0.34)",
+                    bgcolor: "rgba(255,255,255,0.5)",
                   },
                 }}
               >
@@ -187,12 +188,12 @@ export default function WorkspaceShell({
             <Paper
               sx={{
                 p: 1.5,
-                borderRadius: 2.5,
+                borderRadius: 4,
                 position: "sticky",
                 top: 24,
                 zIndex: 5,
-                bgcolor: "rgba(255, 253, 248, 0.92)",
-                backdropFilter: "blur(12px)",
+                bgcolor: "rgba(251, 253, 254, 0.82)",
+                backdropFilter: "blur(18px)",
               }}
             >
               <Stack
@@ -208,11 +209,11 @@ export default function WorkspaceShell({
                   >
                     Seccion actual
                   </Typography>
-                  <Chip
-                    label={activeItem.label}
-                    sx={{
-                      bgcolor: "rgba(183, 128, 60, 0.12)",
-                      color: "#7f5724",
+                    <Chip
+                      label={activeItem.label}
+                      sx={{
+                      bgcolor: "rgba(111, 148, 163, 0.12)",
+                      color: "#557886",
                       fontWeight: 700,
                     }}
                   />
@@ -245,9 +246,9 @@ export default function WorkspaceShell({
             <Paper
               sx={{
                 p: { xs: 3, md: 4 },
-                borderRadius: 3,
+                borderRadius: 4,
                 background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.94) 0%, rgba(252,249,244,0.98) 100%)",
+                  "linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(246,250,251,0.98) 100%)",
               }}
             >
               <Stack

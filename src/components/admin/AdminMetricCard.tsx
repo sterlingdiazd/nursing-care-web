@@ -22,11 +22,11 @@ export default function AdminMetricCard({
 }: AdminMetricCardProps) {
   const getToneStyles = () => {
     switch (tone) {
-      case "primary": return { bg: "rgba(31, 75, 110, 0.04)", border: "rgba(31, 75, 110, 0.15)", text: "primary.main" };
-      case "success": return { bg: "rgba(44, 122, 100, 0.04)", border: "rgba(44, 122, 100, 0.15)", text: "success.main" };
-      case "warning": return { bg: "rgba(193, 138, 66, 0.04)", border: "rgba(193, 138, 66, 0.15)", text: "warning.main" };
-      case "info": return { bg: "rgba(59, 108, 141, 0.04)", border: "rgba(59, 108, 141, 0.15)", text: "info.main" };
-      default: return { bg: "rgba(183, 128, 60, 0.04)", border: "rgba(183, 128, 60, 0.15)", text: "secondary.main" };
+      case "primary": return { bg: "rgba(111, 148, 163, 0.08)", border: "rgba(111, 148, 163, 0.18)", text: "primary.main" };
+      case "success": return { bg: "rgba(125, 169, 147, 0.08)", border: "rgba(125, 169, 147, 0.18)", text: "success.main" };
+      case "warning": return { bg: "rgba(168, 183, 190, 0.08)", border: "rgba(168, 183, 190, 0.18)", text: "warning.main" };
+      case "info": return { bg: "rgba(124, 167, 187, 0.08)", border: "rgba(124, 167, 187, 0.18)", text: "info.main" };
+      default: return { bg: "rgba(138, 167, 160, 0.08)", border: "rgba(138, 167, 160, 0.18)", text: "secondary.main" };
     }
   };
 
@@ -46,7 +46,7 @@ export default function AdminMetricCard({
         overflow: "hidden",
         bgcolor: isSelected ? toneStyles.bg : "background.paper",
         border: "1px solid",
-        borderColor: isSelected ? toneStyles.text : "rgba(23, 48, 66, 0.08)",
+        borderColor: isSelected ? toneStyles.text : "rgba(111, 148, 163, 0.12)",
         transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": onClick ? {
           transform: "translateY(-4px)",

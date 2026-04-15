@@ -69,10 +69,10 @@ export default function HomePage() {
           <Paper
             sx={{
               p: { xs: 3, md: 4 },
-              borderRadius: 3,
+              borderRadius: 4,
               background:
-                "linear-gradient(145deg, rgba(24,59,84,0.98) 0%, rgba(33,88,124,0.96) 58%, rgba(53,122,116,0.92) 100%)",
-              color: "#f8fafc",
+                "linear-gradient(145deg, rgba(236,244,246,0.98) 0%, rgba(223,235,239,0.98) 58%, rgba(234,241,238,0.96) 100%)",
+              color: "#36505d",
               overflow: "hidden",
               position: "relative",
             }}
@@ -85,19 +85,19 @@ export default function HomePage() {
                 width: 180,
                 height: 180,
                 borderRadius: "50%",
-                background: "rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.52)",
               }}
             />
             <Stack spacing={2.5} sx={{ position: "relative" }}>
-              <Typography variant="overline" sx={{ letterSpacing: "0.2em", color: "#bde0dd" }}>
+              <Typography variant="overline" sx={{ letterSpacing: "0.2em", color: "#6f94a3" }}>
                 Vista diaria
               </Typography>
-              <Typography variant="h3" sx={{ color: "#fffef8", maxWidth: 640 }}>
+              <Typography variant="h3" sx={{ color: "#36505d", maxWidth: 640 }}>
                 {canCreateRequest
                   ? "Mueve las solicitudes desde la captura hasta la accion sin perder el hilo operativo."
                   : "Revisa el flujo actual de solicitudes con una vista profesional y consciente del rol."}
               </Typography>
-              <Typography sx={{ maxWidth: 620, color: "rgba(235,244,247,0.8)", lineHeight: 1.8 }}>
+              <Typography sx={{ maxWidth: 620, color: "#64808c", lineHeight: 1.8 }}>
                 Usa la cola para revisar estados y luego abre solicitudes individuales para ver
                 transiciones, marcas de tiempo y contexto operativo. El formulario sigue
                 disponible cuando necesites registrar trabajo nuevo.
@@ -105,15 +105,15 @@ export default function HomePage() {
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25}>
                 <Chip
                   label={profileLabel}
-                  sx={{ bgcolor: "rgba(255,255,255,0.14)", color: "#fffef8", borderRadius: 2 }}
+                  sx={{ bgcolor: "rgba(255,255,255,0.72)", color: "#36505d", borderRadius: 999 }}
                 />
                 <Chip
                   label={formatRoleLabels(roles)}
-                  sx={{ bgcolor: "rgba(255,255,255,0.14)", color: "#d8ecec", borderRadius: 2 }}
+                  sx={{ bgcolor: "rgba(255,255,255,0.72)", color: "#62818e", borderRadius: 999 }}
                 />
                 <Chip
                   label={email ?? "Sin correo cargado"}
-                  sx={{ bgcolor: "rgba(255,255,255,0.14)", color: "#d8ecec", borderRadius: 2 }}
+                  sx={{ bgcolor: "rgba(255,255,255,0.72)", color: "#62818e", borderRadius: 999 }}
                 />
               </Stack>
             </Stack>
@@ -140,7 +140,10 @@ export default function HomePage() {
                 body: "Las sesiones guardadas se restauran automaticamente y los refresh tokens sostienen revisiones largas.",
               },
             ].map((item) => (
-              <Paper key={item.title} sx={{ p: 3, borderRadius: 2.5 }}>
+              <Paper
+                key={item.title}
+                sx={{ p: 3, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.9)" }}
+              >
                 <Typography variant="h6" sx={{ mb: 1.2 }}>
                   {item.title}
                 </Typography>
@@ -153,7 +156,7 @@ export default function HomePage() {
         </Stack>
 
         <Stack spacing={3}>
-          <Paper sx={{ p: 3, borderRadius: 2.5 }}>
+          <Paper sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
               Estado
             </Typography>
@@ -178,8 +181,8 @@ export default function HomePage() {
             </Stack>
           </Paper>
 
-          <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }}>
-            <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
+          <Paper sx={{ p: 3, borderRadius: 3, bgcolor: "#f1f5f2" }}>
+            <Typography variant="overline" sx={{ color: "#789588", letterSpacing: "0.16em" }}>
               Flujo recomendado
             </Typography>
             <Stack spacing={1.4} sx={{ mt: 2 }}>
@@ -194,12 +197,12 @@ export default function HomePage() {
                       width: 10,
                       height: 10,
                       borderRadius: "50%",
-                      bgcolor: "#b7803c",
+                      bgcolor: "#8db1a0",
                       mt: 0.9,
                       flexShrink: 0,
                     }}
                   />
-                  <Typography sx={{ color: "#6f5a3b", lineHeight: 1.7 }}>{step}</Typography>
+                  <Typography sx={{ color: "#6d8378", lineHeight: 1.7 }}>{step}</Typography>
                 </Box>
               ))}
             </Stack>

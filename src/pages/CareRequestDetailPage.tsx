@@ -303,8 +303,8 @@ export default function CareRequestDetailPage() {
                 </Paper>
               )}
 
-              <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }} data-testid={careRequestTestIds.detail.actionsPanel}>
-                <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
+              <Paper sx={{ p: 3, borderRadius: 2.5, bgcolor: "#eff5f3" }} data-testid={careRequestTestIds.detail.actionsPanel}>
+                <Typography variant="overline" sx={{ color: "#789588", letterSpacing: "0.16em" }}>
                   Acciones disponibles
                 </Typography>
                 <Stack spacing={1.25} sx={{ mt: 2 }}>

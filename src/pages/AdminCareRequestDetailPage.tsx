@@ -448,7 +448,7 @@ export default function AdminCareRequestDetailPage() {
                       InputLabelProps={{ shrink: true }}
                     />
                   </Stack>
-                  <Button variant="contained" color="secondary" onClick={() => void runRegisterShift()} disabled={isActing}>
+                  <Button variant="contained" color="primary" onClick={() => void runRegisterShift()} disabled={isActing}>
                     Registrar turno
                   </Button>
                 </Stack>
@@ -612,8 +612,8 @@ export default function AdminCareRequestDetailPage() {
                 </Stack>
               </Paper>
 
-              <Paper sx={{ p: 3.5, borderRadius: 3.5, bgcolor: "#f3ede0" }}>
-                <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
+              <Paper sx={{ p: 3.5, borderRadius: 3.5, bgcolor: "#eff5f3" }}>
+                <Typography variant="overline" sx={{ color: "#789588", letterSpacing: "0.16em" }}>
                   Acciones administrativas
                 </Typography>
                 <Stack spacing={1.25} sx={{ mt: 2.2 }}>

@@ -25,7 +25,7 @@ export default function AuthScene({
         display: "flex",
         alignItems: "center",
         background:
-          "radial-gradient(circle at top left, rgba(34, 95, 145, 0.18), transparent 25%), linear-gradient(180deg, #f7f4ee 0%, #edf2f4 100%)",
+          "radial-gradient(circle at top left, rgba(184, 214, 223, 0.48), transparent 24%), radial-gradient(circle at 85% 14%, rgba(228, 236, 240, 0.72), transparent 20%), linear-gradient(180deg, #f9fbfc 0%, #eef4f5 55%, #eef1ef 100%)",
         py: { xs: 4, md: 6 },
       }}
     >
@@ -42,9 +42,9 @@ export default function AuthScene({
             sx={{
               minHeight: { lg: 720 },
               p: { xs: 3.5, md: 5 },
-              borderRadius: 3,
-              bgcolor: "#112c3f",
-              color: "#f7f6f0",
+              borderRadius: 4,
+              bgcolor: "#e8f0f3",
+              color: "#36505d",
               position: "relative",
               overflow: "hidden",
             }}
@@ -54,18 +54,18 @@ export default function AuthScene({
                 position: "absolute",
                 inset: 0,
                 background:
-                  "radial-gradient(circle at 18% 20%, rgba(116, 189, 184, 0.24), transparent 20%), radial-gradient(circle at 78% 24%, rgba(241, 177, 90, 0.16), transparent 22%), linear-gradient(145deg, rgba(255,255,255,0.02), transparent 45%)",
+                  "radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.65), transparent 20%), radial-gradient(circle at 82% 20%, rgba(154, 190, 201, 0.24), transparent 24%), linear-gradient(145deg, rgba(255,255,255,0.48), transparent 55%)",
               }}
             />
             <Stack spacing={4.5} sx={{ position: "relative", zIndex: 1 }}>
               <Box>
-                <Typography variant="overline" sx={{ letterSpacing: "0.24em", color: "#9ed0cf" }}>
+                <Typography variant="overline" sx={{ letterSpacing: "0.24em", color: "#6f94a3" }}>
                   NursingCare
                 </Typography>
                 <Typography variant="h1" sx={{ mt: 2, maxWidth: 620 }}>
                   Operaciones de cuidado con un flujo mas claro y sereno.
                 </Typography>
-                <Typography sx={{ mt: 2.5, maxWidth: 580, lineHeight: 1.85, color: "#d4e6ea" }}>
+                <Typography sx={{ mt: 2.5, maxWidth: 580, lineHeight: 1.85, color: "#5e7985" }}>
                   Un espacio profesional para captura, revision y coordinacion del ciclo de vida
                   entre administracion, enfermeria y clientes.
                 </Typography>
@@ -88,14 +88,15 @@ export default function AuthScene({
                     key={cardTitle}
                     sx={{
                       p: 2.25,
-                      borderRadius: 2.5,
-                      bgcolor: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: 3,
+                      bgcolor: "rgba(255,255,255,0.62)",
+                      border: "1px solid rgba(111, 148, 163, 0.14)",
                       color: "inherit",
+                      boxShadow: "none",
                     }}
                   >
                     <Typography sx={{ fontWeight: 700, mb: 0.8 }}>{cardTitle}</Typography>
-                    <Typography sx={{ color: "#cfe0e4", lineHeight: 1.7 }}>{cardBody}</Typography>
+                    <Typography sx={{ color: "#65808c", lineHeight: 1.7 }}>{cardBody}</Typography>
                   </Paper>
                 ))}
               </Box>
@@ -106,12 +107,12 @@ export default function AuthScene({
             sx={{
               minHeight: { lg: 720 },
               p: { xs: 3.5, md: 5 },
-              borderRadius: 3,
+              borderRadius: 4,
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
               background:
-                "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(251,248,242,0.98) 100%)",
+                "linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(246,250,251,0.98) 100%)",
             }}
           >
             <Stack spacing={3}>
@@ -134,16 +135,16 @@ export default function AuthScene({
               sx={{
                 mt: 3,
                 p: 2.5,
-                borderRadius: 2.5,
-                bgcolor: "#f3ede0",
-                border: "1px solid rgba(160, 122, 61, 0.16)",
+                borderRadius: 3,
+                bgcolor: "#f3f6f3",
+                border: "1px solid rgba(111, 148, 163, 0.12)",
                 boxShadow: "none",
               }}
             >
-              <Typography sx={{ fontWeight: 700, color: "#5a4120", mb: 0.8 }}>
+              <Typography sx={{ fontWeight: 700, color: "#516b62", mb: 0.8 }}>
                 {asideTitle}
               </Typography>
-              <Typography sx={{ color: "#6d5a3d", lineHeight: 1.7 }}>{asideBody}</Typography>
+              <Typography sx={{ color: "#70827a", lineHeight: 1.7 }}>{asideBody}</Typography>
             </Paper>
           </Paper>
         </Box>

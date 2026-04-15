@@ -180,92 +180,127 @@ export default function AdminClientDetailPage() {
         )}
 
         {detail && (
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", xl: "1.1fr 0.9fr" },
-              gap: 3,
-            }}
-          >
-            <Stack spacing={3}>
-              <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
-                <Stack spacing={2.2}>
-                  <Stack
-                    direction={{ xs: "column", lg: "row" }}
-                    spacing={1.5}
-                    justifyContent="space-between"
-                    alignItems={{ xs: "flex-start", lg: "center" }}
-                  >
-                    <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {statusStyles && (
-                        <Chip
-                          label={formatAdminClientStatusLabel(detail.isActive)}
-                          sx={{ bgcolor: statusStyles.bg, color: statusStyles.color, fontWeight: 700 }}
-                        />
-                      )}
+          <Stack spacing={3}>
+            <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
+              <Stack spacing={2.2}>
+                <Stack
+                  direction={{ xs: "column", lg: "row" }}
+                  spacing={1.5}
+                  justifyContent="space-between"
+                  alignItems={{ xs: "flex-start", lg: "center" }}
+                >
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {statusStyles && (
                       <Chip
-                        label={detail.canAdminCreateCareRequest ? "Listo para solicitud administrativa" : "Solicitud administrativa bloqueada"}
-                        variant="outlined"
+                        label={formatAdminClientStatusLabel(detail.isActive)}
+                        sx={{ bgcolor: statusStyles.bg, color: statusStyles.color, fontWeight: 700 }}
                       />
-                    </Stack>
-                    <Typography color="text.secondary">Cliente {detail.userId}</Typography>
+                    )}
                   </Stack>
-
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
-                      gap: 1.8,
-                    }}
-                  >
-                    {[
-                      ["Correo", detail.email],
-                      ["Cedula", detail.identificationNumber ?? "Sin cedula"],
-                      ["Telefono", detail.phone ?? "Sin telefono"],
-                      ["Historial", formatAdminClientCareRequestCount(detail.ownedCareRequestsCount)],
-                      ["Ultima actividad", formatAdminClientDateTime(detail.lastCareRequestAtUtc)],
-                      ["Creado", formatAdminClientDateTime(detail.createdAtUtc)],
-                    ].map(([label, value]) => (
-                      <Box key={label}>
-                        <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
-                          {label}
-                        </Typography>
-                        <Typography sx={{ mt: 0.45 }}>{value}</Typography>
-                      </Box>
-                    ))}
-                  </Box>
+                  <Typography variant="caption" color="text.secondary">ID: {detail.userId}</Typography>
                 </Stack>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+                    gap: 2,
+                  }}
+                >
+                  {[
+                    ["Correo", detail.email],
+                    ["Cedula", detail.identificationNumber ?? "Sin cedula"],
+                    ["Telefono", detail.phone ?? "Sin telefono"],
+                  ].map(([label, value]) => (
+                    <Box key={label}>
+                      <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em", fontSize: "0.7rem" }}>
+                        {label}
+                      </Typography>
+                      <Typography sx={{ mt: 0.6, fontWeight: 500 }}>{value}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+                    gap: 2,
+                    mt: 1,
+                  }}
+                >
+                  {[
+                    ["Solicitudes", formatAdminClientCareRequestCount(detail.ownedCareRequestsCount)],
+                    ["Ultima actividad", formatAdminClientDateTime(detail.lastCareRequestAtUtc)],
+                    ["Cliente desde", formatAdminClientDateTime(detail.createdAtUtc)],
+                  ].map(([label, value]) => (
+                    <Box key={label}>
+                      <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em", fontSize: "0.7rem" }}>
+                        {label}
+                      </Typography>
+                      <Typography sx={{ mt: 0.6, fontSize: "0.9rem", color: "text.secondary" }}>{value}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Stack>
+            </Paper>
+
+            <Stack spacing={2} direction={{ xs: "column", xl: "row" }}>
+              <Paper sx={{ p: 3.5, borderRadius: 3.5, flex: 1 }}>
+                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                  Editar informacion
+                </Typography>
+                <Box sx={{ mt: 2.2 }}>
+                  <AdminClientForm
+                    mode="edit"
+                    initialValues={initialFormValues}
+                    isSubmitting={isSaving}
+                    submitLabel="Guardar cambios"
+                    onSubmit={handleSave}
+                    onCancel={() => navigate(listPath)}
+                  />
+                </Box>
               </Paper>
 
-              <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
-                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                  Editar identidad del cliente
-                </Typography>
-                <Typography color="text.secondary" sx={{ mt: 1, mb: 2.2, lineHeight: 1.7 }}>
-                  Este formulario conserva las mismas reglas de nombre, cedula y telefono del resto de la plataforma para evitar inconsistencias entre canales.
-                </Typography>
-                <AdminClientForm
-                  mode="edit"
-                  initialValues={initialFormValues}
-                  isSubmitting={isSaving}
-                  submitLabel="Guardar cambios"
-                  onSubmit={handleSave}
-                  onCancel={() => navigate(listPath)}
-                />
-              </Paper>
+              <Stack spacing={2} sx={{ flex: 0.8 }}>
+                <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
+                  <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                    Acciones
+                  </Typography>
+                  <Stack spacing={1.5} sx={{ mt: 2.2 }}>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={() => navigate("/admin/care-requests/new", {
+                        state: {
+                          presetClientUserId: detail.userId,
+                          backPath: `/admin/clients/${detail.userId}`,
+                        },
+                      })}
+                      disabled={!detail.canAdminCreateCareRequest}
+                    >
+                      Crear solicitud
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      onClick={() => void handleToggleActiveState()}
+                      disabled={isSaving}
+                    >
+                      {detail.isActive ? "Desactivar" : "Activar"}
+                    </Button>
+                  </Stack>
+                </Paper>
+              </Stack>
+            </Stack>
 
+            {detail.careRequestHistory.length > 0 && (
               <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
                 <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                  Historial de solicitudes
+                  Historial de solicitudes ({detail.careRequestHistory.length})
                 </Typography>
 
                 <Stack spacing={2} sx={{ mt: 2.2 }}>
-                  {detail.careRequestHistory.length === 0 && (
-                    <Typography color="text.secondary">
-                      Este cliente aun no tiene solicitudes registradas.
-                    </Typography>
-                  )}
-
                   {detail.careRequestHistory.map((item) => {
                     const statusChip = getAdminCareRequestStatusStyles(item.status);
 
@@ -280,7 +315,7 @@ export default function AdminClientDetailPage() {
                           >
                             <Box>
                               <Typography sx={{ fontWeight: 700 }}>{item.careRequestDescription}</Typography>
-                              <Typography color="text.secondary" sx={{ mt: 0.4 }}>
+                              <Typography color="text.secondary" sx={{ mt: 0.4, fontSize: "0.85rem" }}>
                                 {formatAdminCareRequestTypeLabel(item.careRequestType, catalogDisplayMaps?.careRequestType)}
                               </Typography>
                             </Box>
@@ -301,78 +336,39 @@ export default function AdminClientDetailPage() {
                             }}
                           >
                             {[
-                              ["Fecha del servicio", item.careRequestDate ?? "Sin fecha"],
+                              ["Fecha", item.careRequestDate ?? "Sin fecha"],
                               ["Actualizada", formatAdminCareRequestDateTime(item.updatedAtUtc)],
                               [
-                                "Enfermera asignada",
+                                "Enfermera",
                                 item.assignedNurseDisplayName
                                   ? `${item.assignedNurseDisplayName} · ${item.assignedNurseEmail ?? "Sin correo"}`
                                   : "Sin asignar",
                               ],
                             ].map(([label, value]) => (
                               <Box key={label}>
-                                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
+                                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em", fontSize: "0.65rem" }}>
                                   {label}
                                 </Typography>
-                                <Typography sx={{ mt: 0.45 }}>{value}</Typography>
+                                <Typography sx={{ mt: 0.45, fontSize: "0.85rem" }}>{value}</Typography>
                               </Box>
                             ))}
                           </Box>
 
-                          <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
-                            <Button
-                              variant="text"
-                              onClick={() => navigate(`/admin/care-requests/${item.careRequestId}`)}
-                            >
-                              Ver solicitud
-                            </Button>
-                          </Stack>
+                          <Button
+                            variant="text"
+                            size="small"
+                            onClick={() => navigate(`/admin/care-requests/${item.careRequestId}`)}
+                          >
+                            Ver detalles
+                          </Button>
                         </Stack>
                       </Paper>
                     );
                   })}
                 </Stack>
               </Paper>
-            </Stack>
-
-            <Stack spacing={3}>
-              <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
-                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                  Acciones administrativas
-                </Typography>
-                <Stack spacing={1.5} sx={{ mt: 2.2 }}>
-                  <Button
-                    variant="contained"
-                    onClick={() => navigate("/admin/care-requests/new", {
-                      state: {
-                        presetClientUserId: detail.userId,
-                        backPath: `/admin/clients/${detail.userId}`,
-                      },
-                    })}
-                    disabled={!detail.canAdminCreateCareRequest}
-                  >
-                    Crear solicitud para este cliente
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() => void handleToggleActiveState()}
-                    disabled={isSaving}
-                  >
-                    {detail.isActive ? "Desactivar cliente" : "Activar cliente"}
-                  </Button>
-                </Stack>
-              </Paper>
-
-              <Paper sx={{ p: 3.5, borderRadius: 3.5, bgcolor: "rgba(243, 237, 224, 0.74)" }}>
-                <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
-                  Regla operativa
-                </Typography>
-                <Typography sx={{ mt: 1.2, color: "#5c4a2d", lineHeight: 1.8 }}>
-                  Solo los clientes activos pueden recibir nuevas solicitudes creadas desde administracion. Cuando el cliente se desactiva, el backend deja de aceptarlo como destinatario de nuevas solicitudes administrativas.
-                </Typography>
-              </Paper>
-            </Stack>
-          </Box>
+            )}
+          </Stack>
         )}
       </Stack>
     </AdminPortalShell>

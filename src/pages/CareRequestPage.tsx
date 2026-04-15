@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   CircularProgress,
@@ -14,9 +15,12 @@ import { useNavigate } from "react-router-dom";
 
 import { createCareRequest, getCareRequests } from "../api/careRequests";
 import WorkspaceShell from "../components/layout/WorkspaceShell";
+import { FormDatePicker } from "../components/common/FormDatePicker";
 import { useAuth } from "../context/AuthContext";
 import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
+import { useAvailableNurses } from "../hooks/useAvailableNurses";
 import { careRequestTestIds } from "../testing/careRequestTestIds";
+import type { AvailableNurse } from "../api/catalogOptions";
 import {
   clearClientLogs,
   createCorrelationId,
@@ -30,8 +34,10 @@ export default function CareRequestPage() {
   const { userId } = useAuth();
   const { data: catalogOptions, isLoading: catalogLoading, error: catalogError } =
     useCareRequestCatalogOptions();
+  const { data: availableNurses, isLoading: nursesLoading, error: nursesError } =
+    useAvailableNurses();
   const [careRequestDescription, setCareRequestDescription] = useState("");
-  const [suggestedNurse, setSuggestedNurse] = useState("");
+  const [selectedNurse, setSelectedNurse] = useState<AvailableNurse | null>(null);
   const [careRequestDate, setCareRequestDate] = useState("");
   const [careRequestType, setCareRequestType] = useState<string>("");
   const [unit, setUnit] = useState<number>(1);
@@ -133,6 +139,7 @@ export default function CareRequestPage() {
   const canSubmit =
     !isLoading
     && !catalogLoading
+    && !nursesLoading
     && Boolean(catalogOptions)
     && Boolean(userId)
     && trimmedDescription.length > 0
@@ -194,7 +201,7 @@ export default function CareRequestPage() {
           careRequestDescription: trimmedDescription,
           careRequestType,
           unit,
-          ...(suggestedNurse.trim() ? { suggestedNurse: suggestedNurse.trim() } : {}),
+          ...(selectedNurse ? { suggestedNurse: selectedNurse.displayName } : {}),
           ...(careRequestDate ? { careRequestDate } : {}),
           ...(typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
             ? { clientBasePriceOverride }
@@ -217,7 +224,7 @@ export default function CareRequestPage() {
         message: `Solicitud creada correctamente con el ID ${response.id}.`,
       });
       setCareRequestDescription("");
-      setSuggestedNurse("");
+      setSelectedNurse(null);
       setCareRequestDate("");
       navigate(`/care-requests/${response.id}`);
     } catch (error: unknown) {
@@ -311,26 +318,36 @@ export default function CareRequestPage() {
                 data-testid={careRequestTestIds.create.descriptionField}
               />
 
-              <TextField
-                fullWidth
-                label="Enfermera sugerida (opcional)"
-                value={suggestedNurse}
-                onChange={(event) => setSuggestedNurse(event.target.value)}
-                placeholder="Nombre de la enfermera que el cliente prefiere"
-                disabled={isLoading || catalogLoading}
-                helperText="Administracion decidira si asigna esta sugerencia u otra enfermera."
-                data-testid={careRequestTestIds.create.suggestedNurseField}
+              <Autocomplete
+                options={availableNurses ?? []}
+                getOptionLabel={(option) => `${option.displayName} (${option.specialty})`}
+                value={selectedNurse}
+                onChange={(_, newValue) => setSelectedNurse(newValue)}
+                loading={nursesLoading}
+                disabled={isLoading || catalogLoading || nursesLoading}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Enfermera sugerida (opcional)"
+                    placeholder="Busca la enfermera que el cliente prefiere"
+                    helperText="Administracion decidira si asigna esta sugerencia u otra enfermera."
+                    data-testid={careRequestTestIds.create.suggestedNurseField}
+                  />
+                )}
+                noOptionsText={nursesError ? "Error cargando enfermeras" : "No hay enfermeras disponibles"}
               />
 
-              <TextField
+              <FormDatePicker
                 fullWidth
                 label="Fecha del servicio (opcional)"
-                type="date"
                 value={careRequestDate}
-                onChange={(event) => setCareRequestDate(event.target.value)}
+                onChange={setCareRequestDate}
                 disabled={isLoading || catalogLoading}
-                InputLabelProps={{ shrink: true }}
-                helperText="Si se indica una fecha futura, la enfermera asignada no podra completar la solicitud antes de ese dia."
+                slotProps={{
+                  textField: {
+                    helperText: "Si se indica una fecha futura, la enfermera asignada no podra completar la solicitud antes de ese dia."
+                  }
+                }}
               />
 
               <Divider sx={{ my: 2 }} />
@@ -499,7 +516,7 @@ export default function CareRequestPage() {
                   disabled={isLoading}
                   onClick={() => {
                     setCareRequestDescription("");
-                    setSuggestedNurse("");
+                    setSelectedNurse(null);
                     setCareRequestDate("");
                     setFeedback(null);
                   }}
@@ -514,10 +531,10 @@ export default function CareRequestPage() {
 
         <Stack spacing={3}>
           <Paper
-            sx={{ p: 3, borderRadius: 2.5, bgcolor: "#f3ede0" }}
+            sx={{ p: 3, borderRadius: 2.5, bgcolor: "#eff5f3" }}
             data-testid={careRequestTestIds.create.submissionChecklist}
           >
-            <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
+            <Typography variant="overline" sx={{ color: "#789588", letterSpacing: "0.16em" }}>
               Checklist de envio
             </Typography>
             <Stack spacing={1.25} sx={{ mt: 2 }}>

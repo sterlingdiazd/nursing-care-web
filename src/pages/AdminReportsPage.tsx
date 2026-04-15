@@ -21,6 +21,7 @@ import {
 } from "@mui/material";
 
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { FormDatePicker } from "../components/common/FormDatePicker";
 import {
   getAdminReport,
   getAdminReportExportUrl,
@@ -192,23 +193,27 @@ export default function AdminReportsPage() {
               <Paper sx={{ p: 3, borderRadius: 3 }}>
                 <Typography variant="h6" sx={{ mb: 2 }}>{t("adminReports.actions.filtersTitle")}</Typography>
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="flex-end">
-                  <TextField
+                  <FormDatePicker
                     label={t("adminReports.actions.from")}
-                    type="date"
-                    size="small"
                     value={fromDate}
-                    onChange={(e) => setFromDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={setFromDate}
                     fullWidth
+                    slotProps={{
+                      textField: {
+                        size: "small"
+                      }
+                    }}
                   />
-                  <TextField
+                  <FormDatePicker
                     label={t("adminReports.actions.to")}
-                    type="date"
-                    size="small"
                     value={toDate}
-                    onChange={(e) => setToDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
+                    onChange={setToDate}
                     fullWidth
+                    slotProps={{
+                      textField: {
+                        size: "small"
+                      }
+                    }}
                   />
                   <Button variant="contained" onClick={() => void loadReportData()} disabled={isLoading} sx={{ py: 1, minWidth: 120 }}>
                     {t("adminReports.actions.refresh")}

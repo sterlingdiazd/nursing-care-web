@@ -12,6 +12,7 @@ import {
 import { ArrowBack as ArrowBackIcon, Mail as MailIcon } from "@mui/icons-material";
 import AuthScene from "../components/layout/AuthScene";
 import { forgotPassword, validateEmail } from "../api/auth";
+import { extractApiErrorMessage } from "../api/errorMessage";
 import { authTestIds } from "../testing/authTestIds";
 
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -50,8 +51,8 @@ export default function ForgotPasswordPage() {
       await forgotPassword(email.trim());
       setIsSuccess(true);
       setCooldownRemaining(RESEND_COOLDOWN_SECONDS);
-    } catch (err: any) {
-      setError(err.message || "Ocurrió un error al procesar tu solicitud.");
+    } catch (err) {
+      setError(extractApiErrorMessage(err, "Ocurrió un error al procesar tu solicitud."));
     } finally {
       setIsLoading(false);
     }

@@ -9,6 +9,8 @@ import {
   FormControl,
   FormControlLabel,
   FormLabel,
+  IconButton,
+  InputAdornment,
   Link,
   MenuItem,
   Paper,
@@ -18,9 +20,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 import { getGoogleOAuthStartUrl, validateEmail, validatePassword } from "../api/auth";
 import AuthScene from "../components/layout/AuthScene";
+import { FormDatePicker } from "../components/common/FormDatePicker";
 import { useNurseProfileCatalogOptions } from "../hooks/useNurseProfileCatalogOptions";
 import { useAuth } from "../context/AuthContext";
 import { RegisterRequest, UserProfileType } from "../types/auth";
@@ -59,6 +63,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [profileType, setProfileType] = useState<UserProfileType>(UserProfileType.CLIENT);
   const [hireDate, setHireDate] = useState("");
   const [specialty, setSpecialty] = useState("");
@@ -278,11 +283,25 @@ export default function RegisterPage() {
                 <TextField
                   fullWidth
                   label="Contrasena"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   disabled={isLoading}
                   inputProps={{ "data-testid": authTestIds.register.passwordInput }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          disabled={password.length === 0 && confirmPassword.length === 0}
+                          aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                   error={password.length > 0 && !passwordValidation.isValid}
                   helperText={password.length > 0 ? passwordValidation.message : "Minimo 6 caracteres"}
                 />
@@ -290,11 +309,25 @@ export default function RegisterPage() {
                 <TextField
                   fullWidth
                   label="Confirmar contrasena"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   disabled={isLoading}
                   inputProps={{ "data-testid": authTestIds.register.confirmPasswordInput }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                          disabled={password.length === 0 && confirmPassword.length === 0}
+                          aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                   error={confirmPassword.length > 0 && !passwordsMatch}
                   helperText={
                     confirmPassword.length > 0 && !passwordsMatch
@@ -363,15 +396,17 @@ export default function RegisterPage() {
                         Datos del perfil de enfermeria
                       </Typography>
 
-                      <TextField
+                      <FormDatePicker
                         fullWidth
                         label="Fecha de contratacion"
-                        type="date"
                         value={hireDate}
-                        onChange={(event) => setHireDate(event.target.value)}
+                        onChange={setHireDate}
                         disabled={isLoading}
-                        InputLabelProps={{ shrink: true }}
-                        helperText="Campo obligatorio para el perfil de enfermeria."
+                        slotProps={{
+                          textField: {
+                            helperText: "Campo obligatorio para el perfil de enfermeria."
+                          }
+                        }}
                       />
 
                       <TextField

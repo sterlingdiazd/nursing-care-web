@@ -12,6 +12,7 @@ import {
 
 import { validateEmail, validatePassword } from "../../api/auth";
 import { useNurseProfileCatalogOptions } from "../../hooks/useNurseProfileCatalogOptions";
+import { FormDatePicker } from "../common/FormDatePicker";
 import {
   getExactDigitsFieldError,
   getOptionalDigitsFieldError,
@@ -306,12 +307,10 @@ export default function AdminNurseProfileForm({
             gap: 2,
           }}
         >
-          <TextField
+          <FormDatePicker
             label="Fecha de contratacion"
-            type="date"
             value={formState.hireDate}
-            onChange={(event) => handleChange("hireDate", event.target.value)}
-            InputLabelProps={{ shrink: true }}
+            onChange={(value) => handleChange("hireDate", value)}
             disabled={isSubmitting}
           />
           <TextField

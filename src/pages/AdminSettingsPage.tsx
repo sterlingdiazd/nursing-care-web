@@ -27,6 +27,7 @@ import { useTranslation } from "react-i18next";
 
 import AdminPortalShell from "../components/layout/AdminPortalShell";
 import { getAdminSettings, updateAdminSetting, type SystemSetting } from "../api/adminSettings";
+import { extractApiErrorMessage } from "../api/errorMessage";
 import { logClientEvent } from "../logging/clientLogger";
 
 const getCategoryIcon = (category: string) => {
@@ -58,8 +59,7 @@ export default function AdminSettingsPage() {
       setSettings(data);
       setError(null);
     } catch (err) {
-      setError(t("adminSettings.errors.load"));
-      console.error(err);
+      setError(extractApiErrorMessage(err, t("adminSettings.errors.load")));
     } finally {
       setLoading(false);
     }
@@ -78,8 +78,7 @@ export default function AdminSettingsPage() {
       );
       logClientEvent("admin.settings", "Updated system setting", { key, value });
     } catch (err) {
-      setError(t("adminSettings.errors.update", { key }));
-      console.error(err);
+      setError(extractApiErrorMessage(err, t("adminSettings.errors.update", { key })));
     } finally {
       setSavingKey(null);
     }

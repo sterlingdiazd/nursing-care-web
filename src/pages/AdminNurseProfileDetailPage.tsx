@@ -95,7 +95,7 @@ export default function AdminNurseProfileDetailPage() {
     <AdminPortalShell
       eyebrow="Administracion de enfermeria"
       title={detail ? formatNurseDisplayName(detail) : "Detalle de enfermeria"}
-      description="Lee identidad, estado operativo, catalogacion y carga basica antes de completar revision, editar el perfil o cambiar el acceso operativo."
+      description=""
       actions={(
         <>
           <Button variant="outlined" onClick={() => navigate(listPath)}>
@@ -117,119 +117,120 @@ export default function AdminNurseProfileDetailPage() {
         )}
 
         {detail && (
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", xl: "1.1fr 0.9fr" },
-              gap: 3,
-            }}
-          >
-            <Stack spacing={3}>
-              <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
-                <Stack spacing={2}>
-                  <Stack
-                    direction={{ xs: "column", lg: "row" }}
-                    spacing={1.2}
-                    justifyContent="space-between"
-                    alignItems={{ xs: "flex-start", lg: "center" }}
-                  >
-                    <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {statusStyles && (
-                        <Chip label={getNurseStatusLabel(detail)} sx={{ bgcolor: statusStyles.bg, color: statusStyles.color, fontWeight: 700 }} />
-                      )}
-                      <Chip label={getNurseReadinessLabel(detail)} variant="outlined" />
-                    </Stack>
-                    <Typography color="text.secondary">Perfil {detail.userId}</Typography>
+          <Stack spacing={3}>
+            <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
+              <Stack spacing={2}>
+                <Stack
+                  direction={{ xs: "column", lg: "row" }}
+                  spacing={1.5}
+                  justifyContent="space-between"
+                  alignItems={{ xs: "flex-start", lg: "center" }}
+                >
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {statusStyles && (
+                      <Chip label={getNurseStatusLabel(detail)} sx={{ bgcolor: statusStyles.bg, color: statusStyles.color, fontWeight: 700 }} />
+                    )}
+                    <Chip label={getNurseReadinessLabel(detail)} variant="outlined" />
                   </Stack>
-
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
-                      gap: 1.8,
-                    }}
-                  >
-                    {[
-                      ["Correo", detail.email],
-                      ["Cedula", detail.identificationNumber ?? "Sin cedula"],
-                      ["Telefono", detail.phone ?? "Sin telefono"],
-                      ["Fecha de contratacion", detail.hireDate ?? "Sin fecha"],
-                      ["Especialidad", detail.specialty ?? "Sin especialidad"],
-                      ["Categoria", detail.category ?? "Sin categoria"],
-                      ["Licencia", detail.licenseId ?? "Sin licencia"],
-                      ["Banco", detail.bankName ?? "Sin banco"],
-                      ["Numero de cuenta", detail.accountNumber ?? "Sin cuenta"],
-                      ["Creado", formatDateTime(detail.createdAtUtc)],
-                    ].map(([label, value]) => (
-                      <Box key={label}>
-                        <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
-                          {label}
-                        </Typography>
-                        <Typography sx={{ mt: 0.45 }}>{value}</Typography>
-                      </Box>
-                    ))}
-                  </Box>
+                  <Typography variant="caption" color="text.secondary">ID: {detail.userId}</Typography>
                 </Stack>
-              </Paper>
 
-              <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+                    gap: 2,
+                  }}
+                >
+                  {[
+                    ["Correo", detail.email],
+                    ["Cedula", detail.identificationNumber ?? "Sin cedula"],
+                    ["Telefono", detail.phone ?? "Sin telefono"],
+                  ].map(([label, value]) => (
+                    <Box key={label}>
+                      <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em", fontSize: "0.7rem" }}>
+                        {label}
+                      </Typography>
+                      <Typography sx={{ mt: 0.6, fontWeight: 500 }}>{value}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+                    gap: 2,
+                    mt: 1,
+                  }}
+                >
+                  {[
+                    ["Especialidad", detail.specialty ?? "Sin especialidad"],
+                    ["Categoria", detail.category ?? "Sin categoria"],
+                    ["Licencia", detail.licenseId ?? "Sin licencia"],
+                  ].map(([label, value]) => (
+                    <Box key={label}>
+                      <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em", fontSize: "0.7rem" }}>
+                        {label}
+                      </Typography>
+                      <Typography sx={{ mt: 0.6, fontSize: "0.9rem" }}>{value}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Stack>
+            </Paper>
+
+            <Stack spacing={2} direction={{ xs: "column", xl: "row" }}>
+              <Paper sx={{ p: 3.5, borderRadius: 3.5, flex: 1 }}>
                 <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                  Carga operativa basica
+                  Carga operativa
                 </Typography>
                 <Stack spacing={1.2} sx={{ mt: 2.2 }}>
-                  <Typography variant="h5">{formatNurseWorkloadSummary(detail.workload)}</Typography>
-                  <Typography color="text.secondary">
-                    Ultima actividad relacionada: {detail.workload?.lastCareRequestAtUtc ? formatDateTime(detail.workload.lastCareRequestAtUtc) : "Sin registros"}
+                  <Typography variant="h6">{formatNurseWorkloadSummary(detail.workload)}</Typography>
+                  <Typography color="text.secondary" sx={{ fontSize: "0.85rem" }}>
+                    {detail.workload?.lastCareRequestAtUtc ? formatDateTime(detail.workload.lastCareRequestAtUtc) : "Sin registros de actividad"}
                   </Typography>
                 </Stack>
               </Paper>
-            </Stack>
 
-            <Stack spacing={3}>
-              <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
-                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                  Acciones administrativas
-                </Typography>
-                <Stack spacing={1.5} sx={{ mt: 2.2 }}>
-                  {detail.isPendingReview ? (
-                    <Button
-                      variant="contained"
-                      onClick={() => navigate(`/admin/nurse-profiles/${detail.userId}/review`, { state: { from: listPath } })}
-                    >
-                      Completar revision
-                    </Button>
-                  ) : (
-                    <>
+              <Stack spacing={2} sx={{ flex: 0.8 }}>
+                <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
+                  <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                    Acciones
+                  </Typography>
+                  <Stack spacing={1.5} sx={{ mt: 2.2 }}>
+                    {detail.isPendingReview ? (
                       <Button
                         variant="contained"
-                        onClick={() => navigate(`/admin/nurse-profiles/${detail.userId}/edit`, { state: { from: listPath } })}
+                        fullWidth
+                        onClick={() => navigate(`/admin/nurse-profiles/${detail.userId}/review`, { state: { from: listPath } })}
                       >
-                        Editar perfil
+                        Completar revision
                       </Button>
-                      <Button
-                        variant="outlined"
-                        onClick={() => void handleOperationalAccessToggle()}
-                        disabled={isActing}
-                      >
-                        {detail.userIsActive && detail.nurseProfileIsActive
-                          ? "Desactivar acceso operativo"
-                          : "Activar acceso operativo"}
-                      </Button>
-                    </>
-                  )}
-                </Stack>
-              </Paper>
-
-              <Paper sx={{ p: 3.5, borderRadius: 3.5, bgcolor: "rgba(243, 237, 224, 0.74)" }}>
-                <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
-                  Regla de asignacion
-                </Typography>
-                <Typography sx={{ mt: 1.2, color: "#5c4a2d", lineHeight: 1.8 }}>
-                  Solo las enfermeras activas y con perfil totalmente completado entran como candidatas de asignacion en solicitudes aprobables. Cuando una enfermera esta inactiva o pendiente, el backend ya evita su asignacion.
-                </Typography>
-              </Paper>
+                    ) : (
+                      <>
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          onClick={() => navigate(`/admin/nurse-profiles/${detail.userId}/edit`, { state: { from: listPath } })}
+                        >
+                          Editar perfil
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          onClick={() => void handleOperationalAccessToggle()}
+                          disabled={isActing}
+                        >
+                          {detail.userIsActive && detail.nurseProfileIsActive ? "Desactivar" : "Activar"}
+                        </Button>
+                      </>
+                    )}
+                  </Stack>
+                </Paper>
+              </Stack>
             </Stack>
-          </Box>
+          </Stack>
         )}
       </Stack>
     </AdminPortalShell>

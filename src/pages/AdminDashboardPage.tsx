@@ -249,46 +249,23 @@ export default function AdminDashboardPage() {
 
         <Paper
           sx={{
-            p: { xs: 3, md: 4 },
+            p: { xs: 2.5, md: 3 },
             borderRadius: 4,
             background:
-              "linear-gradient(145deg, rgba(15,49,69,0.98) 0%, rgba(32,79,104,0.96) 58%, rgba(183,128,60,0.9) 100%)",
+              "linear-gradient(145deg, rgba(15,49,69,0.98) 0%, rgba(32,79,104,0.96) 100%)",
             color: "#f8fafc",
             overflow: "hidden",
             position: "relative",
           }}
         >
-          <Box
-            sx={{
-              position: "absolute",
-              right: -30,
-              top: -40,
-              width: 190,
-              height: 190,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.08)",
-            }}
-          />
-          <Stack spacing={2.2} sx={{ position: "relative" }}>
-            <Typography variant="overline" sx={{ letterSpacing: "0.2em", color: "#cbe3ee" }}>
-              {t('dashboard.visibilityTitle')}
-            </Typography>
-            <Typography variant="h3" sx={{ color: "#fffef8", maxWidth: 760 }}>
+          <Stack spacing={1.5} sx={{ position: "relative" }}>
+            <Typography variant="h6" sx={{ color: "#fffef8" }}>
               {t('dashboard.visibilityDesc1')}
             </Typography>
-            <Typography sx={{ maxWidth: 760, color: "rgba(235,244,247,0.84)", lineHeight: 1.85 }}>
-              {t('dashboard.visibilityDesc2')}
-            </Typography>
             {dashboard?.generatedAtUtc && (
-              <Chip
-                label={t('dashboard.updatedAt', { date: formatTimestamp(dashboard.generatedAtUtc) })}
-                sx={{
-                  width: "fit-content",
-                  bgcolor: "rgba(255,255,255,0.12)",
-                  color: "#e2f0f5",
-                  borderRadius: 2,
-                }}
-              />
+              <Typography variant="caption" sx={{ color: "rgba(235,244,247,0.72)" }}>
+                {t('dashboard.updatedAt', { date: formatTimestamp(dashboard.generatedAtUtc) })}
+              </Typography>
             )}
           </Stack>
         </Paper>
@@ -372,90 +349,45 @@ export default function AdminDashboardPage() {
             </Stack>
           </Paper>
 
-          <Stack spacing={3}>
-            <Paper sx={{ p: 3.5, borderRadius: 4 }}>
-              <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                {t('dashboard.criticalAlertsTitle')}
-              </Typography>
-              <Typography variant="h5" sx={{ mt: 1.2 }}>
-                {t('dashboard.criticalAlertsDesc')}
-              </Typography>
+          <Paper sx={{ p: 3.5, borderRadius: 4 }}>
+            <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+              {t('dashboard.criticalAlertsTitle')}
+            </Typography>
 
-              <Stack spacing={1.5} sx={{ mt: 2.5 }}>
-                {isLoading && <Skeleton variant="rounded" height={110} />}
+            <Stack spacing={1.5} sx={{ mt: 2.2 }}>
+              {isLoading && <Skeleton variant="rounded" height={110} />}
 
-                {!isLoading && dashboard && dashboard.highSeverityAlerts.length === 0 && (
-                  <Alert severity="info" variant="outlined">
-                    {t('dashboard.noAlerts')}
-                  </Alert>
-                )}
+              {!isLoading && dashboard && dashboard.highSeverityAlerts.length === 0 && (
+                <Alert severity="info" variant="outlined">
+                  {t('dashboard.noAlerts')}
+                </Alert>
+              )}
 
-                {!isLoading && dashboard?.highSeverityAlerts.map((alert) => (
-                  <Paper
-                    key={alert.id}
-                    sx={{
-                      p: 2.5,
-                      borderRadius: 3,
-                      bgcolor: "rgba(183, 79, 77, 0.06)",
-                      border: "1px solid rgba(183, 79, 77, 0.16)",
-                    }}
-                  >
-                    <Stack direction={{ xs: "column", md: "row" }} spacing={2} justifyContent="space-between">
-                      <Box>
-                        <Typography variant="h6">{alert.title}</Typography>
-                        <Typography color="text.secondary" sx={{ mt: 0.9, lineHeight: 1.7 }}>
-                          {alert.description}
-                        </Typography>
-                      </Box>
-                      <Button variant="outlined" color="error" onClick={() => navigate(alert.modulePath)}>
-                        {t('dashboard.openAlert')}
-                      </Button>
-                    </Stack>
-                  </Paper>
-                ))}
-              </Stack>
-            </Paper>
-
-            <Paper sx={{ p: 3.5, borderRadius: 4, bgcolor: "#f2ebde" }}>
-              <Typography variant="overline" sx={{ color: "#8c6430", letterSpacing: "0.16em" }}>
-                {t('dashboard.keyRoutes')}
-              </Typography>
-              <Stack spacing={1.35} sx={{ mt: 2.2 }}>
-                {[
-                  {
-                    label: t('dashboard.routes.queue'),
-                    path: "/admin/action-items",
-                  },
-                  {
-                    label: t('dashboard.routes.unassigned'),
-                    path: "/admin/care-requests?view=unassigned",
-                  },
-                  {
-                    label: t('dashboard.routes.approval'),
-                    path: "/admin/care-requests?view=pending-approval",
-                  },
-                  {
-                    label: t('dashboard.routes.pendingNurses'),
-                    path: "/admin/nurse-profiles?view=pending",
-                  },
-                ].map((item) => (
-                  <Button
-                    key={item.label}
-                    variant="text"
-                    onClick={() => navigate(item.path)}
-                    sx={{
-                      justifyContent: "space-between",
-                      px: 0,
-                      color: "#6b4f2c",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                ))}
-              </Stack>
-            </Paper>
-          </Stack>
+              {!isLoading && dashboard?.highSeverityAlerts.map((alert) => (
+                <Paper
+                  key={alert.id}
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 3,
+                    bgcolor: "rgba(183, 79, 77, 0.06)",
+                    border: "1px solid rgba(183, 79, 77, 0.16)",
+                  }}
+                >
+                  <Stack direction={{ xs: "column", md: "row" }} spacing={2} justifyContent="space-between">
+                    <Box>
+                      <Typography variant="h6">{alert.title}</Typography>
+                      <Typography color="text.secondary" sx={{ mt: 0.9, lineHeight: 1.7 }}>
+                        {alert.description}
+                      </Typography>
+                    </Box>
+                    <Button variant="outlined" color="error" onClick={() => navigate(alert.modulePath)}>
+                      {t('dashboard.openAlert')}
+                    </Button>
+                  </Stack>
+                </Paper>
+              ))}
+            </Stack>
+          </Paper>
         </Box>
       </Stack>
     </AdminPortalShell>

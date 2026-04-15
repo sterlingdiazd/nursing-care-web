@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Alert,
+  Autocomplete,
   Box,
   Button,
   Paper,
@@ -16,7 +17,10 @@ import {
   type AdminCareRequestClientOption,
 } from "../api/adminCareRequests";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { FormDatePicker } from "../components/common/FormDatePicker";
 import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
+import { useAvailableNurses } from "../hooks/useAvailableNurses";
+import type { AvailableNurse } from "../api/catalogOptions";
 import { estimateCareRequestPricingFromCatalog } from "../utils/pricingFromCatalogOptions";
 import { formatAdminCareRequestCurrency } from "../utils/adminCareRequests";
 import { extractApiErrorMessage } from "../api/errorMessage";
@@ -26,12 +30,13 @@ export default function AdminCreateCareRequestPage() {
   const location = useLocation();
   const { data: catalogOptions, isLoading: catalogLoading, error: catalogError } =
     useCareRequestCatalogOptions();
+  const { data: availableNurses, isLoading: nursesLoading, error: nursesError } = useAvailableNurses();
   const locationState = location.state as { presetClientUserId?: string; backPath?: string } | null;
   const presetClientUserId = locationState?.presetClientUserId ?? "";
   const [clientOptions, setClientOptions] = useState<AdminCareRequestClientOption[]>([]);
   const [clientUserId, setClientUserId] = useState(presetClientUserId);
   const [careRequestDescription, setCareRequestDescription] = useState("");
-  const [suggestedNurse, setSuggestedNurse] = useState("");
+  const [selectedNurse, setSelectedNurse] = useState<AvailableNurse | null>(null);
   const [careRequestDate, setCareRequestDate] = useState("");
   const [careRequestType, setCareRequestType] = useState<string>("");
   const [unit, setUnit] = useState<number>(1);
@@ -166,7 +171,7 @@ export default function AdminCreateCareRequestPage() {
         careRequestDescription: careRequestDescription.trim(),
         careRequestType,
         unit,
-        suggestedNurse: suggestedNurse.trim() || undefined,
+        suggestedNurse: selectedNurse?.displayName || undefined,
         careRequestDate: careRequestDate || undefined,
         clientBasePriceOverride:
           typeof clientBasePriceOverride === "number" && clientBasePriceOverride > 0
@@ -189,8 +194,8 @@ export default function AdminCreateCareRequestPage() {
   return (
     <AdminPortalShell
       eyebrow="Nueva solicitud administrativa"
-      title="Crear una solicitud en nombre de un cliente activo."
-      description="Administracion puede registrar solicitudes para clientes cuando el caso lo requiera, manteniendo el mismo motor de calculo y las mismas reglas operativas del flujo regular."
+      title="Crear una solicitud en nombre de un cliente activo"
+      description=""
       actions={
         <>
           <Button variant="outlined" onClick={() => navigate(backPath)}>
@@ -205,7 +210,7 @@ export default function AdminCreateCareRequestPage() {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", xl: "1.1fr 0.9fr" },
+          gridTemplateColumns: { xs: "1fr", xl: "1.15fr 0.85fr" },
           gap: 3,
         }}
       >
@@ -240,19 +245,27 @@ export default function AdminCreateCareRequestPage() {
               disabled={isSaving}
             />
 
-            <TextField
-              label="Enfermera sugerida (opcional)"
-              value={suggestedNurse}
-              onChange={(event) => setSuggestedNurse(event.target.value)}
-              disabled={isSaving}
+            <Autocomplete
+              options={availableNurses ?? []}
+              getOptionLabel={(option) => `${option.displayName} (${option.specialty})`}
+              value={selectedNurse}
+              onChange={(_, newValue) => setSelectedNurse(newValue)}
+              loading={nursesLoading}
+              disabled={isSaving || nursesLoading}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Enfermera sugerida (opcional)"
+                  placeholder="Busca la enfermera que el cliente prefiere"
+                />
+              )}
+              noOptionsText={nursesError ? "Error cargando enfermeras" : "No hay enfermeras disponibles"}
             />
 
-            <TextField
+            <FormDatePicker
               label="Fecha del servicio (opcional)"
-              type="date"
               value={careRequestDate}
-              onChange={(event) => setCareRequestDate(event.target.value)}
-              InputLabelProps={{ shrink: true }}
+              onChange={setCareRequestDate}
               disabled={isSaving}
             />
 
@@ -347,39 +360,33 @@ export default function AdminCreateCareRequestPage() {
         </Paper>
 
         <Stack spacing={3}>
-          <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
-            <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-              Cliente seleccionado
-            </Typography>
-            <Stack spacing={1.2} sx={{ mt: 2.2 }}>
-              <Typography variant="h5">{selectedClient?.displayName ?? "Sin cliente seleccionado"}</Typography>
-              <Typography color="text.secondary">{selectedClient?.email ?? "Selecciona un cliente para continuar."}</Typography>
-              <Typography color="text.secondary">
-                {selectedClient?.identificationNumber ? `Cedula ${selectedClient.identificationNumber}` : "Sin cedula visible"}
-              </Typography>
-            </Stack>
-          </Paper>
-
           <Paper sx={{ p: 3.5, borderRadius: 3.5, bgcolor: "#f7fff9" }}>
             <Typography variant="overline" sx={{ color: "#1f5a49", letterSpacing: "0.16em" }}>
-              Estimacion previa
+              Desglose de precios
             </Typography>
-            <Stack spacing={1.2} sx={{ mt: 2.2 }}>
+            <Stack spacing={1.8} sx={{ mt: 2.2 }}>
               {[
                 ["Precio base", formatAdminCareRequestCurrency(basePrice)],
                 ["Factor de categoria", categoryFactor.toFixed(2)],
-                ["Factor de distancia", distanceFactorValue.toFixed(2)],
-                ["Factor de complejidad", complexityFactorValue.toFixed(2)],
+                ...(isDomicilio ? [["Factor de distancia", distanceFactorValue.toFixed(2)]] : []),
+                ...(isHogarOrDomicilio ? [["Factor de complejidad", complexityFactorValue.toFixed(2)]] : []),
                 ["Descuento por volumen", `${volumeDiscountPercent}%`],
-                ["Precio unitario estimado", formatAdminCareRequestCurrency(unitPrice)],
-                ["Insumos medicos", formatAdminCareRequestCurrency(medicalSuppliesValue)],
-                ["Total estimado", formatAdminCareRequestCurrency(estimatedTotal)],
+                ["Precio unitario", formatAdminCareRequestCurrency(unitPrice)],
+                ...(isMedicos && medicalSuppliesValue > 0 ? [["Insumos medicos", formatAdminCareRequestCurrency(medicalSuppliesValue)]] : []),
               ].map(([label, value]) => (
                 <Box key={label} sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
-                  <Typography sx={{ fontWeight: 700 }}>{label}</Typography>
-                  <Typography color="text.secondary">{value}</Typography>
+                  <Typography sx={{ fontWeight: 500, color: "text.primary" }}>{label}</Typography>
+                  <Typography sx={{ fontWeight: 700, color: "#1f5a49" }}>{value}</Typography>
                 </Box>
               ))}
+              <Box sx={{ pt: 1.5, borderTop: "2px solid rgba(31, 90, 73, 0.2)" }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+                  <Typography sx={{ fontWeight: 700 }}>Total estimado</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: "1.1rem", color: "#1f5a49" }}>
+                    {formatAdminCareRequestCurrency(estimatedTotal)}
+                  </Typography>
+                </Box>
+              </Box>
             </Stack>
           </Paper>
         </Stack>

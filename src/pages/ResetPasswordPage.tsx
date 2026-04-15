@@ -20,6 +20,7 @@ import {
 } from "@mui/icons-material";
 import AuthScene from "../components/layout/AuthScene";
 import { resetPassword, validateEmail, validatePassword } from "../api/auth";
+import { extractApiErrorMessage } from "../api/errorMessage";
 import { authTestIds } from "../testing/authTestIds";
 
 export default function ResetPasswordPage() {
@@ -77,8 +78,8 @@ export default function ResetPasswordPage() {
         navigate("/login", { replace: true });
       }, 2000);
 
-    } catch (err: any) {
-      setError(err.message || "Ocurrió un error al restablecer tu contraseña.");
+    } catch (err) {
+      setError(extractApiErrorMessage(err, "Ocurrió un error al restablecer tu contraseña."));
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +152,12 @@ export default function ResetPasswordPage() {
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      disabled={newPassword.length === 0 && confirmPassword.length === 0}
+                      aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                    >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
@@ -172,6 +178,18 @@ export default function ResetPasswordPage() {
               InputProps={{
                 startAdornment: (
                   <LockIcon color="action" sx={{ mr: 1, fontSize: 20 }} />
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      disabled={newPassword.length === 0 && confirmPassword.length === 0}
+                      aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
                 ),
               }}
             />

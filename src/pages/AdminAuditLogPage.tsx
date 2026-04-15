@@ -25,6 +25,7 @@ import {
 
 import { extractApiErrorMessage } from "../api/errorMessage";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { FormDatePicker } from "../components/common/FormDatePicker";
 import {
   searchAuditLogs,
   getAuditLogDetail,
@@ -174,21 +175,25 @@ export default function AdminAuditLogPage() {
               size="small"
               placeholder={t("adminAuditLog.filters.placeholders.entityId")}
             />
-            <TextField
+            <FormDatePicker
               label={t("adminAuditLog.filters.fromDate")}
-              type="date"
               value={fromDateFilter}
-              onChange={(e) => setFromDateFilter(e.target.value)}
-              size="small"
-              InputLabelProps={{ shrink: true }}
+              onChange={setFromDateFilter}
+              slotProps={{
+                textField: {
+                  size: "small"
+                }
+              }}
             />
-            <TextField
+            <FormDatePicker
               label={t("adminAuditLog.filters.toDate")}
-              type="date"
               value={toDateFilter}
-              onChange={(e) => setToDateFilter(e.target.value)}
-              size="small"
-              InputLabelProps={{ shrink: true }}
+              onChange={setToDateFilter}
+              slotProps={{
+                textField: {
+                  size: "small"
+                }
+              }}
             />
           </Box>
           <Stack direction="row" spacing={2} sx={{ mt: 2 }}>

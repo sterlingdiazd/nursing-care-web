@@ -37,4 +37,34 @@ describe("errorMessage", () => {
       "La cedula debe tener exactamente 11 digitos.",
     );
   });
+
+  it("returns a concrete login message for unauthorized responses without detail", () => {
+    const error = {
+      isAxiosError: true,
+      message: "Request failed with status code 401",
+      response: {
+        status: 401,
+        data: {},
+      },
+    };
+
+    expect(extractApiErrorMessage(error, "No fue posible iniciar sesion.")).toBe(
+      "Correo o contrasena invalidos. Verifica tus datos e intenta de nuevo.",
+    );
+  });
+
+  it("returns a concrete throttling message for rate-limited responses without detail", () => {
+    const error = {
+      isAxiosError: true,
+      message: "Request failed with status code 429",
+      response: {
+        status: 429,
+        data: {},
+      },
+    };
+
+    expect(extractApiErrorMessage(error, "No fue posible iniciar sesion.")).toBe(
+      "Has excedido temporalmente los intentos permitidos. Intenta de nuevo en unos minutos.",
+    );
+  });
 });

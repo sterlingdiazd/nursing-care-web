@@ -23,6 +23,7 @@ import {
 import { extractApiErrorMessage } from "../api/errorMessage";
 import AdminMetricCard from "../components/admin/AdminMetricCard";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
+import { FormDatePicker } from "../components/common/FormDatePicker";
 import { useAdminTableFilters, type FilterState } from "../hooks/useAdminTableFilters";
 import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
 import { buildCatalogDisplayMaps } from "../utils/pricingFromCatalogOptions";
@@ -247,19 +248,15 @@ export default function AdminCareRequestsPage() {
                 onChange={(event) => setSearchInput(event.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && navigateWithFilters({ searchText: searchInput, selectedId: null })}
               />
-              <TextField
+              <FormDatePicker
                 label={t("adminCareRequests.filters.fromLabel")}
-                type="date"
                 value={filters.scheduledFrom || ""}
-                onChange={(event) => navigateWithFilters({ scheduledFrom: event.target.value, selectedId: null })}
-                InputLabelProps={{ shrink: true }}
+                onChange={(value) => navigateWithFilters({ scheduledFrom: value, selectedId: null })}
               />
-              <TextField
+              <FormDatePicker
                 label={t("adminCareRequests.filters.toLabel")}
-                type="date"
                 value={filters.scheduledTo || ""}
-                onChange={(event) => navigateWithFilters({ scheduledTo: event.target.value, selectedId: null })}
-                InputLabelProps={{ shrink: true }}
+                onChange={(value) => navigateWithFilters({ scheduledTo: value, selectedId: null })}
               />
               <TextField
                 select

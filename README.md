@@ -72,7 +72,7 @@ The Nursing Care Web Portal is a comprehensive administrative and client-facing 
 
    Typical direct API setup:
    `VITE_API_BASE_URL=/api`
-   `VITE_API_PROXY_TARGET=http://localhost:5050`
+   `VITE_API_PROXY_TARGET=http://localhost:8080`
 
    Typical production setup:
    `VITE_API_BASE_URL=https://api.yourdomain.com/api`
@@ -84,6 +84,23 @@ The Nursing Care Web Portal is a comprehensive administrative and client-facing 
 
 ### URLs
 - **Local Dev**: http://localhost:3000
+- **Mobile Dev**: http://[YOUR_LOCAL_IP]:3000 (see Mobile Development section)
+
+### Mobile Development
+
+To access the application from mobile devices (e.g., using Expo):
+
+1. **Quick setup script** (recommended):
+   ```bash
+   ./scripts/setup-mobile-dev.sh
+   ```
+
+2. **Manual setup**: Copy `.env.mobile` to `.env.development.local` and update with your local IP
+   ```bash
+   cp .env.mobile .env.development.local
+   ```
+
+📖 **For detailed instructions, see [MOBILE_DEVELOPMENT.md](./MOBILE_DEVELOPMENT.md)**
 
 ### VS Code Environment Picker
 
@@ -96,7 +113,7 @@ Use the workspace launch/task configuration if you want to choose the target env
 When you start one of those, VS Code shows a picker for `development-docker`, `development-direct`, `staging`, or `production`.
 
 - `development-docker` uses the Docker/Nginx local endpoint on `https://localhost:5050`
-- `development-direct` uses the .NET API directly on `http://localhost:5050`
+- `development-direct` uses the .NET API directly on `http://localhost:8080`
 - `staging` maps to `.env.staging`
 - `production` maps to `.env.production`
 

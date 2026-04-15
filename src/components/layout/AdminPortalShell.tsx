@@ -148,7 +148,7 @@ export default function AdminPortalShell({
       sx={{
         minHeight: "100vh",
         background:
-          "radial-gradient(circle at top left, rgba(19, 71, 93, 0.24), transparent 24%), radial-gradient(circle at right center, rgba(183, 128, 60, 0.14), transparent 22%), linear-gradient(180deg, #f3efe5 0%, #e9eef1 100%)",
+          "radial-gradient(circle at top left, rgba(180, 212, 221, 0.48), transparent 23%), radial-gradient(circle at right center, rgba(231, 236, 239, 0.72), transparent 20%), linear-gradient(180deg, #f8fbfc 0%, #eef4f5 56%, #eef1ef 100%)",
         py: { xs: 3, md: 4 },
       }}
     >
@@ -161,9 +161,10 @@ export default function AdminPortalShell({
               borderRadius: 4,
               position: "sticky",
               top: 24,
-              bgcolor: "#0f3145",
-              color: "#f9fafb",
+              bgcolor: "rgba(232, 240, 243, 0.84)",
+              color: "#36505d",
               overflow: "hidden",
+              backdropFilter: "blur(18px)",
             }}
           >
             <Box
@@ -174,7 +175,7 @@ export default function AdminPortalShell({
                 width: 180,
                 height: 180,
                 borderRadius: "50%",
-                background: "rgba(255,255,255,0.06)",
+                background: "rgba(255,255,255,0.5)",
               }}
             />
 
@@ -182,14 +183,14 @@ export default function AdminPortalShell({
               <Box>
                 <Typography
                   variant="overline"
-                  sx={{ letterSpacing: "0.24em", color: "rgba(214, 234, 248, 0.72)" }}
+                  sx={{ letterSpacing: "0.24em", color: "#6f94a3" }}
                 >
                   NursingCare
                 </Typography>
-                <Typography variant="h4" sx={{ mt: 1.1, color: "#fffdf8" }}>
+                <Typography variant="h4" sx={{ mt: 1.1, color: "#36505d" }}>
                   {t('shell.title')}
                 </Typography>
-                <Typography sx={{ mt: 1.2, color: "rgba(232, 241, 247, 0.76)", lineHeight: 1.75 }}>
+                <Typography sx={{ mt: 1.2, color: "#68808c", lineHeight: 1.75 }}>
                   {t('shell.subtitle')}
                 </Typography>
               </Box>
@@ -210,15 +211,15 @@ export default function AdminPortalShell({
                         alignItems: "flex-start",
                         px: 1.6,
                         py: 1.35,
-                        borderRadius: 2.5,
+                        borderRadius: 3,
                         textAlign: "left",
-                        color: active ? "#112c3f" : "#f8fafc",
-                        bgcolor: active ? "#f6ead7" : "rgba(255,255,255,0.05)",
+                        color: active ? "#36505d" : "#55707d",
+                        bgcolor: active ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.42)",
                         border: active
-                          ? "1px solid rgba(246, 234, 215, 0.92)"
-                          : "1px solid rgba(255,255,255,0.08)",
+                          ? "1px solid rgba(111, 148, 163, 0.18)"
+                          : "1px solid rgba(111, 148, 163, 0.1)",
                         "&:hover": {
-                          bgcolor: active ? "#f3dfc0" : "rgba(255,255,255,0.09)",
+                          bgcolor: active ? "#ffffff" : "rgba(255,255,255,0.64)",
                         },
                       }}
                     >
@@ -230,8 +231,8 @@ export default function AdminPortalShell({
                               label={unreadNotifications}
                               size="small"
                               sx={{
-                                bgcolor: active ? "#112c3f" : "#f6ead7",
-                                color: active ? "#f7ead5" : "#112c3f",
+                                bgcolor: active ? "#6f94a3" : "rgba(111, 148, 163, 0.14)",
+                                color: active ? "#ffffff" : "#557886",
                                 fontWeight: 700,
                               }}
                             />
@@ -242,7 +243,7 @@ export default function AdminPortalShell({
                             mt: 0.35,
                             fontSize: "0.82rem",
                             lineHeight: 1.55,
-                            color: active ? "rgba(17, 44, 63, 0.76)" : "rgba(232, 241, 247, 0.72)",
+                            color: active ? "rgba(54, 80, 93, 0.74)" : "#708692",
                           }}
                         >
                           {item.description}
@@ -253,16 +254,16 @@ export default function AdminPortalShell({
                 })}
               </Stack>
 
-              <Divider sx={{ borderColor: "rgba(255,255,255,0.12)" }} />
+              <Divider sx={{ borderColor: "rgba(111, 148, 163, 0.12)" }} />
 
               <Stack spacing={1}>
                 <Chip
                   label={email ?? t('shell.noEmail')}
                   sx={{
                     justifyContent: "flex-start",
-                    bgcolor: "rgba(255,255,255,0.08)",
-                    color: "#fffef8",
-                    borderRadius: 2,
+                    bgcolor: "rgba(255,255,255,0.62)",
+                    color: "#45616f",
+                    borderRadius: 999,
                     height: 40,
                   }}
                 />
@@ -270,9 +271,9 @@ export default function AdminPortalShell({
                   label={formatRoleLabels(roles)}
                   sx={{
                     justifyContent: "flex-start",
-                    bgcolor: "rgba(255,255,255,0.08)",
-                    color: "#dbeafe",
-                    borderRadius: 2,
+                    bgcolor: "rgba(255,255,255,0.62)",
+                    color: "#6f94a3",
+                    borderRadius: 999,
                     height: 40,
                   }}
                 />
@@ -285,11 +286,11 @@ export default function AdminPortalShell({
                   navigate("/login");
                 }}
                 sx={{
-                  color: "#fffef8",
-                  borderColor: "rgba(255,255,255,0.24)",
+                  color: "#58727f",
+                  borderColor: "rgba(111, 148, 163, 0.2)",
                   "&:hover": {
-                    borderColor: "rgba(255,255,255,0.42)",
-                    bgcolor: "rgba(255,255,255,0.06)",
+                    borderColor: "rgba(111, 148, 163, 0.32)",
+                    bgcolor: "rgba(255,255,255,0.48)",
                   },
                 }}
               >
@@ -302,12 +303,12 @@ export default function AdminPortalShell({
             <Paper
               sx={{
                 p: { xs: 2, md: 2.4 },
-                borderRadius: 3,
+                borderRadius: 4,
                 position: "sticky",
                 top: 24,
                 zIndex: 5,
-                bgcolor: "rgba(255, 253, 248, 0.92)",
-                backdropFilter: "blur(12px)",
+                bgcolor: "rgba(251, 253, 254, 0.82)",
+                backdropFilter: "blur(18px)",
               }}
             >
               <Stack
@@ -327,8 +328,8 @@ export default function AdminPortalShell({
                     <Chip
                       label={activeItem.label}
                       sx={{
-                        bgcolor: "rgba(183, 128, 60, 0.12)",
-                        color: "#7f5724",
+                        bgcolor: "rgba(111, 148, 163, 0.12)",
+                        color: "#557886",
                         fontWeight: 700,
                       }}
                     />
@@ -365,7 +366,7 @@ export default function AdminPortalShell({
                 p: { xs: 3, md: 4 },
                 borderRadius: 4,
                 background:
-                  "linear-gradient(140deg, rgba(255,255,255,0.95) 0%, rgba(251,247,240,0.98) 100%)",
+                  "linear-gradient(140deg, rgba(255,255,255,0.96) 0%, rgba(246,250,251,0.98) 100%)",
               }}
             >
               <Stack
