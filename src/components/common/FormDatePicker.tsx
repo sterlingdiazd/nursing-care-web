@@ -1,5 +1,7 @@
 import React from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { TextFieldProps } from '@mui/material/TextField';
 
@@ -16,13 +18,6 @@ interface FormDatePickerProps {
   };
 }
 
-/**
- * Reusable DatePicker component that wraps MUI X DatePicker
- * and maintains compatibility with existing form string-based date values (YYYY-MM-DD format)
- * Automatically adapts to mobile and desktop interfaces
- *
- * Note: Requires LocalizationProvider to be set up at the app level
- */
 export const FormDatePicker: React.FC<FormDatePickerProps> = ({
   label,
   value,
@@ -33,10 +28,8 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
   helperText,
   slotProps,
 }) => {
-  // Convert string value to Dayjs object for the DatePicker
   const dayjsValue = value ? dayjs(value) : null;
 
-  // Handle date change and convert back to string format (YYYY-MM-DD)
   const handleDateChange = (newValue: Dayjs | null) => {
     if (newValue && newValue.isValid()) {
       onChange(newValue.format('YYYY-MM-DD'));
@@ -46,19 +39,21 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
   };
 
   return (
-    <DatePicker
-      label={label}
-      value={dayjsValue}
-      onChange={handleDateChange}
-      disabled={disabled}
-      slotProps={{
-        textField: {
-          fullWidth,
-          error,
-          helperText,
-          ...slotProps?.textField,
-        },
-      }}
-    />
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <DatePicker
+        label={label}
+        value={dayjsValue}
+        onChange={handleDateChange}
+        disabled={disabled}
+        slotProps={{
+          textField: {
+            fullWidth,
+            error,
+            helperText,
+            ...slotProps?.textField,
+          },
+        }}
+      />
+    </LocalizationProvider>
   );
 };
