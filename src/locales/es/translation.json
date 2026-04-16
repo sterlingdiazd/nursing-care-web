@@ -58,6 +58,10 @@
     "settings": {
       "label": "Configuración",
       "desc": "Parámetros del portal"
+    },
+    "shifts": {
+      "label": "Turnos",
+      "desc": "Gestion de turnos y programacion de enfermeria"
     }
   },
   "shell": {
@@ -802,12 +806,6 @@
     "errors": {
       "loadFailed": "No fue posible cargar los turnos.",
       "detailFailed": "No fue posible cargar el detalle del turno."
-    }
-  },
-  "nav": {
-    "shifts": {
-      "label": "Turnos",
-      "desc": "Gestion de turnos y programacion de enfermeria"
     }
   }
 }

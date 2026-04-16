@@ -235,7 +235,7 @@ export default function AdminPortalShell({
                     >
                       <Box>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Typography sx={{ fontWeight: 700 }}> - {item.label} - </Typography>
+                          <Typography sx={{ fontWeight: 700 }}>{item.label}</Typography>
                           {showUnreadBadge && (
                             <Chip
                               label={unreadNotifications}

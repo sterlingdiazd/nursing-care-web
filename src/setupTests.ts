@@ -4,9 +4,11 @@
 // learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
-import translation from "./locales/es/translation.json";
+import * as fs from "fs";
+import * as path from "path";
 
-console.log("Translation keys:", Object.keys(translation));
+const translationPath = path.resolve(__dirname, "./locales/es/translation.json");
+const translation = JSON.parse(fs.readFileSync(translationPath, "utf8"));
 
 function resolveKey(obj: any, key: string): string {
   const parts = key.split(".");
