@@ -369,18 +369,7 @@ export default function AdminPayrollPage() {
     <AdminPortalShell
       eyebrow={t("adminPayroll.eyebrow")}
       title={t("adminPayroll.title")}
-      description={t("adminPayroll.description")}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
-          <Tab label={t("adminPayroll.tabs.periods", "Períodos")} />
-          <Tab label={t("adminPayroll.tabs.rules", "Reglas de Compensación")} />
-          <Tab label={t("adminPayroll.tabs.deductions", "Deducciones")} />
-          <Tab label={t("adminPayroll.tabs.adjustments", "Ajustes")} />
-        </Tabs>
-      </Box>
-      {activeTab === 0 && (
-        <>
-      
+      description={t("adminPayroll.description")}
       actions={
         <>
           <Button variant="outlined" onClick={() => void loadPeriods()} disabled={loading}>
@@ -392,7 +381,17 @@ export default function AdminPayrollPage() {
         </>
       }
     >
-      <Stack spacing={3} data-testid="admin-payroll-page">
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
+          <Tab label={t("adminPayroll.tabs.periods", "Períodos")} />
+          <Tab label={t("adminPayroll.tabs.rules", "Reglas de Compensación")} />
+          <Tab label={t("adminPayroll.tabs.deductions", "Deducciones")} />
+          <Tab label={t("adminPayroll.tabs.adjustments", "Ajustes")} />
+        </Tabs>
+      </Box>
+{activeTab === 0 && (
+        <>
+        <Stack spacing={3} data-testid="admin-payroll-page">
         {error && <Alert severity="error">{error}</Alert>}
         {actionError && <Alert severity="error">{actionError}</Alert>}
 
@@ -512,10 +511,10 @@ export default function AdminPayrollPage() {
             </Stack>
           )}
         </Paper>
-      </Stack>
+        </Stack>
 
-      {/* Create Period Dialog */}
-      <Dialog
+        {/* Create Period Dialog */}
+        <Dialog
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
         maxWidth="sm"
@@ -577,7 +576,7 @@ export default function AdminPayrollPage() {
           </Button>
         </DialogActions>
       </Dialog>
-        </>
+      </>
       )}
       {activeTab === 1 && (
         <Box sx={{ p: 3 }}>
