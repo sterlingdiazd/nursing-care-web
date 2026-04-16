@@ -280,6 +280,11 @@ export default function AdminCreateCareRequestPage() {
               value={careRequestDate}
               onChange={setCareRequestDate}
               disabled={isSaving}
+              slotProps={{
+                textField: {
+                  "data-testid": "admin-create-care-request-date-input",
+                }
+              }}
             />
 
             <TextField

@@ -404,6 +404,7 @@ export default function RegisterPage() {
                         disabled={isLoading}
                         slotProps={{
                           textField: {
+                            "data-testid": authTestIds.register.hireDateInput,
                             helperText: "Campo obligatorio para el perfil de enfermeria."
                           }
                         }}
@@ -416,6 +417,7 @@ export default function RegisterPage() {
                         value={specialty}
                         onChange={(event) => setSpecialty(event.target.value)}
                         disabled={isLoading}
+                        inputProps={{ "data-testid": authTestIds.register.specialtyInput }}
                         helperText="Selecciona una especialidad de enfermeria."
                       >
                         <MenuItem value="">
@@ -440,7 +442,7 @@ export default function RegisterPage() {
                         disabled={isLoading}
                         error={!!displayedLicenseIdError}
                         helperText={displayedLicenseIdError || "Opcional. Solo numeros."}
-                        inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
+                        inputProps={{ inputMode: "numeric", pattern: "\\d*", "data-testid": authTestIds.register.licenseIdInput }}
                       />
 
                       <TextField
@@ -455,6 +457,7 @@ export default function RegisterPage() {
                         disabled={isLoading}
                         error={!!displayedBankNameError}
                         helperText={displayedBankNameError || "Campo obligatorio. Solo letras y espacios."}
+                        inputProps={{ "data-testid": authTestIds.register.bankNameInput }}
                       />
 
                       <TextField
@@ -469,7 +472,7 @@ export default function RegisterPage() {
                         disabled={isLoading}
                         error={!!displayedAccountNumberError}
                         helperText={displayedAccountNumberError || "Opcional. Solo numeros."}
-                        inputProps={{ inputMode: "numeric", pattern: "\\d*" }}
+                        inputProps={{ inputMode: "numeric", pattern: "\\d*", "data-testid": authTestIds.register.accountNumberInput }}
                       />
                     </Stack>
                   </Paper>

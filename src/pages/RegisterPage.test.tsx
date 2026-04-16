@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import { vi } from "vitest";
 
 import RegisterPage from "./RegisterPage";
+import { authTestIds } from "../testing/authTestIds";
 
 const navigate = vi.fn();
 
@@ -53,8 +54,8 @@ describe("RegisterPage", () => {
 
     expect(screen.getByText("Perfil de enfermeria")).toBeInTheDocument();
     expect(screen.getByText("Datos del perfil de enfermeria")).toBeInTheDocument();
-    expect(screen.getByLabelText("Fecha de contratacion")).toBeInTheDocument();
-    expect(screen.getByLabelText("Especialidad")).toBeInTheDocument();
+    expect(screen.getByTestId(authTestIds.register.hireDateInput)).toBeInTheDocument();
+    expect(screen.getByTestId(authTestIds.register.specialtyInput)).toBeInTheDocument();
   });
 
   it("shows immediate feedback when a forbidden character is attempted", () => {

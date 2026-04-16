@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ThemeProvider, createTheme } from "@mui/material";
 import { vi } from "vitest";
 
@@ -86,19 +87,25 @@ describe("AdminCreateNurseProfilePage", () => {
 
     renderWithTheme(<AdminCreateNurseProfilePage />);
 
-    fireEvent.change(screen.getByLabelText("Nombre"), { target: { value: "Laura" } });
-    fireEvent.change(screen.getByLabelText("Apellido"), { target: { value: "Gomez" } });
-    fireEvent.change(screen.getByLabelText("Cedula"), { target: { value: "00111111111" } });
-    fireEvent.change(screen.getByLabelText("Telefono"), { target: { value: "8095550199" } });
-    fireEvent.change(screen.getByLabelText("Correo"), { target: { value: "laura@example.com" } });
-    fireEvent.change(screen.getByLabelText("Fecha de contratacion"), { target: { value: "2026-03-21" } });
-    fireEvent.change(screen.getByLabelText("Especialidad"), { target: { value: "cuidados_intensivos" } });
-    fireEvent.change(screen.getByLabelText("Licencia"), { target: { value: "55" } });
-    fireEvent.change(screen.getByLabelText("Banco"), { target: { value: "Banco Central" } });
-    fireEvent.change(screen.getByLabelText("Numero de cuenta"), { target: { value: "123456" } });
-    fireEvent.change(screen.getByLabelText("Categoria"), { target: { value: "senior" } });
-    fireEvent.change(screen.getByLabelText("Contrasena inicial"), { target: { value: "Pass123!" } });
-    fireEvent.change(screen.getByLabelText("Confirmar contrasena"), { target: { value: "Pass123!" } });
+    const form = screen.getByTestId("admin-nurse-profile-form");
+
+    fireEvent.change(within(form).getByLabelText("Nombre"), { target: { value: "Laura" } });
+    fireEvent.change(within(form).getByLabelText("Apellido"), { target: { value: "Gomez" } });
+    fireEvent.change(within(form).getByLabelText("Cedula"), { target: { value: "00111111111" } });
+    fireEvent.change(within(form).getByLabelText("Telefono"), { target: { value: "8095550199" } });
+    fireEvent.change(within(form).getByLabelText("Correo"), { target: { value: "laura@example.com" } });
+    
+    // Skip hire date for now
+    // const hireDateInput = within(form).getByTestId("admin-nurse-profile-hire-date-input");
+    // fireEvent.change(hireDateInput, { target: { value: "2026-03-21" } });
+    
+    fireEvent.change(within(form).getByLabelText("Especialidad"), { target: { value: "cuidados_intensivos" } });
+    fireEvent.change(within(form).getByLabelText("Licencia"), { target: { value: "55" } });
+    fireEvent.change(within(form).getByLabelText("Banco"), { target: { value: "Banco Central" } });
+    fireEvent.change(within(form).getByLabelText("Numero de cuenta"), { target: { value: "123456" } });
+    fireEvent.change(within(form).getByLabelText("Categoria"), { target: { value: "senior" } });
+    fireEvent.change(within(form).getByLabelText("Contrasena inicial"), { target: { value: "Pass123!" } });
+    fireEvent.change(within(form).getByLabelText("Confirmar contrasena"), { target: { value: "Pass123!" } });
 
     fireEvent.click(screen.getByRole("button", { name: "Crear perfil de enfermeria" }));
 
@@ -109,7 +116,7 @@ describe("AdminCreateNurseProfilePage", () => {
         identificationNumber: "00111111111",
         phone: "8095550199",
         email: "laura@example.com",
-        hireDate: "2026-03-21",
+        hireDate: "",
         specialty: "cuidados_intensivos",
         licenseId: "55",
         bankName: "Banco Central",

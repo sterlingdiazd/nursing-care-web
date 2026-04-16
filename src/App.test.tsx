@@ -45,6 +45,14 @@ vi.mock("./hooks/useCareRequestCatalogOptions", () => ({
   }),
 }));
 
+vi.mock("./hooks/useAvailableNurses", () => ({
+  useAvailableNurses: () => ({
+    data: [], // No nurses for simplicity
+    isLoading: false,
+    error: null,
+  }),
+}));
+
 vi.mock("./context/AuthContext", () => ({
   useAuth: () => ({
     isAuthenticated: true,
@@ -94,8 +102,19 @@ describe("CareRequestPage", () => {
 
     renderWithTheme(<CareRequestPage />);
 
+    // Wait for the form to be ready
+    await waitFor(() => {
+      expect(screen.getByLabelText("Descripcion de la solicitud")).toBeInTheDocument();
+    });
+
     fireEvent.change(screen.getByLabelText("Descripcion de la solicitud"), {
       target: { value: "Resident needs a morning wellness visit and medication support." },
+    });
+
+    // Wait for the submit button to be enabled
+    await waitFor(() => {
+      const submitButton = screen.getByRole("button", { name: "Crear solicitud" });
+      expect(submitButton).not.toBeDisabled();
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Crear solicitud" }));

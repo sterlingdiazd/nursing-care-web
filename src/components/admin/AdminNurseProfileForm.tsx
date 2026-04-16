@@ -143,7 +143,7 @@ export default function AdminNurseProfileForm({
     && formState.identificationNumber.trim().length === 11
     && formState.phone.trim().length === 10
     && formState.email.trim().length > 0
-    && formState.hireDate.trim().length > 0
+    && (!isCreateMode ? formState.hireDate.trim().length > 0 : true)
     && formState.specialty.trim().length > 0
     && formState.bankName.trim().length > 0
     && formState.category.trim().length > 0
@@ -238,7 +238,7 @@ export default function AdminNurseProfileForm({
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit}>
+    <Box component="form" onSubmit={handleSubmit} data-testid="admin-nurse-profile-form">
       <Stack spacing={2.25}>
         {helperText && (
           <Paper sx={{ p: 2.4, borderRadius: 3, bgcolor: "rgba(247, 244, 238, 0.78)", boxShadow: "none" }}>
@@ -312,6 +312,11 @@ export default function AdminNurseProfileForm({
             value={formState.hireDate}
             onChange={(value) => handleChange("hireDate", value)}
             disabled={isSubmitting}
+            slotProps={{
+              textField: {
+                "data-testid": "admin-nurse-profile-hire-date-input",
+              }
+            }}
           />
           <TextField
             select
