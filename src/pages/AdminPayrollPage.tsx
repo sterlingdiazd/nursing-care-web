@@ -34,11 +34,17 @@ import {
   getAdminCompensationRules,
   getAdminDeductions,
   getAdminAdjustments,
+  createAdminCompensationRule,
+  updateAdminCompensationRule,
+  deactivateAdminCompensationRule,
   type AdminPayrollPeriodListResult,
   type AdminPayrollPeriodDetail,
   type AdminCompensationRuleListResult,
   type AdminDeductionListResult,
   type AdminCompensationAdjustmentListResult,
+  type AdminCompensationRuleListItem,
+  type CreateCompensationRuleParams,
+  type UpdateCompensationRuleParams,
 } from "../api/adminPayroll";
 
 function formatDate(value: string) {
@@ -85,6 +91,21 @@ export default function AdminPayrollPage() {
   const [formEndDate, setFormEndDate] = useState("");
   const [formCutoffDate, setFormCutoffDate] = useState("");
   const [formPaymentDate, setFormPaymentDate] = useState("");
+
+  // Compensation rules state
+  const [compensationRules, setCompensationRules] = useState<AdminCompensationRuleListResult | null>(null);
+  const [rulesLoading, setRulesLoading] = useState(false);
+  const [rulesError, setRulesError] = useState<string | null>(null);
+  const [ruleDialogOpen, setRuleDialogOpen] = useState(false);
+  const [ruleFormData, setRuleFormData] = useState<Partial<CreateCompensationRuleParams>>({
+    name: "",
+    employmentType: "FullTime",
+    baseCompensationPercent: 0,
+    transportIncentivePercent: 0,
+    complexityBonusPercent: 0,
+    medicalSuppliesPercent: 0,
+  });
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
 
   const loadPeriods = useCallback(async () => {
     setLoading(true);
@@ -180,6 +201,90 @@ export default function AdminPayrollPage() {
   };
 
   const totalPages = periods ? Math.ceil(periods.totalCount / periods.pageSize) : 0;
+
+  // Compensation Rules Handlers
+  const loadCompensationRules = useCallback(async () => {
+    setRulesLoading(true);
+    setRulesError(null);
+    try {
+      const result = await getAdminCompensationRules();
+      setCompensationRules(result);
+    } catch (e) {
+      setRulesError(e instanceof Error ? e.message : "No fue posible cargar las reglas");
+    } finally {
+      setRulesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 1) {
+      void loadCompensationRules();
+    }
+  }, [activeTab, loadCompensationRules]);
+
+  const handleOpenRuleDialog = (rule?: AdminCompensationRuleListItem) => {
+    if (rule) {
+      setEditingRuleId(rule.id);
+      setRuleFormData({
+        name: rule.name,
+        employmentType: rule.employmentType as "FullTime" | "PartTime" | "Contractor",
+        baseCompensationPercent: rule.baseCompensationPercent,
+        transportIncentivePercent: rule.transportIncentivePercent,
+        complexityBonusPercent: rule.complexityBonusPercent,
+        medicalSuppliesPercent: rule.medicalSuppliesPercent,
+      });
+    } else {
+      setEditingRuleId(null);
+      setRuleFormData({
+        name: "",
+        employmentType: "FullTime",
+        baseCompensationPercent: 0,
+        transportIncentivePercent: 0,
+        complexityBonusPercent: 0,
+        medicalSuppliesPercent: 0,
+      });
+    }
+    setRuleDialogOpen(true);
+  };
+
+  const handleSaveRule = async () => {
+    if (!ruleFormData.name || ruleFormData.employmentType === undefined) {
+      setActionError("Complete todos los campos requeridos");
+      return;
+    }
+
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const params = ruleFormData as CreateCompensationRuleParams;
+      if (editingRuleId) {
+        await updateAdminCompensationRule(editingRuleId, params);
+      } else {
+        await createAdminCompensationRule(params);
+      }
+      setRuleDialogOpen(false);
+      await loadCompensationRules();
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Error al guardar la regla");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeactivateRule = async (ruleId: string) => {
+    if (!window.confirm("¿Está seguro que desea desactivar esta regla?")) return;
+    
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      await deactivateAdminCompensationRule(ruleId);
+      await loadCompensationRules();
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Error al desactivar la regla");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   // ──────────── DETAIL VIEW ────────────
   if (selectedPeriodId) {
@@ -579,9 +684,212 @@ export default function AdminPayrollPage() {
       </>
       )}
       {activeTab === 1 && (
-        <Box sx={{ p: 3 }}>
-          <Typography variant="h6">Reglas de Compensación - Próximamente</Typography>
-        </Box>
+        <Stack spacing={3} sx={{ p: 3 }}>
+          {rulesError && <Alert severity="error">{rulesError}</Alert>}
+          {actionError && <Alert severity="error">{actionError}</Alert>}
+
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Typography variant="h6">Reglas de Compensación</Typography>
+            <Button
+              variant="contained"
+              onClick={() => handleOpenRuleDialog()}
+              disabled={rulesLoading}
+            >
+              {t("adminPayroll.actions.createRule", "Nueva Regla")}
+            </Button>
+          </Box>
+
+          {rulesLoading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+              <CircularProgress />
+            </Box>
+          ) : !compensationRules || compensationRules.items.length === 0 ? (
+            <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
+              No hay reglas de compensación registradas
+            </Typography>
+          ) : (
+            <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: "grey.50" }}>
+                      <TableCell>Nombre</TableCell>
+                      <TableCell>Tipo de Empleado</TableCell>
+                      <TableCell align="right">% Base</TableCell>
+                      <TableCell align="right">% Transporte</TableCell>
+                      <TableCell align="right">% Complejidad</TableCell>
+                      <TableCell align="right">% Insumos</TableCell>
+                      <TableCell>Estado</TableCell>
+                      <TableCell align="right">Acciones</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {compensationRules.items.map((rule) => (
+                      <TableRow key={rule.id} hover>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={600}>
+                            {rule.name}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {rule.employmentType === "FullTime"
+                              ? "Tiempo Completo"
+                              : rule.employmentType === "PartTime"
+                              ? "Tiempo Parcial"
+                              : "Contratista"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">{rule.baseCompensationPercent.toFixed(2)}%</TableCell>
+                        <TableCell align="right">{rule.transportIncentivePercent.toFixed(2)}%</TableCell>
+                        <TableCell align="right">{rule.complexityBonusPercent.toFixed(2)}%</TableCell>
+                        <TableCell align="right">{rule.medicalSuppliesPercent.toFixed(2)}%</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={rule.isActive ? "Activa" : "Inactiva"}
+                            size="small"
+                            color={rule.isActive ? "success" : "default"}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                            <Button
+                              size="small"
+                              onClick={() => handleOpenRuleDialog(rule)}
+                              disabled={!rule.isActive || actionLoading}
+                            >
+                              Editar
+                            </Button>
+                            {rule.isActive && (
+                              <Button
+                                size="small"
+                                color="error"
+                                onClick={() => void handleDeactivateRule(rule.id)}
+                                disabled={actionLoading}
+                              >
+                                Desactivar
+                              </Button>
+                            )}
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+          )}
+
+          {/* Rule Dialog */}
+          <Dialog
+            open={ruleDialogOpen}
+            onClose={() => setRuleDialogOpen(false)}
+            maxWidth="sm"
+            fullWidth
+          >
+            <DialogTitle>
+              {editingRuleId ? "Editar Regla" : "Nueva Regla de Compensación"}
+            </DialogTitle>
+            <DialogContent>
+              <Stack spacing={2.5} sx={{ mt: 1 }}>
+                {actionError && <Alert severity="error">{actionError}</Alert>}
+                <TextField
+                  label="Nombre de la Regla"
+                  value={ruleFormData.name || ""}
+                  onChange={(e) =>
+                    setRuleFormData({ ...ruleFormData, name: e.target.value })
+                  }
+                  fullWidth
+                  size="small"
+                />
+                <TextField
+                  select
+                  label="Tipo de Empleado"
+                  value={ruleFormData.employmentType || "FullTime"}
+                  onChange={(e) =>
+                    setRuleFormData({
+                      ...ruleFormData,
+                      employmentType: e.target.value as "FullTime" | "PartTime" | "Contractor",
+                    })
+                  }
+                  fullWidth
+                  size="small"
+                  SelectProps={{ native: true }}
+                >
+                  <option value="FullTime">Tiempo Completo</option>
+                  <option value="PartTime">Tiempo Parcial</option>
+                  <option value="Contractor">Contratista</option>
+                </TextField>
+                <TextField
+                  label="% Compensación Base"
+                  type="number"
+                  value={ruleFormData.baseCompensationPercent || 0}
+                  onChange={(e) =>
+                    setRuleFormData({
+                      ...ruleFormData,
+                      baseCompensationPercent: parseFloat(e.target.value),
+                    })
+                  }
+                  fullWidth
+                  size="small"
+                  inputProps={{ step: 0.01, min: 0 }}
+                />
+                <TextField
+                  label="% Incentivo de Transporte"
+                  type="number"
+                  value={ruleFormData.transportIncentivePercent || 0}
+                  onChange={(e) =>
+                    setRuleFormData({
+                      ...ruleFormData,
+                      transportIncentivePercent: parseFloat(e.target.value),
+                    })
+                  }
+                  fullWidth
+                  size="small"
+                  inputProps={{ step: 0.01, min: 0 }}
+                />
+                <TextField
+                  label="% Bono de Complejidad"
+                  type="number"
+                  value={ruleFormData.complexityBonusPercent || 0}
+                  onChange={(e) =>
+                    setRuleFormData({
+                      ...ruleFormData,
+                      complexityBonusPercent: parseFloat(e.target.value),
+                    })
+                  }
+                  fullWidth
+                  size="small"
+                  inputProps={{ step: 0.01, min: 0 }}
+                />
+                <TextField
+                  label="% Compensación de Insumos Médicos"
+                  type="number"
+                  value={ruleFormData.medicalSuppliesPercent || 0}
+                  onChange={(e) =>
+                    setRuleFormData({
+                      ...ruleFormData,
+                      medicalSuppliesPercent: parseFloat(e.target.value),
+                    })
+                  }
+                  fullWidth
+                  size="small"
+                  inputProps={{ step: 0.01, min: 0 }}
+                />
+              </Stack>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setRuleDialogOpen(false)}>Cancelar</Button>
+              <Button
+                variant="contained"
+                onClick={() => void handleSaveRule()}
+                disabled={actionLoading || !ruleFormData.name}
+              >
+                {actionLoading ? <CircularProgress size={20} /> : "Guardar"}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Stack>
       )}
       {activeTab === 2 && (
         <Box sx={{ p: 3 }}>
