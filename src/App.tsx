@@ -54,7 +54,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
 
-  if (requiresProfileCompletion || !isFullyRegistered) {
+  if (requiresProfileCompletion) {
     return <Navigate to="/register" replace />;
   }
 
@@ -70,7 +70,7 @@ function OperationalRoute({ children }: { children: React.ReactNode }) {
 
   const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
 
-  if (requiresProfileCompletion || !isFullyRegistered) {
+  if (requiresProfileCompletion) {
     return <Navigate to="/register" replace />;
   }
 
@@ -90,7 +90,7 @@ function CareRequestCreateRoute({ children }: { children: React.ReactNode }) {
 
   const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
 
-  if (requiresProfileCompletion || !isFullyRegistered) {
+  if (requiresProfileCompletion) {
     return <Navigate to="/register" replace />;
   }
 

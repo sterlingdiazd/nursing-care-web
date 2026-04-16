@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("No fue posible resolver el identificador del usuario autenticado.");
     }
 
-    const finalRequiresProfileCompletion = response.requiresProfileCompletion || normalizedRoles.length === 0;
+    const finalRequiresProfileCompletion = response.requiresProfileCompletion;
 
     setToken(response.token);
     setUserId(resolvedUserId);
