@@ -75,6 +75,16 @@ export const getAdminNavigationItems = (t: TFunction): AdminPortalNavigationItem
     description: t('nav.alerts.desc'),
   },
   {
+    label: t('nav.payroll.label'),
+    path: "/admin/payroll",
+    description: t('nav.payroll.desc'),
+  },
+  {
+    label: t('nav.shifts.label'),
+    path: "/admin/shifts",
+    description: t('nav.shifts.desc'),
+  },
+  {
     label: t('nav.reports.label'),
     path: "/admin/reports",
     description: t('nav.reports.desc'),
@@ -225,7 +235,7 @@ export default function AdminPortalShell({
                     >
                       <Box>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Typography sx={{ fontWeight: 700 }}>{item.label}</Typography>
+                          <Typography sx={{ fontWeight: 700 }}> - {item.label} - </Typography>
                           {showUnreadBadge && (
                             <Chip
                               label={unreadNotifications}

@@ -47,6 +47,10 @@
       "label": "Alertas",
       "desc": "Eventos críticos de alto impacto"
     },
+    "payroll": {
+      "label": "Nomina",
+      "desc": "Periodos de pago y compensaciones de enfermeria"
+    },
     "reports": {
       "label": "Reportes",
       "desc": "Indicadores operativos y exportación de datos"
@@ -581,6 +585,229 @@
     },
     "metadata": {
       "modifiedBy": "Modificado por: {{actor}} ({{date}})"
+    }
+  },
+  "adminPayroll": {
+    "eyebrow": "Modulo de Nomina",
+    "title": "Gestiona y supervisa los periodos de pago del personal de enfermeria.",
+    "description": "Crea y cierra periodos de nomina, revisa compensaciones por enfermera y exporta reportes en formato CSV para analisis externo.",
+    "tabs": {
+      "periods": "Períodos",
+      "rules": "Reglas de Compensación",
+      "deductions": "Deducciones",
+      "adjustments": "Ajustes"
+    },
+    "actions": {
+      "refresh": "Actualizar",
+      "createPeriod": "Crear periodo",
+      "export": "Exportar CSV",
+      "closePeriod": "Cerrar periodo",
+      "viewDetail": "Ver detalle",
+      "backToList": "Volver a la lista"
+    },
+    "status": {
+      "open": "Abierto",
+      "closed": "Cerrado"
+    },
+    "filters": {
+      "all": "Todos",
+      "open": "Abiertos",
+      "closed": "Cerrados"
+    },
+    "list": {
+      "empty": "No hay periodos de nomina creados aun.",
+      "period": "Periodo",
+      "start": "Inicio",
+      "end": "Fin",
+      "cutoff": "Corte",
+      "payment": "Pago",
+      "lines": "Lineas",
+      "loading": "Cargando periodos de nomina..."
+    },
+    "detail": {
+      "staff": "Resumen por enfermera",
+      "lines": "Lineas de nomina",
+      "nurse": "Enfermera",
+      "lineCount": "Servicios",
+      "gross": "Bruto",
+      "transport": "Transporte",
+      "adjustments": "Ajustes",
+      "deductions": "Deducciones",
+      "net": "Neto",
+      "description": "Descripcion",
+      "base": "Base",
+      "complexity": "Complejidad",
+      "supplies": "Insumos"
+    },
+    "createForm": {
+      "title": "Crear periodo de nomina",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "cutoffDate": "Fecha de corte",
+      "paymentDate": "Fecha de pago",
+      "submit": "Crear periodo",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar los periodos de nomina.",
+      "detailFailed": "No fue posible cargar el detalle del periodo.",
+      "createFailed": "No fue posible crear el periodo.",
+      "closeFailed": "No fue posible crear el periodo."
+    }
+  },
+  "adminCompensationRules": {
+    "eyebrow": "Reglas de Compensacion",
+    "title": "Gestiona las reglas que determinan como se calculan las compensaciones de enfermeria.",
+    "description": "Crea, edita y desactiva reglas de compensacion por tipo de empleo. Estas reglas afectan los calculos automaticos de payroll.",
+    "actions": {
+      "refresh": "Actualizar",
+      "createRule": "Crear regla",
+      "editRule": "Editar regla",
+      "deactivateRule": "Desactivar regla"
+    },
+    "list": {
+      "empty": "No hay reglas de compensacion creadas aun.",
+      "name": "Nombre",
+      "employmentType": "Tipo de Empleo",
+      "basePercent": "Base (%)",
+      "transportPercent": "Transporte (%)",
+      "complexityPercent": "Complejidad (%)",
+      "suppliesPercent": "Insumos (%)",
+      "active": "Activa"
+    },
+    "createForm": {
+      "title": "Crear regla de compensacion",
+      "name": "Nombre de la regla",
+      "employmentType": "Tipo de empleo",
+      "baseCompensationPercent": "Porcentaje base",
+      "transportIncentivePercent": "Porcentaje incentivo transporte",
+      "complexityBonusPercent": "Porcentaje bono complejidad",
+      "medicalSuppliesPercent": "Porcentaje insumos medicos",
+      "submit": "Crear regla",
+      "cancel": "Cancelar"
+    },
+    "editForm": {
+      "title": "Editar regla de compensacion"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar las reglas de compensacion.",
+      "detailFailed": "No fue posible cargar la regla.",
+      "createFailed": "No fue posible crear la regla.",
+      "updateFailed": "No fue posible actualizar la regla.",
+      "deactivateFailed": "No fue posible desactivar la regla."
+    }
+  },
+  "adminDeductions": {
+    "eyebrow": "Deducciones",
+    "title": "Gestiona deducciones aplicadas a las compensaciones de enfermeria.",
+    "description": "Agrega deducciones fijas o porcentuales por enfermera o periodo de payroll.",
+    "actions": {
+      "refresh": "Actualizar",
+      "addDeduction": "Agregar deduccion",
+      "deleteDeduction": "Eliminar deduccion"
+    },
+    "list": {
+      "empty": "No hay deducciones registradas.",
+      "nurse": "Enfermera",
+      "period": "Periodo",
+      "label": "Etiqueta",
+      "amount": "Monto",
+      "type": "Tipo"
+    },
+    "createForm": {
+      "title": "Agregar deduccion",
+      "nurseUserId": "Enfermera",
+      "payrollPeriodId": "Periodo (opcional)",
+      "label": "Etiqueta",
+      "amount": "Monto",
+      "deductionType": "Tipo de deduccion",
+      "submit": "Agregar",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar las deducciones.",
+      "createFailed": "No fue posible crear la deduccion.",
+      "deleteFailed": "No fue posible eliminar la deduccion."
+    }
+  },
+  "adminAdjustments": {
+    "eyebrow": "Ajustes de Compensacion",
+    "title": "Ajustes manuales a las compensaciones calculadas.",
+    "description": "Agrega ajustes positivos o negativos sobre ejecuciones especificas de servicio.",
+    "actions": {
+      "refresh": "Actualizar",
+      "addAdjustment": "Agregar ajuste",
+      "deleteAdjustment": "Eliminar ajuste"
+    },
+    "list": {
+      "empty": "No hay ajustes registrados.",
+      "nurse": "Enfermera",
+      "execution": "Ejecucion",
+      "label": "Etiqueta",
+      "amount": "Monto"
+    },
+    "createForm": {
+      "title": "Agregar ajuste",
+      "serviceExecutionId": "Ejecucion de servicio",
+      "label": "Etiqueta",
+      "amount": "Monto (positivo o negativo)",
+      "submit": "Agregar",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar los ajustes.",
+      "createFailed": "No fue posible crear el ajuste.",
+      "deleteFailed": "No fue posible eliminar el ajuste."
+    }
+  },
+  "adminShifts": {
+    "eyebrow": "Gestion de Turnos",
+    "title": "Administra los turnos programados del personal de enfermeria.",
+    "description": "Visualiza turnos por enfermera o solicitud, revisa el historial de cambios y gestiona la programacion.",
+    "actions": {
+      "refresh": "Actualizar",
+      "filter": "Filtrar",
+      "viewDetail": "Ver detalle"
+    },
+    "status": {
+      "planned": "Planificado",
+      "completed": "Completado",
+      "changed": "Cambiado"
+    },
+    "list": {
+      "empty": "No hay turnos registrados.",
+      "nurse": "Enfermera",
+      "careRequest": "Solicitud",
+      "date": "Fecha",
+      "time": "Horario",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "detail": {
+      "title": "Detalle del Turno",
+      "history": "Historial de Cambios",
+      "previousNurse": "Enfermera Anterior",
+      "newNurse": "Nueva Enfermera",
+      "reason": "Razon",
+      "effectiveAt": "Efectivo desde"
+    },
+    "filters": {
+      "nurse": "Enfermera",
+      "careRequest": "Solicitud",
+      "startDate": "Fecha inicio",
+      "endDate": "Fecha fin",
+      "status": "Estado",
+      "all": "Todos"
+    },
+    "errors": {
+      "loadFailed": "No fue posible cargar los turnos.",
+      "detailFailed": "No fue posible cargar el detalle del turno."
+    }
+  },
+  "nav": {
+    "shifts": {
+      "label": "Turnos",
+      "desc": "Gestion de turnos y programacion de enfermeria"
     }
   }
 }

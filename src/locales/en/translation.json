@@ -47,6 +47,10 @@
       "label": "Alerts",
       "desc": "High impact critical events"
     },
+    "payroll": {
+      "label": "Payroll",
+      "desc": "Pay periods and nursing compensations"
+    },
     "reports": {
       "label": "Reports",
       "desc": "Operational indicators and data export"
@@ -128,6 +132,229 @@
       "unassigned": "Requests Pending Assignment",
       "approval": "Requests Ready for Approval",
       "pendingNurses": "Pending Nursing Profiles"
+    }
+  },
+  "adminPayroll": {
+    "eyebrow": "Payroll Module",
+    "title": "Manage and supervise pay periods for nursing staff.",
+    "description": "Create and close payroll periods, review compensations per nurse and export reports in CSV format for external analysis.",
+    "tabs": {
+      "periods": "Periods",
+      "rules": "Compensation Rules",
+      "deductions": "Deductions",
+      "adjustments": "Adjustments"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "createPeriod": "Create period",
+      "export": "Export CSV",
+      "closePeriod": "Close period",
+      "viewDetail": "View detail",
+      "backToList": "Back to list"
+    },
+    "status": {
+      "open": "Open",
+      "closed": "Closed"
+    },
+    "filters": {
+      "all": "All",
+      "open": "Open",
+      "closed": "Closed"
+    },
+    "list": {
+      "empty": "No payroll periods created yet.",
+      "period": "Period",
+      "start": "Start",
+      "end": "End",
+      "cutoff": "Cutoff",
+      "payment": "Payment",
+      "lines": "Lines",
+      "loading": "Loading payroll periods..."
+    },
+    "detail": {
+      "staff": "Staff summary",
+      "lines": "Payroll lines",
+      "nurse": "Nurse",
+      "lineCount": "Services",
+      "gross": "Gross",
+      "transport": "Transport",
+      "adjustments": "Adjustments",
+      "deductions": "Deductions",
+      "net": "Net",
+      "description": "Description",
+      "base": "Base",
+      "complexity": "Complexity",
+      "supplies": "Supplies"
+    },
+    "createForm": {
+      "title": "Create payroll period",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "cutoffDate": "Cutoff date",
+      "paymentDate": "Payment date",
+      "submit": "Create period",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "loadFailed": "Could not load payroll periods.",
+      "detailFailed": "Could not load the period detail.",
+      "createFailed": "Could not create the payroll period.",
+      "closeFailed": "Could not close the payroll period."
+    }
+  },
+  "adminCompensationRules": {
+    "eyebrow": "Compensation Rules",
+    "title": "Manage rules that determine how nursing compensation is calculated.",
+    "description": "Create, edit and deactivate compensation rules by employment type. These rules affect automatic payroll calculations.",
+    "actions": {
+      "refresh": "Refresh",
+      "createRule": "Create Rule",
+      "editRule": "Edit Rule",
+      "deactivateRule": "Deactivate Rule"
+    },
+    "list": {
+      "empty": "No compensation rules created yet.",
+      "name": "Name",
+      "employmentType": "Employment Type",
+      "basePercent": "Base (%)",
+      "transportPercent": "Transport (%)",
+      "complexityPercent": "Complexity (%)",
+      "suppliesPercent": "Supplies (%)",
+      "active": "Active"
+    },
+    "createForm": {
+      "title": "Create Compensation Rule",
+      "name": "Rule Name",
+      "employmentType": "Employment Type",
+      "baseCompensationPercent": "Base Percentage",
+      "transportIncentivePercent": "Transport Incentive Percentage",
+      "complexityBonusPercent": "Complexity Bonus Percentage",
+      "medicalSuppliesPercent": "Medical Supplies Percentage",
+      "submit": "Create Rule",
+      "cancel": "Cancel"
+    },
+    "editForm": {
+      "title": "Edit Compensation Rule"
+    },
+    "errors": {
+      "loadFailed": "Could not load compensation rules.",
+      "detailFailed": "Could not load the rule.",
+      "createFailed": "Could not create the rule.",
+      "updateFailed": "Could not update the rule.",
+      "deactivateFailed": "Could not deactivate the rule."
+    }
+  },
+  "adminDeductions": {
+    "eyebrow": "Deductions",
+    "title": "Manage deductions applied to nursing compensation.",
+    "description": "Add fixed or percentage deductions per nurse or payroll period.",
+    "actions": {
+      "refresh": "Refresh",
+      "addDeduction": "Add Deduction",
+      "deleteDeduction": "Delete Deduction"
+    },
+    "list": {
+      "empty": "No deductions registered.",
+      "nurse": "Nurse",
+      "period": "Period",
+      "label": "Label",
+      "amount": "Amount",
+      "type": "Type"
+    },
+    "createForm": {
+      "title": "Add Deduction",
+      "nurseUserId": "Nurse",
+      "payrollPeriodId": "Period (optional)",
+      "label": "Label",
+      "amount": "Amount",
+      "deductionType": "Deduction Type",
+      "submit": "Add",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "loadFailed": "Could not load deductions.",
+      "createFailed": "Could not create the deduction.",
+      "deleteFailed": "Could not delete the deduction."
+    }
+  },
+  "adminAdjustments": {
+    "eyebrow": "Compensation Adjustments",
+    "title": "Manual adjustments to calculated compensation.",
+    "description": "Add positive or negative adjustments on specific service executions.",
+    "actions": {
+      "refresh": "Refresh",
+      "addAdjustment": "Add Adjustment",
+      "deleteAdjustment": "Delete Adjustment"
+    },
+    "list": {
+      "empty": "No adjustments registered.",
+      "nurse": "Nurse",
+      "execution": "Execution",
+      "label": "Label",
+      "amount": "Amount"
+    },
+    "createForm": {
+      "title": "Add Adjustment",
+      "serviceExecutionId": "Service Execution",
+      "label": "Label",
+      "amount": "Amount (positive or negative)",
+      "submit": "Add",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "loadFailed": "Could not load adjustments.",
+      "createFailed": "Could not create the adjustment.",
+      "deleteFailed": "Could not delete the adjustment."
+    }
+  },
+  "adminShifts": {
+    "eyebrow": "Shift Management",
+    "title": "Manage scheduled shifts for nursing staff.",
+    "description": "View shifts by nurse or request, review change history and manage scheduling.",
+    "actions": {
+      "refresh": "Refresh",
+      "filter": "Filter",
+      "viewDetail": "View detail"
+    },
+    "status": {
+      "planned": "Planned",
+      "completed": "Completed",
+      "changed": "Changed"
+    },
+    "list": {
+      "empty": "No shifts registered.",
+      "nurse": "Nurse",
+      "careRequest": "Care Request",
+      "date": "Date",
+      "time": "Time",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "detail": {
+      "title": "Shift Detail",
+      "history": "Change History",
+      "previousNurse": "Previous Nurse",
+      "newNurse": "New Nurse",
+      "reason": "Reason",
+      "effectiveAt": "Effective at"
+    },
+    "filters": {
+      "nurse": "Nurse",
+      "careRequest": "Care Request",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "status": "Status",
+      "all": "All"
+    },
+    "errors": {
+      "loadFailed": "Could not load shifts.",
+      "detailFailed": "Could not load shift detail."
+    }
+  },
+  "nav": {
+    "shifts": {
+      "label": "Shifts",
+      "desc": "Shift management and nursing scheduling"
     }
   }
 }
