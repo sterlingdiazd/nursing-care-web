@@ -54,6 +54,8 @@ export interface AdminCareRequestPricingBreakdown {
   complexityLevel: string | null;
   complexityFactorValue: number;
   volumeDiscountPercent: number;
+  lineBeforeVolumeDiscount?: number | null;
+  unitPriceAfterVolumeDiscount?: number | null;
   subtotalBeforeSupplies: number;
   medicalSuppliesCost: number;
   total: number;

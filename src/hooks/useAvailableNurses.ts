@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getAvailableNurses, type AvailableNurse } from "../api/catalogOptions";
+import { logClientEvent } from "../logging/clientLogger";
 
 let cached: AvailableNurse[] | null = null;
 let inflight: Promise<AvailableNurse[]> | null = null;
@@ -23,12 +24,12 @@ export function useAvailableNurses() {
     setError(null);
     try {
       const next = await getAvailableNurses();
-      console.log("[useAvailableNurses] Nurses loaded:", next);
+      logClientEvent("useAvailableNurses", "Nurses loaded", { count: next.length });
       cached = next;
       setData(next);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "No fue posible cargar la lista de enfermeras.";
-      console.error("[useAvailableNurses] Error:", errorMessage, e);
+      logClientEvent("useAvailableNurses", "Error loading nurses", { error: errorMessage }, "error");
       setError(errorMessage);
       // Clear cache on error so next call will retry
       cached = null;

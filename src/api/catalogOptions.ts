@@ -1,6 +1,7 @@
 import { httpClient } from "./httpClient";
 import { extractApiErrorMessage } from "./errorMessage";
 import type { CatalogOptionsResponse, NurseProfileOptionsResponse } from "../types/catalog";
+import { logClientEvent } from "../logging/clientLogger";
 
 export interface AvailableNurse {
   userId: string;
@@ -33,12 +34,12 @@ export async function getNurseProfileOptions() {
 /** Obtiene lista de enfermeras activas disponibles para autocompletar */
 export async function getAvailableNurses() {
   try {
-    console.log("[getAvailableNurses] Fetching from /catalog/available-nurses");
+    logClientEvent("getAvailableNurses", "Fetching available nurses from /catalog/available-nurses");
     const response = await httpClient.get<AvailableNurse[]>("/catalog/available-nurses");
-    console.log("[getAvailableNurses] Response:", response.data);
+    logClientEvent("getAvailableNurses", "Available nurses response received", { count: response.data.length });
     return response.data;
   } catch (error) {
-    console.error("[getAvailableNurses] Error:", error);
+    logClientEvent("getAvailableNurses", "Error fetching available nurses", { error: error instanceof Error ? error.message : String(error) }, "error");
     throw new Error(extractApiErrorMessage(error, "No fue posible cargar la lista de enfermeras disponibles."));
   }
 }
