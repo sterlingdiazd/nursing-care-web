@@ -37,6 +37,8 @@ import {
   createAdminCompensationRule,
   updateAdminCompensationRule,
   deactivateAdminCompensationRule,
+  downloadNurseVoucher,
+  downloadBulkVouchersZip,
   type AdminPayrollPeriodListResult,
   type AdminPayrollPeriodDetail,
   type AdminCompensationRuleListResult,
@@ -202,6 +204,36 @@ export default function AdminPayrollPage() {
 
   const totalPages = periods ? Math.ceil(periods.totalCount / periods.pageSize) : 0;
 
+  // Voucher download state
+  const [voucherLoading, setVoucherLoading] = useState<string | null>(null); // nurseUserId being downloaded
+  const [zipLoading, setZipLoading] = useState(false);
+
+  const handleDownloadNurseVoucher = async (nurseId: string) => {
+    if (!selectedPeriodId) return;
+    setVoucherLoading(nurseId);
+    setActionError(null);
+    try {
+      await downloadNurseVoucher(selectedPeriodId, nurseId);
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "No fue posible descargar el comprobante.");
+    } finally {
+      setVoucherLoading(null);
+    }
+  };
+
+  const handleDownloadBulkZip = async () => {
+    if (!selectedPeriodId) return;
+    setZipLoading(true);
+    setActionError(null);
+    try {
+      await downloadBulkVouchersZip(selectedPeriodId);
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "No fue posible descargar el archivo ZIP.");
+    } finally {
+      setZipLoading(false);
+    }
+  };
+
   // Compensation Rules Handlers
   const loadCompensationRules = useCallback(async () => {
     setRulesLoading(true);
@@ -322,6 +354,15 @@ export default function AdminPayrollPage() {
                 {t("adminPayroll.actions.export")}
               </Button>
             )}
+            {selectedDetail && (
+              <Button
+                variant="outlined"
+                onClick={() => void handleDownloadBulkZip()}
+                disabled={zipLoading}
+              >
+                {zipLoading ? <CircularProgress size={20} /> : "Descargar Vouchers (ZIP)"}
+              </Button>
+            )}
           </>
         }
       >
@@ -373,12 +414,13 @@ export default function AdminPayrollPage() {
                         <TableCell align="right">{t("adminPayroll.detail.adjustments")}</TableCell>
                         <TableCell align="right">{t("adminPayroll.detail.deductions")}</TableCell>
                         <TableCell align="right">{t("adminPayroll.detail.net")}</TableCell>
+                        <TableCell align="right">Comprobante</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {selectedDetail.staffSummary.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                          <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
                             {t("adminPayroll.list.empty")}
                           </TableCell>
                         </TableRow>
@@ -397,6 +439,17 @@ export default function AdminPayrollPage() {
                             <TableCell align="right">{formatCurrency(staff.deductionsTotal)}</TableCell>
                             <TableCell align="right">
                               <Typography fontWeight={700}>{formatCurrency(staff.netCompensation)}</Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => void handleDownloadNurseVoucher(staff.nurseUserId)}
+                                disabled={voucherLoading === staff.nurseUserId}
+                                title="Descargar comprobante PDF"
+                              >
+                                {voucherLoading === staff.nurseUserId ? <CircularProgress size={16} /> : "PDF"}
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))

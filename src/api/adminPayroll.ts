@@ -136,6 +136,57 @@ export function getAdminPayrollPeriodExportUrl(id: string): string {
   return `${baseUrl}/admin/payroll/periods/${id}/export`;
 }
 
+export async function downloadNurseVoucher(
+  periodId: string,
+  nurseId: string,
+  fallbackFilename?: string
+): Promise<void> {
+  try {
+    const response = await httpClient.get(
+      `/admin/payroll/periods/${periodId}/voucher/${nurseId}`,
+      { responseType: "blob" }
+    );
+    const contentDisposition = response.headers["content-disposition"] as string | undefined;
+    const filenameMatch = contentDisposition?.match(/filename="?([^";\n]+)"?/);
+    const filename = filenameMatch?.[1] ?? fallbackFilename ?? `voucher-${nurseId}.pdf`;
+    const url = window.URL.createObjectURL(new Blob([response.data as BlobPart]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible descargar el comprobante de pago."));
+  }
+}
+
+export async function downloadBulkVouchersZip(
+  periodId: string,
+  fallbackFilename?: string
+): Promise<void> {
+  try {
+    const response = await httpClient.get(
+      `/admin/payroll/periods/${periodId}/vouchers/zip`,
+      { responseType: "blob" }
+    );
+    const contentDisposition = response.headers["content-disposition"] as string | undefined;
+    const filenameMatch = contentDisposition?.match(/filename="?([^";\n]+)"?/);
+    const filename = filenameMatch?.[1] ?? fallbackFilename ?? `vouchers-${periodId}.zip`;
+    const url = window.URL.createObjectURL(new Blob([response.data as BlobPart]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible descargar el archivo ZIP de comprobantes."));
+  }
+}
+
 export interface AdminCompensationRuleListItem {
   id: string;
   name: string;
