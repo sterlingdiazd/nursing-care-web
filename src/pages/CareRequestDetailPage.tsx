@@ -5,9 +5,18 @@ import {
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   Paper,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
@@ -15,9 +24,11 @@ import {
 import {
   CareRequest,
   CareRequestTransitionAction,
+  PricingVerificationResponse,
   assignCareRequestNurse,
   getCareRequestById,
   transitionCareRequest,
+  verifyCareRequestPricing,
 } from "../api/careRequests";
 import { getActiveNurseProfiles, type ActiveNurseProfileSummary } from "../api/adminNurseProfiles";
 import WorkspaceShell from "../components/layout/WorkspaceShell";
@@ -61,6 +72,10 @@ export default function CareRequestDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isActing, setIsActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<PricingVerificationResponse | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationOpen, setVerificationOpen] = useState(false);
 
   const loadCareRequest = async () => {
     if (!id) {
@@ -111,6 +126,27 @@ export default function CareRequestDetailPage() {
       setError(nextError.message ?? "No fue posible actualizar la solicitud.");
     } finally {
       setIsActing(false);
+    }
+  };
+
+  const runVerifyPricing = async () => {
+    if (!id) {
+      return;
+    }
+
+    setIsVerifying(true);
+    setVerificationError(null);
+    setVerificationResult(null);
+
+    try {
+      const result = await verifyCareRequestPricing(id);
+      setVerificationResult(result);
+      setVerificationOpen(true);
+    } catch (nextError: any) {
+      setVerificationError(nextError.message ?? "No fue posible verificar los precios.");
+      setVerificationOpen(true);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -252,6 +288,67 @@ export default function CareRequestDetailPage() {
               </Stack>
             </Paper>
 
+            <Paper sx={{ p: 4, borderRadius: 3 }} data-testid={careRequestTestIds.detail.pricingBreakdown}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.2 }}>
+                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                  Desglose de precios
+                </Typography>
+                {roles.includes("ADMIN") && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={runVerifyPricing}
+                    disabled={isVerifying}
+                    data-testid={careRequestTestIds.detail.verifyPricingButton}
+                    sx={{
+                      color: designTokens.color.ink.secondary,
+                      borderColor: designTokens.color.border.strong,
+                      bgcolor: designTokens.color.surface.secondary,
+                      "&:hover": {
+                        borderColor: designTokens.color.border.accent,
+                        bgcolor: designTokens.color.surface.accent,
+                      },
+                    }}
+                  >
+                    {isVerifying ? "Verificando..." : "Verificar precios"}
+                  </Button>
+                )}
+              </Stack>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+                  gap: 2,
+                }}
+              >
+                {[
+                  { key: "category", label: "Categoria", value: careRequest.pricingCategoryCode ?? null },
+                  { key: "base-price", label: "Precio base", value: careRequest.price != null ? `RD$ ${careRequest.price.toFixed(2)}` : null },
+                  { key: "category-factor", label: "Factor de categoria", value: careRequest.categoryFactorSnapshot != null ? careRequest.categoryFactorSnapshot.toFixed(4) : null },
+                  { key: "distance-factor", label: "Factor de distancia", value: careRequest.distanceFactorMultiplierSnapshot != null ? careRequest.distanceFactorMultiplierSnapshot.toFixed(4) : null },
+                  { key: "complexity-factor", label: "Factor de complejidad", value: careRequest.complexityMultiplierSnapshot != null ? careRequest.complexityMultiplierSnapshot.toFixed(4) : null },
+                  { key: "client-base-price", label: "Precio base del cliente", value: careRequest.clientBasePrice != null ? `RD$ ${careRequest.clientBasePrice.toFixed(2)}` : null },
+                  { key: "line-before-discount", label: "Linea antes de descuento", value: careRequest.lineBeforeVolumeDiscount != null ? `RD$ ${careRequest.lineBeforeVolumeDiscount.toFixed(4)}` : null },
+                  { key: "volume-discount", label: "Descuento por volumen", value: careRequest.volumeDiscountPercentSnapshot != null ? `${careRequest.volumeDiscountPercentSnapshot}%` : null },
+                  { key: "unit-price-after-discount", label: "Precio unitario tras descuento", value: careRequest.unitPriceAfterVolumeDiscount != null ? `RD$ ${careRequest.unitPriceAfterVolumeDiscount.toFixed(4)}` : null },
+                  { key: "subtotal-before-supplies", label: "Subtotal antes de insumos", value: careRequest.subtotalBeforeSupplies != null ? `RD$ ${careRequest.subtotalBeforeSupplies.toFixed(2)}` : null },
+                  { key: "medical-supplies", label: "Insumos medicos", value: careRequest.medicalSuppliesCost != null ? `RD$ ${careRequest.medicalSuppliesCost.toFixed(2)}` : null },
+                  { key: "total", label: "Total", value: careRequest.total != null ? `RD$ ${careRequest.total.toFixed(2)}` : null },
+                ].map(({ key, label, value }) => (
+                  <Paper
+                    key={key}
+                    sx={{ p: 2.5, borderRadius: 2.5, bgcolor: "rgba(247, 244, 238, 0.72)" }}
+                    data-testid={careRequestTestIds.detail.pricingField(key)}
+                  >
+                    <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                      {label}
+                    </Typography>
+                    <Typography sx={{ mt: 0.9, fontWeight: 700 }}>{value ?? "N/A"}</Typography>
+                  </Paper>
+                ))}
+              </Box>
+            </Paper>
+
             <Stack spacing={3}>
               <Paper sx={{ p: 3, borderRadius: 2.5 }} data-testid={careRequestTestIds.detail.transitionsSection}>
                 <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
@@ -371,6 +468,72 @@ export default function CareRequestDetailPage() {
           </Box>
         )}
       </Stack>
+      <Dialog
+        open={verificationOpen}
+        onClose={() => setVerificationOpen(false)}
+        maxWidth="md"
+        fullWidth
+        data-testid={careRequestTestIds.detail.verificationModal}
+      >
+        <DialogTitle>Verificacion de precios</DialogTitle>
+        <DialogContent>
+          {verificationError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {verificationError}
+            </Alert>
+          )}
+          {verificationResult && (
+            <Stack spacing={2}>
+              {verificationResult.matches ? (
+                <Alert severity="success" data-testid={careRequestTestIds.detail.verificationSuccess}>
+                  Los precios almacenados coinciden con los precios actuales del catalogo (tolerancia: {verificationResult.toleranceUsed}).
+                </Alert>
+              ) : (
+                verificationResult.discrepancies.length > 0 && (
+                  <Box data-testid={careRequestTestIds.detail.verificationDiscrepancies}>
+                    <Alert severity="warning" sx={{ mb: 2 }}>
+                      Se encontraron {verificationResult.discrepancies.length} diferencia(s) entre los precios almacenados y los actuales.
+                    </Alert>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Campo</TableCell>
+                          <TableCell align="right">Almacenado</TableCell>
+                          <TableCell align="right">Actual</TableCell>
+                          <TableCell align="right">Diferencia</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {verificationResult.discrepancies.map((discrepancy) => (
+                          <TableRow key={discrepancy.fieldName}>
+                            <TableCell>{discrepancy.fieldName}</TableCell>
+                            <TableCell align="right">{discrepancy.storedValue.toFixed(4)}</TableCell>
+                            <TableCell align="right">{discrepancy.currentValue.toFixed(4)}</TableCell>
+                            <TableCell align="right">{discrepancy.difference.toFixed(4)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Box>
+                )
+              )}
+              {verificationResult.limitationNotes.length > 0 && (
+                <Alert severity="info" data-testid={careRequestTestIds.detail.verificationLimitation}>
+                  <strong>Nota:</strong> {verificationResult.limitationNotes.join(" ")}
+                </Alert>
+              )}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setVerificationOpen(false)}
+            data-testid={careRequestTestIds.detail.verificationCloseButton}
+          >
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </WorkspaceShell>
   );
 }

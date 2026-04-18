@@ -40,6 +40,29 @@ export interface CareRequest {
   completedAtUtc: string | null;
   cancelledAtUtc: string | null;
   rejectionReason: string | null;
+  pricingCategoryCode?: string | null;
+  categoryFactorSnapshot?: number | null;
+  distanceFactorMultiplierSnapshot?: number | null;
+  complexityMultiplierSnapshot?: number | null;
+  volumeDiscountPercentSnapshot?: number | null;
+  lineBeforeVolumeDiscount?: number | null;
+  unitPriceAfterVolumeDiscount?: number | null;
+  subtotalBeforeSupplies?: number | null;
+}
+
+export interface PricingDiscrepancy {
+  fieldName: string;
+  storedValue: number;
+  currentValue: number;
+  difference: number;
+}
+
+export interface PricingVerificationResponse {
+  careRequestId: string;
+  matches: boolean;
+  toleranceUsed: number;
+  limitationNotes: string[];
+  discrepancies: PricingDiscrepancy[];
 }
 
 export type CareRequestTransitionAction = "approve" | "reject" | "complete" | "cancel";
@@ -107,6 +130,15 @@ export async function transitionCareRequest(
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible actualizar la solicitud."));
+  }
+}
+
+export async function verifyCareRequestPricing(id: string): Promise<PricingVerificationResponse> {
+  try {
+    const response = await httpClient.get<PricingVerificationResponse>(`care-requests/${id}/verify-pricing`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible verificar los precios de la solicitud."));
   }
 }
 

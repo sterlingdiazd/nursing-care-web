@@ -5,8 +5,17 @@ import {
   Box,
   Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
@@ -18,7 +27,12 @@ import {
   recordAdminCareRequestShiftChange,
   type AdminCareRequestDetail,
 } from "../api/adminCareRequests";
-import { assignCareRequestNurse, transitionCareRequest } from "../api/careRequests";
+import {
+  assignCareRequestNurse,
+  transitionCareRequest,
+  verifyCareRequestPricing,
+  type PricingVerificationResponse,
+} from "../api/careRequests";
 import AdminPortalShell from "../components/layout/AdminPortalShell";
 import { useCareRequestCatalogOptions } from "../hooks/useCareRequestCatalogOptions";
 import { buildCatalogDisplayMaps } from "../utils/pricingFromCatalogOptions";
@@ -54,6 +68,10 @@ export default function AdminCareRequestDetailPage() {
   const [newShiftStartLocal, setNewShiftStartLocal] = useState("");
   const [newShiftEndLocal, setNewShiftEndLocal] = useState("");
   const [shiftChangeDrafts, setShiftChangeDrafts] = useState<Record<string, { reason: string; newNurseId: string }>>({});
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<PricingVerificationResponse | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationOpen, setVerificationOpen] = useState(false);
 
   const listPath = `/admin/care-requests${location.search}`;
 
@@ -160,6 +178,27 @@ export default function AdminCareRequestDetailPage() {
       setError(nextError instanceof Error ? nextError.message : "No fue posible registrar el cambio de turno.");
     } finally {
       setIsActing(false);
+    }
+  };
+
+  const runVerifyPricing = async () => {
+    if (!id) {
+      return;
+    }
+
+    setIsVerifying(true);
+    setVerificationError(null);
+    setVerificationResult(null);
+
+    try {
+      const result = await verifyCareRequestPricing(id);
+      setVerificationResult(result);
+      setVerificationOpen(true);
+    } catch (nextError) {
+      setVerificationError(nextError instanceof Error ? nextError.message : "No fue posible verificar los precios.");
+      setVerificationOpen(true);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -312,48 +351,77 @@ export default function AdminCareRequestDetailPage() {
               </Paper>
 
               <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
-                <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
-                  Desglose de precios
-                </Typography>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.2 }}>
+                  <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                    Desglose de precios
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => void runVerifyPricing()}
+                    disabled={isVerifying}
+                    data-testid="price-breakdown-verify-button"
+                    sx={subduedActionButtonSx}
+                  >
+                    {isVerifying ? "Verificando..." : "Verificar precios"}
+                  </Button>
+                </Stack>
                 <Box
                   sx={{
                     display: "grid",
                     gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
                     gap: 1.6,
-                    mt: 2.2,
                   }}
                 >
                   {[
-                    [
-                      "Categoria",
-                      formatAdminCareRequestCategoryLabel(
+                    {
+                      key: "category",
+                      label: "Categoria",
+                      value: formatAdminCareRequestCategoryLabel(
                         detail.pricingBreakdown.category,
                         catalogDisplayMaps?.category,
                       ),
-                    ],
-                    ["Precio base", formatAdminCareRequestCurrency(detail.pricingBreakdown.basePrice)],
-                    ["Factor de categoria", detail.pricingBreakdown.categoryFactor.toFixed(2)],
-                    [
-                      "Factor de distancia",
-                      `${formatAdminCareRequestDistanceLabel(detail.pricingBreakdown.distanceFactor, catalogDisplayMaps?.distance)} · ${detail.pricingBreakdown.distanceFactorValue.toFixed(2)}`,
-                    ],
-                    [
-                      "Factor de complejidad",
-                      `${formatAdminCareRequestComplexityLabel(detail.pricingBreakdown.complexityLevel, catalogDisplayMaps?.complexity)} · ${detail.pricingBreakdown.complexityFactorValue.toFixed(2)}`,
-                    ],
-                    ["Descuento por volumen", `${detail.pricingBreakdown.volumeDiscountPercent.toFixed(2)}%`],
-                    ["Subtotal antes de insumos", formatAdminCareRequestCurrency(detail.pricingBreakdown.subtotalBeforeSupplies)],
-                    ["Insumos medicos", formatAdminCareRequestCurrency(detail.pricingBreakdown.medicalSuppliesCost)],
-                    ["Total", formatAdminCareRequestCurrency(detail.pricingBreakdown.total)],
-                  ].map(([label, value]) => (
+                    },
+                    { key: "base-price", label: "Precio base", value: formatAdminCareRequestCurrency(detail.pricingBreakdown.basePrice) },
+                    { key: "category-factor", label: "Factor de categoria", value: detail.pricingBreakdown.categoryFactor.toFixed(2) },
+                    {
+                      key: "distance-factor",
+                      label: "Factor de distancia",
+                      value: `${formatAdminCareRequestDistanceLabel(detail.pricingBreakdown.distanceFactor, catalogDisplayMaps?.distance)} · ${detail.pricingBreakdown.distanceFactorValue.toFixed(2)}`,
+                    },
+                    {
+                      key: "complexity-factor",
+                      label: "Factor de complejidad",
+                      value: `${formatAdminCareRequestComplexityLabel(detail.pricingBreakdown.complexityLevel, catalogDisplayMaps?.complexity)} · ${detail.pricingBreakdown.complexityFactorValue.toFixed(2)}`,
+                    },
+                    { key: "volume-discount", label: "Descuento por volumen", value: `${detail.pricingBreakdown.volumeDiscountPercent.toFixed(2)}%` },
+                    {
+                      key: "line-before-discount",
+                      label: "Linea antes de descuento",
+                      value: detail.pricingBreakdown.lineBeforeVolumeDiscount != null
+                        ? `RD$ ${detail.pricingBreakdown.lineBeforeVolumeDiscount.toFixed(4)}`
+                        : "N/A",
+                    },
+                    {
+                      key: "unit-price-after-discount",
+                      label: "Precio unitario tras descuento",
+                      value: detail.pricingBreakdown.unitPriceAfterVolumeDiscount != null
+                        ? `RD$ ${detail.pricingBreakdown.unitPriceAfterVolumeDiscount.toFixed(4)}`
+                        : "N/A",
+                    },
+                    { key: "subtotal-before-supplies", label: "Subtotal antes de insumos", value: formatAdminCareRequestCurrency(detail.pricingBreakdown.subtotalBeforeSupplies) },
+                    { key: "medical-supplies", label: "Insumos medicos", value: formatAdminCareRequestCurrency(detail.pricingBreakdown.medicalSuppliesCost) },
+                    { key: "total", label: "Total", value: formatAdminCareRequestCurrency(detail.pricingBreakdown.total) },
+                  ].map(({ key, label, value }) => (
                     <Paper
-                      key={label}
+                      key={key}
                       sx={{
                         p: 2.2,
                         borderRadius: 2.5,
                         bgcolor: "rgba(247, 244, 238, 0.72)",
                         boxShadow: "none",
                       }}
+                      data-testid={`price-breakdown-${key}`}
                     >
                       <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
                         {label}
@@ -672,6 +740,72 @@ export default function AdminCareRequestDetailPage() {
           </Box>
         )}
       </Stack>
+      <Dialog
+        open={verificationOpen}
+        onClose={() => setVerificationOpen(false)}
+        maxWidth="md"
+        fullWidth
+        data-testid="price-verification-modal"
+      >
+        <DialogTitle>Verificacion de precios</DialogTitle>
+        <DialogContent>
+          {verificationError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {verificationError}
+            </Alert>
+          )}
+          {verificationResult && (
+            <Stack spacing={2}>
+              {verificationResult.matches ? (
+                <Alert severity="success" data-testid="price-verification-success">
+                  Los precios almacenados coinciden con los precios actuales del catalogo (tolerancia: {verificationResult.toleranceUsed}).
+                </Alert>
+              ) : (
+                verificationResult.discrepancies.length > 0 && (
+                  <Box data-testid="price-verification-discrepancies">
+                    <Alert severity="warning" sx={{ mb: 2 }}>
+                      Se encontraron {verificationResult.discrepancies.length} diferencia(s) entre los precios almacenados y los actuales.
+                    </Alert>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Campo</TableCell>
+                          <TableCell align="right">Almacenado</TableCell>
+                          <TableCell align="right">Actual</TableCell>
+                          <TableCell align="right">Diferencia</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {verificationResult.discrepancies.map((discrepancy) => (
+                          <TableRow key={discrepancy.fieldName}>
+                            <TableCell>{discrepancy.fieldName}</TableCell>
+                            <TableCell align="right">{discrepancy.storedValue.toFixed(4)}</TableCell>
+                            <TableCell align="right">{discrepancy.currentValue.toFixed(4)}</TableCell>
+                            <TableCell align="right">{discrepancy.difference.toFixed(4)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </Box>
+                )
+              )}
+              {verificationResult.limitationNotes.length > 0 && (
+                <Alert severity="info" data-testid="price-verification-limitation">
+                  <strong>Nota:</strong> {verificationResult.limitationNotes.join(" ")}
+                </Alert>
+              )}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setVerificationOpen(false)}
+            data-testid="price-verification-close-button"
+          >
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AdminPortalShell>
   );
 }
