@@ -39,6 +39,11 @@ const pendingDetail = {
   approvedAtUtc: null,
   rejectedAtUtc: null,
   completedAtUtc: null,
+  invoiceNumber: null,
+  invoicedAtUtc: null,
+  paidAtUtc: null,
+  voidedAtUtc: null,
+  voidReason: null,
   isOverdueOrStale: false,
   pricingBreakdown: {
     category: "domicilio",
@@ -178,6 +183,8 @@ describe("AdminCareRequestDetailPage", () => {
       approvedAtUtc: null,
       rejectedAtUtc: null,
       completedAtUtc: null,
+      cancelledAtUtc: null,
+      rejectionReason: null,
       assignedNurse: "nurse-1",
     });
     vi.mocked(transitionCareRequest).mockResolvedValue({
@@ -190,6 +197,8 @@ describe("AdminCareRequestDetailPage", () => {
       approvedAtUtc: "2026-03-22T11:00:00Z",
       rejectedAtUtc: null,
       completedAtUtc: null,
+      cancelledAtUtc: null,
+      rejectionReason: null,
       assignedNurse: "nurse-1",
     });
   });
