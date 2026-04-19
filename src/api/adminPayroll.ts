@@ -478,3 +478,57 @@ export async function getAdminShiftChanges(id: string): Promise<AdminShiftChange
     throw new Error(extractApiErrorMessage(error, "No fue posible cargar el historial de cambios."));
   }
 }
+
+// ─── Nurse Payroll Detail ───────────────────────────────────────────────────
+
+export interface NursePayrollServiceLine {
+  serviceExecutionId: string;
+  description: string;
+  baseCompensation: number;
+  transportIncentive: number;
+  complexityBonus: number;
+  medicalSuppliesCompensation: number;
+  adjustmentsTotal: number;
+  deductionsTotal: number;
+  netCompensation: number;
+  serviceDate: string | null;
+}
+
+export interface NursePayrollDeductionLine {
+  id: string;
+  label: string;
+  amount: number;
+  deductionType: string;
+}
+
+export interface NursePayrollPeriodDetailDto {
+  nurseUserId: string;
+  nurseDisplayName: string;
+  periodId: string;
+  periodStartDate: string;
+  periodEndDate: string;
+  periodStatus: "Open" | "Closed";
+  services: NursePayrollServiceLine[];
+  deductions: NursePayrollDeductionLine[];
+  grossCompensation: number;
+  transportIncentives: number;
+  adjustmentsTotal: number;
+  deductionsTotal: number;
+  netCompensation: number;
+}
+
+export async function getAdminNursePayrollDetail(
+  periodId: string,
+  nurseUserId: string
+): Promise<NursePayrollPeriodDetailDto> {
+  try {
+    const response = await httpClient.get<NursePayrollPeriodDetailDto>(
+      `/admin/payroll/periods/${periodId}/nurse-detail/${nurseUserId}`
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      extractApiErrorMessage(error, "No fue posible cargar el detalle de nomina de la enfermera.")
+    );
+  }
+}

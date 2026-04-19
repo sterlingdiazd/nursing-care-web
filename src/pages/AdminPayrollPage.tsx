@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
@@ -66,6 +67,7 @@ function formatCurrency(value: number) {
 
 export default function AdminPayrollPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // List state
   const [periods, setPeriods] = useState<AdminPayrollPeriodListResult | null>(null);
@@ -157,6 +159,21 @@ export default function AdminPayrollPage() {
     setSelectedPeriodId(null);
     setSelectedDetail(null);
     setDetailError(null);
+  };
+
+  const handleViewNurseDetail = (nurseUserId: string) => {
+    if (!selectedPeriodId) return;
+    navigate(`/admin/payroll/periods/${selectedPeriodId}/nurse/${nurseUserId}`);
+  };
+
+  // UC-009: override-request-button for closed period immutability guard
+  const [overrideToastVisible, setOverrideToastVisible] = useState(false);
+
+  const handleOverrideRequest = () => {
+    if (selectedDetail?.status === "Closed") {
+      setOverrideToastVisible(true);
+      setTimeout(() => setOverrideToastVisible(false), 4000);
+    }
   };
 
   const handleClosePeriod = async () => {
@@ -366,9 +383,14 @@ export default function AdminPayrollPage() {
           </>
         }
       >
-        <Stack spacing={3} data-testid="admin-payroll-detail">
-          {detailError && <Alert severity="error">{detailError}</Alert>}
-          {actionError && <Alert severity="error">{actionError}</Alert>}
+        <Stack spacing={3} data-testid="admin-payroll-period-detail-page">
+          {detailError && <Alert severity="error" data-testid="error-toast">{detailError}</Alert>}
+          {actionError && <Alert severity="error" data-testid="error-toast">{actionError}</Alert>}
+          {overrideToastVisible && (
+            <Alert severity="warning" data-testid="error-toast" onClose={() => setOverrideToastVisible(false)}>
+              Este periodo esta cerrado. No se pueden registrar modificaciones sobre un periodo cerrado.
+            </Alert>
+          )}
 
           {detailLoading && (
             <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
@@ -377,14 +399,16 @@ export default function AdminPayrollPage() {
           )}
 
           {selectedDetail && !detailLoading && (
-            <>
+            <Box data-testid="payroll-period-detail-loaded">
               {/* Period metadata */}
+              <Stack spacing={3}>
               <Paper sx={{ p: 2.5, borderRadius: 3 }}>
                 <Stack direction="row" spacing={2} flexWrap="wrap" alignItems="center">
                   <Chip
                     label={selectedDetail.status === "Open" ? t("adminPayroll.status.open") : t("adminPayroll.status.closed")}
                     color={selectedDetail.status === "Open" ? "success" : "default"}
                     size="small"
+                    data-testid="payroll-period-status-badge"
                   />
                   <Typography variant="body2" color="text.secondary">
                     {t("adminPayroll.list.cutoff")}: {formatDate(selectedDetail.cutoffDate)}
@@ -395,6 +419,21 @@ export default function AdminPayrollPage() {
                   <Typography variant="body2" color="text.secondary">
                     {t("adminPayroll.list.lines")}: {selectedDetail.lines.length}
                   </Typography>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color={selectedDetail.status === "Closed" ? "warning" : "primary"}
+                    disabled={selectedDetail.status === "Open"}
+                    onClick={handleOverrideRequest}
+                    data-testid="override-request-button"
+                    title={
+                      selectedDetail.status === "Closed"
+                        ? "Solicitar ajuste manual (periodo cerrado)"
+                        : "Disponible solo en periodos cerrados"
+                    }
+                  >
+                    Solicitar Ajuste
+                  </Button>
                 </Stack>
               </Paper>
 
@@ -404,7 +443,7 @@ export default function AdminPayrollPage() {
                   <Typography variant="h6">{t("adminPayroll.detail.staff")}</Typography>
                 </Box>
                 <TableContainer>
-                  <Table size="small">
+                  <Table size="small" data-testid="payroll-nurse-summary-table">
                     <TableHead>
                       <TableRow sx={{ bgcolor: "grey.50" }}>
                         <TableCell>{t("adminPayroll.detail.nurse")}</TableCell>
@@ -426,7 +465,13 @@ export default function AdminPayrollPage() {
                         </TableRow>
                       ) : (
                         selectedDetail.staffSummary.map((staff) => (
-                          <TableRow key={staff.nurseUserId} hover>
+                          <TableRow
+                            key={staff.nurseUserId}
+                            hover
+                            data-testid="payroll-nurse-row"
+                            sx={{ cursor: "pointer" }}
+                            onClick={() => handleViewNurseDetail(staff.nurseUserId)}
+                          >
                             <TableCell>
                               <Typography variant="body2" fontWeight={600}>
                                 {staff.nurseDisplayName}
@@ -444,7 +489,10 @@ export default function AdminPayrollPage() {
                               <Button
                                 size="small"
                                 variant="outlined"
-                                onClick={() => void handleDownloadNurseVoucher(staff.nurseUserId)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void handleDownloadNurseVoucher(staff.nurseUserId);
+                                }}
                                 disabled={voucherLoading === staff.nurseUserId}
                                 title="Descargar comprobante PDF"
                               >
@@ -465,7 +513,7 @@ export default function AdminPayrollPage() {
                   <Typography variant="h6">{t("adminPayroll.detail.lines")}</Typography>
                 </Box>
                 <TableContainer>
-                  <Table size="small">
+                  <Table size="small" data-testid="payroll-lines-table">
                     <TableHead>
                       <TableRow sx={{ bgcolor: "grey.50" }}>
                         <TableCell>{t("adminPayroll.detail.nurse")}</TableCell>
@@ -515,7 +563,8 @@ export default function AdminPayrollPage() {
                   </Table>
                 </TableContainer>
               </Paper>
-            </>
+              </Stack>
+            </Box>
           )}
         </Stack>
       </AdminPortalShell>

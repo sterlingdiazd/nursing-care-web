@@ -39,6 +39,7 @@ import AdminEditNurseProfilePage from "./pages/AdminEditNurseProfilePage";
 import AdminReviewNurseProfilePage from "./pages/AdminReviewNurseProfilePage";
 import AdminClientsPage from "./pages/AdminClientsPage";
 import AdminPayrollPage from "./pages/AdminPayrollPage";
+import AdminPayrollNurseDetailPage from "./pages/AdminPayrollNurseDetailPage";
 import AdminShiftsPage from "./pages/AdminShiftsPage";
 import AccountPage from "./pages/AccountPage";
 import { UserProfileType } from "./types/auth";
@@ -415,6 +416,14 @@ function AppRoutes() {
         element={
           <AdminRoute>
             <AdminSettingsPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/payroll/periods/:periodId/nurse/:nurseUserId"
+        element={
+          <AdminRoute>
+            <AdminPayrollNurseDetailPage />
           </AdminRoute>
         }
       />
