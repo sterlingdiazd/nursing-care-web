@@ -69,7 +69,7 @@ describe("AdminCreateNurseProfilePage", () => {
       lastName: "Gomez",
       identificationNumber: "00111111111",
       phone: "8095550199",
-      profileType: "NURSE",
+      profileType: 1,
       userIsActive: true,
       nurseProfileIsActive: true,
       isPendingReview: false,

@@ -178,15 +178,15 @@ export default function AdminPayrollNurseDetailPage() {
                   <Table size="small" data-testid="nurse-payroll-services-table">
                     <TableHead>
                       <TableRow sx={{ bgcolor: "grey.50" }}>
-                        <TableCell>Descripcion</TableCell>
-                        <TableCell>Fecha</TableCell>
-                        <TableCell align="right">Base</TableCell>
-                        <TableCell align="right">Transporte</TableCell>
-                        <TableCell align="right">Complejidad</TableCell>
-                        <TableCell align="right">Insumos</TableCell>
-                        <TableCell align="right">Ajustes</TableCell>
-                        <TableCell align="right">Deducciones</TableCell>
-                        <TableCell align="right">Neto</TableCell>
+                        <TableCell scope="col">Descripcion</TableCell>
+                        <TableCell scope="col">Fecha</TableCell>
+                        <TableCell scope="col" align="right">Base</TableCell>
+                        <TableCell scope="col" align="right">Transporte</TableCell>
+                        <TableCell scope="col" align="right">Complejidad</TableCell>
+                        <TableCell scope="col" align="right">Insumos</TableCell>
+                        <TableCell scope="col" align="right">Ajustes</TableCell>
+                        <TableCell scope="col" align="right">Deducciones</TableCell>
+                        <TableCell scope="col" align="right">Neto</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -259,9 +259,9 @@ export default function AdminPayrollNurseDetailPage() {
                   <Table size="small" data-testid="nurse-payroll-deductions-table">
                     <TableHead>
                       <TableRow sx={{ bgcolor: "grey.50" }}>
-                        <TableCell>Concepto</TableCell>
-                        <TableCell>Tipo</TableCell>
-                        <TableCell align="right">Monto</TableCell>
+                        <TableCell scope="col">Concepto</TableCell>
+                        <TableCell scope="col">Tipo</TableCell>
+                        <TableCell scope="col" align="right">Monto</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>

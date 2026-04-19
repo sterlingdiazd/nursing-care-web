@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import AccountPage from "./AccountPage";
 
 import { useAuth } from "../context/AuthContext";
+import { UserProfileType } from "../types/auth";
 
 const navigate = vi.fn();
 const logout = vi.fn();
@@ -60,7 +61,7 @@ describe("AccountPage", () => {
       userId: "11111111-1111-1111-1111-111111111111",
       email: "admin@example.com",
       roles: ["ADMIN"],
-      profileType: "ADMIN",
+      profileType: UserProfileType.ADMIN,
       requiresProfileCompletion: false,
       requiresAdminReview: false,
       isLoading: false,
@@ -70,6 +71,7 @@ describe("AccountPage", () => {
       login: vi.fn(),
       clearError: vi.fn(),
       completeProfile: vi.fn(),
+      applyAuthResponse: vi.fn(),
       completeOAuthLogin: vi.fn(),
     });
   });
@@ -199,6 +201,9 @@ describe("AccountPage", () => {
           register: vi.fn(),
           login: vi.fn(),
           clearError: vi.fn(),
+          completeProfile: vi.fn(),
+          applyAuthResponse: vi.fn(),
+          completeOAuthLogin: vi.fn(),
       });
 
       renderWithTheme(<AccountPage />);
@@ -223,6 +228,9 @@ describe("AccountPage", () => {
           register: vi.fn(),
           login: vi.fn(),
           clearError: vi.fn(),
+          completeProfile: vi.fn(),
+          applyAuthResponse: vi.fn(),
+          completeOAuthLogin: vi.fn(),
       });
 
       renderWithTheme(<AccountPage />);
@@ -245,6 +253,9 @@ describe("AccountPage", () => {
           register: vi.fn(),
           login: vi.fn(),
           clearError: vi.fn(),
+          completeProfile: vi.fn(),
+          applyAuthResponse: vi.fn(),
+          completeOAuthLogin: vi.fn(),
       });
 
       renderWithTheme(<AccountPage />);
@@ -269,6 +280,9 @@ describe("AccountPage", () => {
           register: vi.fn(),
           login: vi.fn(),
           clearError: vi.fn(),
+          completeProfile: vi.fn(),
+          applyAuthResponse: vi.fn(),
+          completeOAuthLogin: vi.fn(),
       });
 
       renderWithTheme(<AccountPage />);
@@ -294,6 +308,9 @@ describe("AccountPage", () => {
           register: vi.fn(),
           login: vi.fn(),
           clearError: vi.fn(),
+          completeProfile: vi.fn(),
+          applyAuthResponse: vi.fn(),
+          completeOAuthLogin: vi.fn(),
       });
 
       renderWithTheme(<AccountPage />);

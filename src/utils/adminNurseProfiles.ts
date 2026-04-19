@@ -1,14 +1,18 @@
 import type {
-  NurseProfileAdminRecord,
   NurseProfileSummary,
   NurseWorkloadSummary,
-  PendingNurseProfile,
 } from "../api/adminNurseProfiles";
 
-type NurseStatusLike =
-  | Pick<NurseProfileAdminRecord, "name" | "lastName" | "email" | "userIsActive" | "nurseProfileIsActive" | "isPendingReview" | "isAssignmentReady">
-  | Pick<NurseProfileSummary, "name" | "lastName" | "email" | "userIsActive" | "nurseProfileIsActive" | "isProfileComplete" | "isAssignmentReady">
-  | Pick<PendingNurseProfile, "name" | "lastName" | "email">;
+type NurseStatusLike = {
+  name: string | null;
+  lastName: string | null;
+  email: string;
+  userIsActive?: boolean;
+  nurseProfileIsActive?: boolean;
+  isPendingReview?: boolean;
+  isAssignmentReady?: boolean;
+  isProfileComplete?: boolean;
+};
 
 export function formatNurseDisplayName(profile: Pick<NurseStatusLike, "name" | "lastName" | "email">) {
   return [profile.name, profile.lastName].filter(Boolean).join(" ").trim() || profile.email;

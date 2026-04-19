@@ -585,7 +585,7 @@ export default function AdminCareRequestDetailPage() {
                         <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
                           Numero de factura
                         </Typography>
-                        <Typography sx={{ mt: 0.45, fontWeight: 700 }}>{detail.invoiceNumber}</Typography>
+                        <Typography sx={{ mt: 0.45, fontWeight: 700 }} data-testid="receipt-number-display">{detail.invoiceNumber}</Typography>
                       </Box>
                     )}
                     {detail.invoicedAtUtc && (
@@ -935,18 +935,6 @@ export default function AdminCareRequestDetailPage() {
                     </>
                   )}
 
-                  {detail.status === "Paid" && (
-                    <Button
-                      variant="outlined"
-                      onClick={() => void runGenerateReceipt()}
-                      disabled={isGeneratingReceipt}
-                      data-testid="generate-receipt-button"
-                      sx={subduedActionButtonSx}
-                    >
-                      {isGeneratingReceipt ? "Generando..." : "Generar / Descargar recibo"}
-                    </Button>
-                  )}
-
                   {(detail.status === "Voided" || detail.status === "Rejected") && (
                     <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
                       Esta solicitud esta en estado terminal. No hay acciones disponibles.
@@ -1050,7 +1038,7 @@ export default function AdminCareRequestDetailPage() {
               onChange={(event) => setInvoiceNumber(event.target.value)}
               disabled={isActing}
               fullWidth
-              inputProps={{ "data-testid": "invoice-number-input" }}
+              inputProps={{ "data-testid": "invoice-number-input", "aria-label": "Numero de factura" }}
             />
           </Stack>
         </DialogContent>
@@ -1086,7 +1074,7 @@ export default function AdminCareRequestDetailPage() {
               onChange={(event) => setBankReference(event.target.value)}
               disabled={isActing}
               fullWidth
-              inputProps={{ "data-testid": "bank-reference-input" }}
+              inputProps={{ "data-testid": "bank-reference-input", "aria-label": "Referencia bancaria" }}
             />
           </Stack>
         </DialogContent>
@@ -1124,7 +1112,7 @@ export default function AdminCareRequestDetailPage() {
               fullWidth
               multiline
               rows={3}
-              inputProps={{ "data-testid": "void-reason-input" }}
+              inputProps={{ "data-testid": "void-reason-input", "aria-label": "Motivo de anulacion" }}
             />
           </Stack>
         </DialogContent>
