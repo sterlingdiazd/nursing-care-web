@@ -29,6 +29,8 @@ const listResponse = [
     approvedAtUtc: null,
     rejectedAtUtc: null,
     completedAtUtc: null,
+    cancelledAtUtc: null,
+    rejectionReason: null,
   },
   {
     id: "request-2",
@@ -40,6 +42,8 @@ const listResponse = [
     approvedAtUtc: "2026-03-18T11:20:00Z",
     rejectedAtUtc: null,
     completedAtUtc: "2026-03-18T12:00:00Z",
+    cancelledAtUtc: null,
+    rejectionReason: null,
   },
 ];
 

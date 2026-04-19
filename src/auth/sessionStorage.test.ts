@@ -26,7 +26,7 @@ describe("sessionStorage", () => {
       userId: "11111111-1111-1111-1111-111111111111",
       email: "care@example.com",
       roles: ["ADMIN"],
-      profileType: "NURSE",
+      profileType: UserProfileType.NURSE,
       requiresProfileCompletion: false,
       requiresAdminReview: false,
     });
@@ -38,7 +38,7 @@ describe("sessionStorage", () => {
       userId: "11111111-1111-1111-1111-111111111111",
       email: "care@example.com",
       roles: ["ADMIN"],
-      profileType: "NURSE",
+      profileType: UserProfileType.NURSE,
       requiresProfileCompletion: false,
       requiresAdminReview: false,
     });
@@ -55,7 +55,7 @@ describe("sessionStorage", () => {
       userId: "11111111-1111-1111-1111-111111111111",
       email: "care@example.com",
       roles: ["NURSE"],
-      profileType: "NURSE",
+      profileType: UserProfileType.NURSE,
       requiresProfileCompletion: false,
       requiresAdminReview: false,
     });
@@ -69,7 +69,7 @@ describe("sessionStorage", () => {
       userId: "11111111-1111-1111-1111-111111111111",
       email: "care@example.com",
       roles: ["NURSE"],
-      profileType: "NURSE",
+      profileType: UserProfileType.NURSE,
       requiresProfileCompletion: false,
       requiresAdminReview: false,
     });
@@ -96,7 +96,7 @@ describe("sessionStorage", () => {
         expiresAtUtc: null,
         email: "legacy@example.com",
         roles: ["ADMIN"],
-        profileType: "NURSE",
+        profileType: UserProfileType.NURSE,
         requiresProfileCompletion: false,
         requiresAdminReview: false,
       }),
@@ -109,7 +109,7 @@ describe("sessionStorage", () => {
       userId: "22222222-2222-2222-2222-222222222222",
       email: "legacy@example.com",
       roles: ["ADMIN"],
-      profileType: "NURSE",
+      profileType: UserProfileType.NURSE,
       requiresProfileCompletion: false,
       requiresAdminReview: false,
     });

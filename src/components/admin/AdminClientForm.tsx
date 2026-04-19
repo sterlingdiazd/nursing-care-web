@@ -247,7 +247,7 @@ export default function AdminClientForm({
               onChange={(event) => handleChange("password", event.target.value)}
               error={formState.password.length > 0 && !passwordValidation.isValid}
               helperText={formState.password.length > 0 && !passwordValidation.isValid
-                ? passwordValidation.error
+                ? passwordValidation.message
                 : "Minimo 6 caracteres."}
               disabled={isSubmitting}
             />

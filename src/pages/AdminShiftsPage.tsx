@@ -45,7 +45,7 @@ function getStatusColor(status: string): "default" | "primary" | "secondary" | "
   switch (status) {
     case "Planned": return "info";
     case "Completed": return "success";
-    case "Changed": return "warning";
+    case "Changed": return "secondary";
     default: return "default";
   }
 }

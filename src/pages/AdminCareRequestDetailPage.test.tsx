@@ -5,7 +5,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AdminCareRequestDetailPage from "./AdminCareRequestDetailPage";
 import { getActiveNurseProfiles } from "../api/adminNurseProfiles";
-import { getAdminCareRequestDetail } from "../api/adminCareRequests";
+import {
+  getAdminCareRequestDetail,
+  invoiceCareRequest,
+  payCareRequest,
+  voidCareRequest,
+  generateReceipt,
+} from "../api/adminCareRequests";
 import { assignCareRequestNurse, transitionCareRequest } from "../api/careRequests";
 
 const navigate = vi.fn();
@@ -93,6 +99,37 @@ const approvedDetail = {
   ],
 };
 
+const completedDetail = {
+  ...assignedDetail,
+  status: "Completed" as const,
+  completedAtUtc: "2026-03-22T12:00:00Z",
+  updatedAtUtc: "2026-03-22T12:00:00Z",
+  timeline: [
+    ...assignedDetail.timeline,
+    {
+      id: "completed:request-1",
+      title: "Servicio completado",
+      description: "La enfermera marco el servicio como completado.",
+      occurredAtUtc: "2026-03-22T12:00:00Z",
+    },
+  ],
+};
+
+const invoicedDetail = {
+  ...completedDetail,
+  status: "Invoiced" as const,
+  invoiceNumber: "FAC-2026-0001",
+  invoicedAtUtc: "2026-03-22T13:00:00Z",
+  updatedAtUtc: "2026-03-22T13:00:00Z",
+};
+
+const paidDetail = {
+  ...invoicedDetail,
+  status: "Paid" as const,
+  paidAtUtc: "2026-03-22T14:00:00Z",
+  updatedAtUtc: "2026-03-22T14:00:00Z",
+};
+
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigate,
   useLocation: () => ({ pathname: "/admin/care-requests/request-1", search: routeSearch }),
@@ -101,6 +138,12 @@ vi.mock("react-router-dom", () => ({
 
 vi.mock("../api/adminCareRequests", () => ({
   getAdminCareRequestDetail: vi.fn(),
+  invoiceCareRequest: vi.fn(),
+  payCareRequest: vi.fn(),
+  voidCareRequest: vi.fn(),
+  generateReceipt: vi.fn(),
+  registerAdminCareRequestShift: vi.fn(),
+  recordAdminCareRequestShiftChange: vi.fn(),
 }));
 
 vi.mock("../hooks/useCareRequestCatalogOptions", () => ({
@@ -128,6 +171,7 @@ vi.mock("../api/adminNurseProfiles", () => ({
 vi.mock("../api/careRequests", () => ({
   assignCareRequestNurse: vi.fn(),
   transitionCareRequest: vi.fn(),
+  verifyCareRequestPricing: vi.fn(),
 }));
 
 vi.mock("../context/AuthContext", () => ({
@@ -234,4 +278,89 @@ describe("AdminCareRequestDetailPage", () => {
     expect(await screen.findByText("Solicitud aprobada")).toBeInTheDocument();
     expect(await screen.findByText("La completacion corresponde exclusivamente a la enfermera asignada.")).toBeInTheDocument();
   }, 30000);
+});
+
+describe("AdminCareRequestDetailPage — billing modal actions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getActiveNurseProfiles).mockResolvedValue([
+      {
+        userId: "nurse-1",
+        email: "luisa@example.com",
+        name: "Luisa",
+        lastName: "Martinez",
+        specialty: "Atencion domiciliaria",
+        category: "Senior",
+      },
+    ]);
+  });
+
+  it("renders invoice button and opens modal for Completed status", async () => {
+    vi.mocked(getAdminCareRequestDetail).mockResolvedValue(completedDetail);
+
+    renderWithTheme(<AdminCareRequestDetailPage />);
+
+    const invoiceButton = await screen.findByTestId("invoice-care-request-button");
+    expect(invoiceButton).toBeInTheDocument();
+
+    fireEvent.click(invoiceButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("invoice-modal")).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId("invoice-number-input")).toBeInTheDocument();
+    expect(screen.getByTestId("invoice-submit-button")).toBeInTheDocument();
+  }, 15000);
+
+  it("renders pay button and opens modal for Invoiced status", async () => {
+    vi.mocked(getAdminCareRequestDetail).mockResolvedValue(invoicedDetail);
+
+    renderWithTheme(<AdminCareRequestDetailPage />);
+
+    const payButton = await screen.findByTestId("pay-care-request-button");
+    expect(payButton).toBeInTheDocument();
+
+    fireEvent.click(payButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-modal")).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId("bank-reference-input")).toBeInTheDocument();
+    expect(screen.getByTestId("payment-submit-button")).toBeInTheDocument();
+  }, 15000);
+
+  it("renders void button and opens modal for Completed status", async () => {
+    vi.mocked(getAdminCareRequestDetail).mockResolvedValue(completedDetail);
+
+    renderWithTheme(<AdminCareRequestDetailPage />);
+
+    const voidButton = await screen.findByTestId("void-care-request-button");
+    expect(voidButton).toBeInTheDocument();
+
+    fireEvent.click(voidButton);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("void-modal")).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId("void-reason-input")).toBeInTheDocument();
+    expect(screen.getByTestId("void-submit-button")).toBeInTheDocument();
+  }, 15000);
+
+  it("renders generate receipt button for Paid status", async () => {
+    vi.mocked(getAdminCareRequestDetail).mockResolvedValue(paidDetail);
+    vi.mocked(generateReceipt).mockResolvedValue({
+      receiptId: "receipt-1",
+      receiptNumber: "REC-20260322-0001",
+      receiptContentBase64: btoa("fake-pdf-content"),
+    });
+
+    renderWithTheme(<AdminCareRequestDetailPage />);
+
+    const receiptButton = await screen.findByTestId("generate-receipt-button");
+    expect(receiptButton).toBeInTheDocument();
+    expect(screen.getByTestId("receipt-details-section")).toBeInTheDocument();
+  }, 15000);
 });

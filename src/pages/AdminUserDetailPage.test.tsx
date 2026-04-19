@@ -4,6 +4,7 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AdminUserDetailPage from "./AdminUserDetailPage";
+import type { AdminUserRoleName } from "../api/adminUsers";
 import {
   getAdminUserDetail,
   invalidateAdminUserSessions,
@@ -24,8 +25,8 @@ const baseDetail = {
   identificationNumber: "00122334455",
   phone: "8095550177",
   profileType: "CLIENT" as const,
-  roleNames: ["CLIENT"] as const,
-  allowedRoleNames: ["ADMIN", "CLIENT"] as const,
+  roleNames: ["CLIENT"] as AdminUserRoleName[],
+  allowedRoleNames: ["ADMIN", "CLIENT"] as AdminUserRoleName[],
   isActive: true,
   accountStatus: "Active" as const,
   requiresProfileCompletion: false,
