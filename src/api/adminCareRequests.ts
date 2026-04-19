@@ -14,7 +14,7 @@ export type AdminCareRequestView =
   | "overdue";
 
 export type AdminCareRequestSort = "newest" | "oldest" | "scheduled" | "status" | "value";
-export type AdminCareRequestStatus = "Pending" | "Approved" | "Rejected" | "Completed";
+export type AdminCareRequestStatus = "Pending" | "Approved" | "Rejected" | "Completed" | "Invoiced" | "Paid" | "Voided";
 
 export interface AdminCareRequestListParams {
   view?: AdminCareRequestView;
@@ -148,11 +148,62 @@ export interface AdminCareRequestDetail {
   approvedAtUtc: string | null;
   rejectedAtUtc: string | null;
   completedAtUtc: string | null;
+  invoiceNumber: string | null;
+  invoicedAtUtc: string | null;
+  paidAtUtc: string | null;
+  voidedAtUtc: string | null;
+  voidReason: string | null;
   isOverdueOrStale: boolean;
   pricingBreakdown: AdminCareRequestPricingBreakdown;
   payrollCompensation: AdminPayrollCompensationSnapshot | null;
   shifts: AdminShiftRecord[];
   timeline: AdminCareRequestTimelineEvent[];
+}
+
+export interface InvoiceCareRequestPayload {
+  invoiceNumber: string;
+  invoiceDate?: string;
+}
+
+export interface PayCareRequestPayload {
+  bankReference: string;
+  paymentDate?: string;
+}
+
+export interface VoidCareRequestPayload {
+  voidReason: string;
+}
+
+export interface InvoicedCareRequestResponse {
+  id: string;
+  invoiceNumber: string;
+  invoicedAtUtc: string;
+  totalAmount: number;
+}
+
+export interface PaidCareRequestResponse {
+  id: string;
+  paidAtUtc: string;
+  totalAmount: number;
+}
+
+export interface VoidedCareRequestResponse {
+  id: string;
+  voidedAtUtc: string;
+  voidReason: string;
+}
+
+export interface GenerateReceiptResponse {
+  receiptId: string;
+  receiptNumber: string;
+  receiptContentBase64: string;
+}
+
+export interface GetReceiptResponse {
+  receiptId: string;
+  receiptNumber: string;
+  receiptContentBase64: string;
+  generatedAtUtc: string;
 }
 
 export interface AdminCareRequestClientOption {
@@ -291,5 +342,55 @@ export async function exportAdminCareRequestsCsv(params: AdminCareRequestListPar
     };
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible exportar las solicitudes."));
+  }
+}
+
+export async function invoiceCareRequest(id: string, payload: InvoiceCareRequestPayload): Promise<InvoicedCareRequestResponse> {
+  try {
+    const response = await httpClient.post<InvoicedCareRequestResponse>(`/admin/care-requests/${id}/invoice`, payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible facturar la solicitud."));
+  }
+}
+
+export async function payCareRequest(id: string, payload: PayCareRequestPayload): Promise<PaidCareRequestResponse> {
+  try {
+    const response = await httpClient.post<PaidCareRequestResponse>(`/admin/care-requests/${id}/pay`, payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible confirmar el pago."));
+  }
+}
+
+export async function voidCareRequest(id: string, payload: VoidCareRequestPayload): Promise<VoidedCareRequestResponse> {
+  try {
+    const response = await httpClient.post<VoidedCareRequestResponse>(`/admin/care-requests/${id}/void`, payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible anular la solicitud."));
+  }
+}
+
+export async function generateReceipt(id: string): Promise<GenerateReceiptResponse> {
+  try {
+    const response = await httpClient.post<GenerateReceiptResponse>(`/admin/care-requests/${id}/receipt`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible generar el recibo."));
+  }
+}
+
+export async function getReceipt(id: string): Promise<GetReceiptResponse | null> {
+  try {
+    const response = await httpClient.get<GetReceiptResponse>(`/admin/care-requests/${id}/receipt`);
+    return response.data;
+  } catch (error: unknown) {
+    // Return null if receipt does not exist yet (404)
+    if (typeof error === "object" && error !== null && "response" in error) {
+      const axiosError = error as { response?: { status?: number } };
+      if (axiosError.response?.status === 404) return null;
+    }
+    throw new Error(extractApiErrorMessage(error, "No fue posible obtener el recibo."));
   }
 }

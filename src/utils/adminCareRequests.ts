@@ -41,6 +41,12 @@ export function getAdminCareRequestStatusLabel(status: AdminCareRequestStatus) {
       return "Rechazada";
     case "Completed":
       return "Completada";
+    case "Invoiced":
+      return "Facturada";
+    case "Paid":
+      return "Pagada";
+    case "Voided":
+      return "Anulada";
     default:
       return "Pendiente";
   }
@@ -53,7 +59,13 @@ export function getAdminCareRequestStatusStyles(status: AdminCareRequestStatus) 
     case "Rejected":
       return { bg: "rgba(183, 79, 77, 0.12)", color: "#9a3f3d" };
     case "Completed":
+      return { bg: "rgba(193, 138, 66, 0.14)", color: "#8a5e22" };
+    case "Invoiced":
       return { bg: "rgba(59, 108, 141, 0.12)", color: "#295774" };
+    case "Paid":
+      return { bg: "rgba(44, 122, 100, 0.18)", color: "#1a5e3a" };
+    case "Voided":
+      return { bg: "rgba(183, 79, 77, 0.15)", color: "#8b1a1a" };
     default:
       return { bg: "rgba(193, 138, 66, 0.14)", color: "#8a5e22" };
   }

@@ -23,6 +23,10 @@ import {
 import { getActiveNurseProfiles, type ActiveNurseProfileSummary } from "../api/adminNurseProfiles";
 import {
   getAdminCareRequestDetail,
+  invoiceCareRequest,
+  payCareRequest,
+  voidCareRequest,
+  generateReceipt,
   registerAdminCareRequestShift,
   recordAdminCareRequestShiftChange,
   type AdminCareRequestDetail,
@@ -72,6 +76,15 @@ export default function AdminCareRequestDetailPage() {
   const [verificationResult, setVerificationResult] = useState<PricingVerificationResponse | null>(null);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [verificationOpen, setVerificationOpen] = useState(false);
+
+  // Billing lifecycle state
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [payModalOpen, setPayModalOpen] = useState(false);
+  const [bankReference, setBankReference] = useState("");
+  const [voidModalOpen, setVoidModalOpen] = useState(false);
+  const [voidReason, setVoidReason] = useState("");
+  const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
 
   const listPath = `/admin/care-requests${location.search}`;
 
@@ -220,6 +233,76 @@ export default function AdminCareRequestDetailPage() {
     }
   };
 
+  const runInvoice = async () => {
+    if (!id || !invoiceNumber.trim()) return;
+    setIsActing(true);
+    setError(null);
+    try {
+      await invoiceCareRequest(id, { invoiceNumber: invoiceNumber.trim() });
+      setInvoiceModalOpen(false);
+      setInvoiceNumber("");
+      await loadDetail();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "No fue posible facturar la solicitud.");
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const runPay = async () => {
+    if (!id || !bankReference.trim()) return;
+    setIsActing(true);
+    setError(null);
+    try {
+      await payCareRequest(id, { bankReference: bankReference.trim() });
+      setPayModalOpen(false);
+      setBankReference("");
+      await loadDetail();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "No fue posible confirmar el pago.");
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const runVoid = async () => {
+    if (!id || !voidReason.trim()) return;
+    setIsActing(true);
+    setError(null);
+    try {
+      await voidCareRequest(id, { voidReason: voidReason.trim() });
+      setVoidModalOpen(false);
+      setVoidReason("");
+      await loadDetail();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "No fue posible anular la solicitud.");
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const runGenerateReceipt = async () => {
+    if (!id) return;
+    setIsGeneratingReceipt(true);
+    setError(null);
+    try {
+      const result = await generateReceipt(id);
+      const pdfBytes = Uint8Array.from(atob(result.receiptContentBase64), (c) => c.charCodeAt(0));
+      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `recibo-${result.receiptNumber}.pdf`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      await loadDetail();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "No fue posible generar el recibo.");
+    } finally {
+      setIsGeneratingReceipt(false);
+    }
+  };
+
   const statusStyles = detail ? getAdminCareRequestStatusStyles(detail.status) : null;
   const statusLabel = detail ? getAdminCareRequestStatusLabel(detail.status) : "";
   const canApproveOrReject = detail?.status === "Pending";
@@ -266,11 +349,12 @@ export default function AdminCareRequestDetailPage() {
         </>
       }
     >
-      <Stack spacing={3} data-testid="admin-care-detail-page">
+      <Stack spacing={3} data-testid="admin-care-request-detail-page">
         {error && <Alert severity="error">{error}</Alert>}
 
         {detail && (
           <Box
+            data-testid="care-request-detail-loaded"
             sx={{
               display: "grid",
               gridTemplateColumns: { xs: "1fr", xl: "1.1fr 0.9fr" },
@@ -290,6 +374,7 @@ export default function AdminCareRequestDetailPage() {
                       {statusStyles && (
                         <Chip
                           label={statusLabel}
+                          data-testid="care-request-status-badge"
                           sx={{
                             bgcolor: statusStyles.bg,
                             color: statusStyles.color,
@@ -481,6 +566,81 @@ export default function AdminCareRequestDetailPage() {
                   </Alert>
                 )}
               </Paper>
+
+              {(detail.invoiceNumber || detail.paidAtUtc || detail.voidedAtUtc) && (
+                <Paper sx={{ p: 3.5, borderRadius: 3.5 }} data-testid="invoice-details-section">
+                  <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
+                    Informacion de facturacion
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+                      gap: 1.6,
+                      mt: 2.2,
+                    }}
+                  >
+                    {detail.invoiceNumber && (
+                      <Box>
+                        <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
+                          Numero de factura
+                        </Typography>
+                        <Typography sx={{ mt: 0.45, fontWeight: 700 }}>{detail.invoiceNumber}</Typography>
+                      </Box>
+                    )}
+                    {detail.invoicedAtUtc && (
+                      <Box>
+                        <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
+                          Fecha de factura
+                        </Typography>
+                        <Typography sx={{ mt: 0.45 }}>{formatAdminCareRequestDateTime(detail.invoicedAtUtc)}</Typography>
+                      </Box>
+                    )}
+                    {detail.paidAtUtc && (
+                      <Box data-testid="payment-details-section">
+                        <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
+                          Fecha de pago
+                        </Typography>
+                        <Typography sx={{ mt: 0.45, fontWeight: 700, color: "#1a5e3a" }}>
+                          {formatAdminCareRequestDateTime(detail.paidAtUtc)}
+                        </Typography>
+                      </Box>
+                    )}
+                    {detail.voidedAtUtc && (
+                      <Box data-testid="void-details-section">
+                        <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
+                          Anulada
+                        </Typography>
+                        <Typography sx={{ mt: 0.45, fontWeight: 700, color: "#8b1a1a" }}>
+                          {formatAdminCareRequestDateTime(detail.voidedAtUtc)}
+                        </Typography>
+                      </Box>
+                    )}
+                    {detail.voidReason && (
+                      <Box sx={{ gridColumn: "1 / -1" }}>
+                        <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
+                          Motivo de anulacion
+                        </Typography>
+                        <Typography sx={{ mt: 0.45 }}>{detail.voidReason}</Typography>
+                      </Box>
+                    )}
+                  </Box>
+                  {detail.status === "Paid" && (
+                    <Box sx={{ mt: 2.2 }} data-testid="receipt-details-section">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => void runGenerateReceipt()}
+                        disabled={isGeneratingReceipt}
+                        data-testid="generate-receipt-button"
+                        sx={subduedActionButtonSx}
+                      >
+                        {isGeneratingReceipt ? "Generando recibo..." : "Generar / Descargar recibo"}
+                      </Button>
+                    </Box>
+                  )}
+                </Paper>
+              )}
 
               <Paper sx={{ p: 3.5, borderRadius: 3.5 }}>
                 <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.16em" }}>
@@ -729,7 +889,73 @@ export default function AdminCareRequestDetailPage() {
                     </Alert>
                   )}
 
-                  {!canApproveOrReject && detail.status !== "Approved" && (
+                  {detail.status === "Completed" && (
+                    <>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setInvoiceModalOpen(true)}
+                        disabled={isActing}
+                        data-testid="invoice-care-request-button"
+                        sx={subduedActionButtonSx}
+                      >
+                        Facturar servicio
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setVoidModalOpen(true)}
+                        disabled={isActing}
+                        data-testid="void-care-request-button"
+                        sx={{ ...subduedActionButtonSx, color: "#8b1a1a", borderColor: "rgba(183,79,77,0.4)" }}
+                      >
+                        Anular servicio
+                      </Button>
+                    </>
+                  )}
+
+                  {detail.status === "Invoiced" && (
+                    <>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setPayModalOpen(true)}
+                        disabled={isActing}
+                        data-testid="pay-care-request-button"
+                        sx={{ ...subduedActionButtonSx, color: "#1a5e3a", borderColor: "rgba(44,122,100,0.4)" }}
+                      >
+                        Confirmar pago
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setVoidModalOpen(true)}
+                        disabled={isActing}
+                        data-testid="void-care-request-button"
+                        sx={{ ...subduedActionButtonSx, color: "#8b1a1a", borderColor: "rgba(183,79,77,0.4)" }}
+                      >
+                        Anular servicio
+                      </Button>
+                    </>
+                  )}
+
+                  {detail.status === "Paid" && (
+                    <Button
+                      variant="outlined"
+                      onClick={() => void runGenerateReceipt()}
+                      disabled={isGeneratingReceipt}
+                      data-testid="generate-receipt-button"
+                      sx={subduedActionButtonSx}
+                    >
+                      {isGeneratingReceipt ? "Generando..." : "Generar / Descargar recibo"}
+                    </Button>
+                  )}
+
+                  {(detail.status === "Voided" || detail.status === "Rejected") && (
+                    <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                      Esta solicitud esta en estado terminal. No hay acciones disponibles.
+                    </Typography>
+                  )}
+
+                  {!canApproveOrReject && detail.status !== "Approved" &&
+                   detail.status !== "Completed" && detail.status !== "Invoiced" &&
+                   detail.status !== "Paid" && detail.status !== "Voided" && (
                     <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
                       No hay acciones administrativas disponibles para el estado actual.
                     </Typography>
@@ -803,6 +1029,117 @@ export default function AdminCareRequestDetailPage() {
             data-testid="price-verification-close-button"
           >
             Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Invoice Modal */}
+      <Dialog
+        open={invoiceModalOpen}
+        onClose={() => setInvoiceModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        data-testid="invoice-modal"
+      >
+        <DialogTitle>Facturar servicio</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Numero de factura"
+              value={invoiceNumber}
+              onChange={(event) => setInvoiceNumber(event.target.value)}
+              disabled={isActing}
+              fullWidth
+              inputProps={{ "data-testid": "invoice-number-input" }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setInvoiceModalOpen(false)} disabled={isActing}>
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => void runInvoice()}
+            disabled={isActing || !invoiceNumber.trim()}
+            data-testid="invoice-submit-button"
+          >
+            {isActing ? "Procesando..." : "Confirmar factura"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Payment Modal */}
+      <Dialog
+        open={payModalOpen}
+        onClose={() => setPayModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        data-testid="payment-modal"
+      >
+        <DialogTitle>Confirmar pago</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Referencia bancaria"
+              value={bankReference}
+              onChange={(event) => setBankReference(event.target.value)}
+              disabled={isActing}
+              fullWidth
+              inputProps={{ "data-testid": "bank-reference-input" }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPayModalOpen(false)} disabled={isActing}>
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => void runPay()}
+            disabled={isActing || !bankReference.trim()}
+            data-testid="payment-submit-button"
+          >
+            {isActing ? "Procesando..." : "Confirmar pago"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Void Modal */}
+      <Dialog
+        open={voidModalOpen}
+        onClose={() => setVoidModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        data-testid="void-modal"
+      >
+        <DialogTitle>Anular servicio</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Motivo de anulacion"
+              value={voidReason}
+              onChange={(event) => setVoidReason(event.target.value)}
+              disabled={isActing}
+              fullWidth
+              multiline
+              rows={3}
+              inputProps={{ "data-testid": "void-reason-input" }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setVoidModalOpen(false)} disabled={isActing}>
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => void runVoid()}
+            disabled={isActing || !voidReason.trim()}
+            data-testid="void-submit-button"
+          >
+            {isActing ? "Procesando..." : "Confirmar anulacion"}
           </Button>
         </DialogActions>
       </Dialog>
