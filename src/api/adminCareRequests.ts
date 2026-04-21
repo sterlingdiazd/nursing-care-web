@@ -68,6 +68,19 @@ export interface AdminCareRequestTimelineEvent {
   occurredAtUtc: string;
 }
 
+interface AdminCareRequestBillingInfo {
+  invoiceNumber?: string | null;
+  invoicedAtUtc?: string | null;
+  paidAtUtc?: string | null;
+  voidedAtUtc?: string | null;
+  voidReason?: string | null;
+  bankReference?: string | null;
+  validationDate?: string | null;
+  receiptNumber?: string | null;
+  receiptId?: string | null;
+  receiptGeneratedAtUtc?: string | null;
+}
+
 export interface AdminShiftChange {
   id: string;
   previousNurseUserId: string | null;
@@ -158,6 +171,20 @@ export interface AdminCareRequestDetail {
   payrollCompensation: AdminPayrollCompensationSnapshot | null;
   shifts: AdminShiftRecord[];
   timeline: AdminCareRequestTimelineEvent[];
+  billingInfo?: AdminCareRequestBillingInfo | null;
+}
+
+function normalizeAdminCareRequestDetail(detail: AdminCareRequestDetail): AdminCareRequestDetail {
+  const billingInfo = detail.billingInfo ?? null;
+
+  return {
+    ...detail,
+    invoiceNumber: detail.invoiceNumber ?? billingInfo?.invoiceNumber ?? null,
+    invoicedAtUtc: detail.invoicedAtUtc ?? billingInfo?.invoicedAtUtc ?? null,
+    paidAtUtc: detail.paidAtUtc ?? billingInfo?.paidAtUtc ?? null,
+    voidedAtUtc: detail.voidedAtUtc ?? billingInfo?.voidedAtUtc ?? null,
+    voidReason: detail.voidReason ?? billingInfo?.voidReason ?? null,
+  };
 }
 
 export interface InvoiceCareRequestPayload {
@@ -267,7 +294,7 @@ export async function getAdminCareRequests(params: AdminCareRequestListParams = 
 export async function getAdminCareRequestDetail(id: string) {
   try {
     const response = await httpClient.get<AdminCareRequestDetail>(`/admin/care-requests/${id}`);
-    return response.data;
+    return normalizeAdminCareRequestDetail(response.data);
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible cargar el detalle administrativo."));
   }
