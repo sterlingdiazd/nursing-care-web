@@ -25,6 +25,31 @@ vi.mock("../api/adminClients", () => ({
   updateAdminClientActiveState: vi.fn(),
 }));
 
+vi.mock("../components/layout/AdminPortalShell", () => ({
+  default: ({ actions, children }: { actions?: ReactNode; children: ReactNode }) => (
+    <>
+      {actions}
+      {children}
+    </>
+  ),
+}));
+
+vi.mock("../hooks/useCareRequestCatalogOptions", () => ({
+  useCareRequestCatalogOptions: () => ({
+    data: {
+      careRequestCategories: [],
+      careRequestTypes: [],
+      unitTypes: [],
+      distanceFactors: [],
+      complexityLevels: [],
+      volumeDiscountRules: [],
+    },
+    isLoading: false,
+    error: null,
+    reload: vi.fn(),
+  }),
+}));
+
 vi.mock("../context/AuthContext", () => ({
   useAuth: () => ({
     isAuthenticated: true,
@@ -120,7 +145,7 @@ describe("AdminClientDetailPage", () => {
   it("loads client detail, saves edits, and handles administrative actions", async () => {
     renderWithTheme(<AdminClientDetailPage />);
 
-    expect(await screen.findByText("Carla Jimenez")).toBeInTheDocument();
+    expect(await screen.findByDisplayValue("carla@example.com")).toBeInTheDocument();
     expect(screen.getByText(/tiene historial de solicitudes/i)).toBeInTheDocument();
 
     await waitFor(() => {

@@ -8,7 +8,7 @@ import {
   createAdminCareRequest,
   getAdminCareRequestClients,
 } from "../api/adminCareRequests";
-import { getCareRequestOptions } from "../api/catalogOptions";
+import { getAvailableNurses, getCareRequestOptions } from "../api/catalogOptions";
 
 const navigate = vi.fn();
 const logout = vi.fn();
@@ -26,6 +26,16 @@ vi.mock("../api/adminCareRequests", () => ({
 
 vi.mock("../api/catalogOptions", () => ({
   getCareRequestOptions: vi.fn(),
+  getAvailableNurses: vi.fn(),
+}));
+
+vi.mock("../components/layout/AdminPortalShell", () => ({
+  default: ({ actions, children }: { actions?: ReactNode; children: ReactNode }) => (
+    <>
+      {actions}
+      {children}
+    </>
+  ),
 }));
 
 vi.mock("../context/AuthContext", () => ({
@@ -75,6 +85,7 @@ describe("AdminCreateCareRequestPage", () => {
       complexityLevels: [{ code: "estandar", displayName: "Estandar", multiplier: 1 }],
       volumeDiscountRules: [{ minimumCount: 5, discountPercent: 5 }],
     });
+    vi.mocked(getAvailableNurses).mockResolvedValue([]);
     vi.mocked(getAdminCareRequestClients).mockResolvedValue([
       {
         userId: "client-1",
