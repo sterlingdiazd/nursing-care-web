@@ -119,6 +119,7 @@ describe("AdminReportsPage", () => {
 
   it("triggers CSV export", async () => {
     renderPage();
+    await screen.findByText("5");
     const exportButton = screen.getByText(/Exportar CSV/);
     expect(exportButton).toBeInTheDocument();
   });

@@ -164,6 +164,15 @@ vi.mock("../hooks/useCareRequestCatalogOptions", () => ({
   }),
 }));
 
+vi.mock("../components/layout/AdminPortalShell", () => ({
+  default: ({ actions, children }: { actions?: ReactNode; children: ReactNode }) => (
+    <>
+      {actions}
+      {children}
+    </>
+  ),
+}));
+
 vi.mock("../api/adminNurseProfiles", () => ({
   getActiveNurseProfiles: vi.fn(),
 }));

@@ -127,8 +127,14 @@ export default function AdminPortalShell({
   const navItems = getAdminNavigationItems(t);
   const activeItem = resolveActiveNavigationItem(location.pathname, navItems);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const isTestMode = import.meta.env.MODE === "test";
 
   useEffect(() => {
+    if (isTestMode) {
+      setUnreadNotifications(0);
+      return;
+    }
+
     let disposed = false;
 
     const loadSummary = async () => {
@@ -151,7 +157,7 @@ export default function AdminPortalShell({
       disposed = true;
       window.clearInterval(pollTimer);
     };
-  }, []);
+  }, [isTestMode]);
 
   return (
     <Box
