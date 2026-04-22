@@ -55,6 +55,15 @@ vi.mock("../api/adminUsers", () => ({
   invalidateAdminUserSessions: vi.fn(),
 }));
 
+vi.mock("../components/layout/AdminPortalShell", () => ({
+  default: ({ actions, children }: { actions?: ReactNode; children: ReactNode }) => (
+    <>
+      {actions}
+      {children}
+    </>
+  ),
+}));
+
 vi.mock("../context/AuthContext", () => ({
   useAuth: () => ({
     isAuthenticated: true,
@@ -111,7 +120,8 @@ describe("AdminUserDetailPage", () => {
   it("loads the detail view and runs identity, role, access, and session actions", async () => {
     renderWithTheme(<AdminUserDetailPage />);
 
-    expect(await screen.findByText("Mario Lopez")).toBeInTheDocument();
+    expect(await screen.findByDisplayValue("Mario")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Lopez")).toBeInTheDocument();
     expect(getAdminUserDetail).toHaveBeenCalledWith("user-1");
 
     fireEvent.change(screen.getByLabelText("Nombre"), {
