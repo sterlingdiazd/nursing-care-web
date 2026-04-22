@@ -100,7 +100,9 @@ describe("AdminPayrollNurseDetailPage", () => {
     it("renders the nurse-payroll-detail-panel container", async () => {
       vi.mocked(getAdminNursePayrollDetail).mockResolvedValue(sampleDetail);
       renderPage();
-      expect(screen.getByTestId("nurse-payroll-detail-panel")).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.getByTestId("nurse-payroll-detail-panel")).toBeInTheDocument()
+      );
     });
 
     it("shows loading spinner while fetching and then loaded container", async () => {

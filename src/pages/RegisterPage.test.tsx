@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ThemeProvider, createTheme } from "@mui/material";
 import { vi } from "vitest";
@@ -9,7 +9,9 @@ import { authTestIds } from "../testing/authTestIds";
 const navigate = vi.fn();
 
 vi.mock("react-router-dom", () => ({
-  Link: ({ children }: { children: ReactNode }) => children,
+  Link: forwardRef<HTMLAnchorElement, { children: ReactNode }>(function MockLink({ children }, ref) {
+    return <a ref={ref}>{children}</a>;
+  }),
   useNavigate: () => navigate,
 }));
 
