@@ -22,6 +22,7 @@ import { formatRoleLabels } from "../utils/roleLabels";
 import { API_BASE_URL } from "../config/env";
 import { authTestIds } from "../testing/authTestIds";
 import { designTokens } from "../design-system/tokens";
+import WorkspaceShell from "../components/layout/WorkspaceShell";
 
 export default function AccountPage() {
   const { email, isAuthenticated, logout, roles, token } = useAuth();
@@ -64,47 +65,18 @@ export default function AccountPage() {
   };
 
   return (
-    <Box
-      sx={{
-        maxWidth: 600,
-        mx: "auto",
-        py: 4,
-        px: 2,
-      }}
+    <WorkspaceShell
+      eyebrow="Cuenta"
+      title="Gestiona acceso, sesion y cambio de cuenta."
+      description="Este espacio se concentra solo en identidad y autenticacion. El diagnostico y las herramientas se movieron a secciones dedicadas."
     >
-      <Typography
-        variant="overline"
+      <Box
         sx={{
-          color: "primary.main",
-          fontWeight: 700,
-          letterSpacing: 1.3,
-          display: "block",
-          mb: 1,
+          maxWidth: 600,
+          mx: "auto",
+          px: 2,
         }}
       >
-        Cuenta
-      </Typography>
-      <Typography
-        variant="h4"
-        sx={{
-          fontFamily: '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif',
-          fontWeight: 700,
-          color: "text.primary",
-          mb: 1,
-        }}
-      >
-        Gestiona acceso, sesion y cambio de cuenta.
-      </Typography>
-      <Typography
-        variant="body1"
-        sx={{
-          color: "text.secondary",
-          mb: 4,
-        }}
-      >
-        Este espacio se concentra solo en identidad y autenticacion. El diagnostico y las herramientas se movieron a secciones dedicadas.
-      </Typography>
-
       {/* Session Card */}
       <Card sx={{ mb: 3 }} data-testid={authTestIds.account.sessionCard}>
         <CardContent>
@@ -261,6 +233,7 @@ export default function AccountPage() {
           )}
         </CardContent>
       </Card>
-    </Box>
+      </Box>
+    </WorkspaceShell>
   );
 }

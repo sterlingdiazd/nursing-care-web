@@ -40,6 +40,10 @@ function getActivePath(pathname: string) {
     return "/admin/nurse-profiles";
   }
 
+  if (pathname === "/account") {
+    return "/account";
+  }
+
   return "/home";
 }
 

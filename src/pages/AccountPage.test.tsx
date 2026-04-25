@@ -13,6 +13,7 @@ const logout = vi.fn();
 
 vi.mock("react-router-dom", () => ({
   useNavigate: () => navigate,
+  useLocation: () => ({ pathname: "/account", search: "" }),
 }));
 
 vi.mock("../context/AuthContext", () => ({
@@ -44,6 +45,17 @@ vi.mock("../utils/roleLabels", () => ({
 
 vi.mock("../config/env", () => ({
   API_BASE_URL: "https://api.example.com",
+}));
+
+vi.mock("../components/layout/WorkspaceShell", () => ({
+  default: ({ children, eyebrow, title, description }: any) => (
+    <div data-testid="workspace-shell">
+      <span>{eyebrow}</span>
+      <span>{title}</span>
+      <span>{description}</span>
+      {children}
+    </div>
+  ),
 }));
 
 const theme = createTheme();
