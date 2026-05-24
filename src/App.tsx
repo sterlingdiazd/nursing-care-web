@@ -48,12 +48,10 @@ const theme = appTheme;
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, requiresProfileCompletion, roles } = useAuth();
+  const { isAuthenticated, requiresProfileCompletion } = useAuth();
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
-  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
 
   if (requiresProfileCompletion) {
     return <Navigate to="/register" replace />;
@@ -63,13 +61,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function OperationalRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, profileType, requiresAdminReview, requiresProfileCompletion, roles } = useAuth();
+  const { isAuthenticated, profileType, requiresAdminReview, requiresProfileCompletion } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
-  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
 
   if (requiresProfileCompletion) {
     return <Navigate to="/register" replace />;
@@ -88,8 +84,6 @@ function CareRequestCreateRoute({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
-  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
 
   if (requiresProfileCompletion) {
     return <Navigate to="/register" replace />;
@@ -113,9 +107,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
-
-  if (requiresProfileCompletion || !isFullyRegistered) {
+  if (requiresProfileCompletion || roles.length === 0) {
     return <Navigate to="/register" replace />;
   }
 
@@ -143,9 +135,7 @@ function HomeRoute() {
     return <Navigate to="/login" replace />;
   }
 
-  const isFullyRegistered = roles.includes("ADMIN") || roles.includes("NURSE") || roles.includes("CLIENT");
-
-  if (requiresProfileCompletion || !isFullyRegistered) {
+  if (requiresProfileCompletion || roles.length === 0) {
     return <Navigate to="/register" replace />;
   }
 

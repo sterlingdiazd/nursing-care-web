@@ -384,7 +384,7 @@ export default function AdminCareRequestDetailPage() {
                       )}
                       {detail.isOverdueOrStale && (
                         <Chip
-                          label="Requiere atencion"
+                          label="Requiere atención"
                           sx={{
                             bgcolor: "rgba(183, 79, 77, 0.12)",
                             color: "#9a3f3d",
@@ -411,7 +411,7 @@ export default function AdminCareRequestDetailPage() {
                           ? `${detail.assignedNurseDisplayName} · ${detail.assignedNurseEmail ?? "Sin correo"}`
                           : "Sin asignar",
                       ],
-                      ["Cedula del cliente", detail.clientIdentificationNumber ?? "Sin cedula"],
+                      ["Cédula del cliente", detail.clientIdentificationNumber ?? "Sin cédula"],
                       ["Enfermera sugerida", detail.suggestedNurse ?? "Sin sugerencia"],
                       [
                         "Tipo",

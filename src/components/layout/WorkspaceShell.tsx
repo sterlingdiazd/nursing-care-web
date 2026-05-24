@@ -64,8 +64,8 @@ export default function WorkspaceShell({
       : []),
     ...(roles.includes("ADMIN")
       ? [
-          { label: "Perfiles de enfermeria", path: "/admin/nurse-profiles" },
-          { label: "Administracion", path: "/admin" },
+          { label: "Perfiles de enfermería", path: "/admin/nurse-profiles" },
+          { label: "Administración", path: "/admin" },
         ]
       : []),
   ];
@@ -109,7 +109,7 @@ export default function WorkspaceShell({
                   Consola operativa
                 </Typography>
                 <Typography sx={{ mt: 1, color: "#68808c", lineHeight: 1.7 }}>
-                  Gestiona captura, revision clinica y cierre desde un solo espacio de trabajo.
+                  Gestiona captura, revisión clínica y cierre desde un solo espacio de trabajo.
                 </Typography>
               </Box>
 
@@ -147,7 +147,7 @@ export default function WorkspaceShell({
 
               <Stack spacing={1}>
                 <Chip
-                  label={email ?? "Sin correo cargado"}
+                  label={email ?? "Sin correo asociado"}
                   sx={{
                     justifyContent: "flex-start",
                     bgcolor: "rgba(255,255,255,0.62)",
@@ -183,7 +183,7 @@ export default function WorkspaceShell({
                   },
                 }}
               >
-                Cerrar sesion
+                Cerrar sesión
               </Button>
             </Stack>
           </Paper>
@@ -211,7 +211,7 @@ export default function WorkspaceShell({
                     variant="overline"
                     sx={{ color: "secondary.main", letterSpacing: "0.16em" }}
                   >
-                    Seccion actual
+                    Sección actual
                   </Typography>
                     <Chip
                       label={activeItem.label}

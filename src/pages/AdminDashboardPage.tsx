@@ -38,9 +38,11 @@ function formatTimestamp(value: string) {
 function WidgetCard({
   item,
   onClick,
+  openLabel,
 }: {
   item: DashboardWidget;
   onClick: () => void;
+  openLabel: string;
 }) {
   const accents = {
     warning: {
@@ -96,7 +98,7 @@ function WidgetCard({
             {item.helper}
           </Typography>
           <Chip
-            label={item.path ? 'Abrir módulo' : 'Abrir'} // Will translate dynamically soon, using static helper for now or let's pass it from parent.
+            label={openLabel}
             sx={{
               width: "fit-content",
               bgcolor: "rgba(255,255,255,0.56)",
@@ -309,6 +311,7 @@ export default function AdminDashboardPage() {
                   key={item.label}
                   item={item}
                   onClick={() => navigate(item.path)}
+                  openLabel={t('dashboard.openModule')}
                 />
               ))}
         </Box>

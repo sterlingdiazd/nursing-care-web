@@ -139,7 +139,7 @@ export default function LoginPage() {
               inputProps={{ "data-testid": authTestIds.login.emailInput }}
               helperText={
                 email.length > 0 && !isEmailValid
-                  ? "Use a valid email format."
+                  ? "Ingresa un correo con formato válido."
                   : "Ingresa el correo asociado a tu cuenta de NursingCare."
               }
             />
