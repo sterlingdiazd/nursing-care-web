@@ -43,6 +43,8 @@ export function getAdminCareRequestStatusLabel(status: AdminCareRequestStatus) {
       return "Completada";
     case "Invoiced":
       return "Facturada";
+    case "PaymentReported":
+      return "Pago reportado";
     case "Paid":
       return "Pagada";
     case "Voided":
@@ -62,6 +64,8 @@ export function getAdminCareRequestStatusStyles(status: AdminCareRequestStatus) 
       return { bg: "rgba(193, 138, 66, 0.14)", color: "#8a5e22" };
     case "Invoiced":
       return { bg: "rgba(59, 108, 141, 0.12)", color: "#295774" };
+    case "PaymentReported":
+      return { bg: "rgba(193, 138, 66, 0.18)", color: "#8a5e22" };
     case "Paid":
       return { bg: "rgba(44, 122, 100, 0.18)", color: "#1a5e3a" };
     case "Voided":

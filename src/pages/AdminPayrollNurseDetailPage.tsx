@@ -22,6 +22,11 @@ import {
   getAdminNursePayrollDetail,
   type NursePayrollPeriodDetailDto,
 } from "../api/adminPayroll";
+import type { AdminCareRequestStatus } from "../api/adminCareRequests";
+import {
+  getAdminCareRequestStatusLabel,
+  getAdminCareRequestStatusStyles,
+} from "../utils/adminCareRequests";
 
 function formatDate(value: string | null) {
   if (!value) return "—";
@@ -187,12 +192,14 @@ export default function AdminPayrollNurseDetailPage() {
                         <TableCell scope="col" align="right">Ajustes</TableCell>
                         <TableCell scope="col" align="right">Deducciones</TableCell>
                         <TableCell scope="col" align="right">Neto</TableCell>
+                        <TableCell scope="col">Factura</TableCell>
+                        <TableCell scope="col">Cobro cliente</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {detail.services.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
+                          <TableCell colSpan={11} align="center" sx={{ py: 4 }}>
                             <Typography color="text.secondary">
                               No hay servicios registrados para este periodo.
                             </Typography>
@@ -241,6 +248,24 @@ export default function AdminPayrollNurseDetailPage() {
                               <Typography fontWeight={700}>
                                 {formatCurrency(svc.netCompensation)}
                               </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">{svc.invoiceNumber || "—"}</Typography>
+                            </TableCell>
+                            <TableCell>
+                              {svc.clientPaymentStatus ? (
+                                <Chip
+                                  label={getAdminCareRequestStatusLabel(svc.clientPaymentStatus as AdminCareRequestStatus)}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: getAdminCareRequestStatusStyles(svc.clientPaymentStatus as AdminCareRequestStatus).bg,
+                                    color: getAdminCareRequestStatusStyles(svc.clientPaymentStatus as AdminCareRequestStatus).color,
+                                    fontWeight: 700,
+                                  }}
+                                />
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">—</Typography>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))

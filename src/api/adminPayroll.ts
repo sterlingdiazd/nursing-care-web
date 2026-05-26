@@ -492,6 +492,9 @@ export interface NursePayrollServiceLine {
   deductionsTotal: number;
   netCompensation: number;
   serviceDate: string | null;
+  // Reconciliation: the client invoice that funded this line and its collection status.
+  invoiceNumber?: string | null;
+  clientPaymentStatus?: string | null;
 }
 
 export interface NursePayrollDeductionLine {

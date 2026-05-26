@@ -26,6 +26,7 @@ import {
   invoiceCareRequest,
   payCareRequest,
   voidCareRequest,
+  rejectPayment,
   generateReceipt,
   registerAdminCareRequestShift,
   recordAdminCareRequestShiftChange,
@@ -84,6 +85,8 @@ export default function AdminCareRequestDetailPage() {
   const [bankReference, setBankReference] = useState("");
   const [voidModalOpen, setVoidModalOpen] = useState(false);
   const [voidReason, setVoidReason] = useState("");
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
   const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
 
   const listPath = `/admin/care-requests${location.search}`;
@@ -276,6 +279,22 @@ export default function AdminCareRequestDetailPage() {
       await loadDetail();
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "No fue posible anular la solicitud.");
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const runRejectPayment = async () => {
+    if (!id || !rejectReason.trim()) return;
+    setIsActing(true);
+    setError(null);
+    try {
+      await rejectPayment(id, { reason: rejectReason.trim() });
+      setRejectModalOpen(false);
+      setRejectReason("");
+      await loadDetail();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "No fue posible rechazar el comprobante.");
     } finally {
       setIsActing(false);
     }
@@ -935,6 +954,29 @@ export default function AdminCareRequestDetailPage() {
                     </>
                   )}
 
+                  {detail.status === "PaymentReported" && (
+                    <>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setPayModalOpen(true)}
+                        disabled={isActing}
+                        data-testid="pay-care-request-button"
+                        sx={{ ...subduedActionButtonSx, color: "#1a5e3a", borderColor: "rgba(44,122,100,0.4)" }}
+                      >
+                        Confirmar pago
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setRejectModalOpen(true)}
+                        disabled={isActing}
+                        data-testid="reject-payment-button"
+                        sx={{ ...subduedActionButtonSx, color: "#8b1a1a", borderColor: "rgba(183,79,77,0.4)" }}
+                      >
+                        Rechazar comprobante
+                      </Button>
+                    </>
+                  )}
+
                   {(detail.status === "Voided" || detail.status === "Rejected") && (
                     <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
                       Esta solicitud esta en estado terminal. No hay acciones disponibles.
@@ -943,6 +985,7 @@ export default function AdminCareRequestDetailPage() {
 
                   {!canApproveOrReject && detail.status !== "Approved" &&
                    detail.status !== "Completed" && detail.status !== "Invoiced" &&
+                   detail.status !== "PaymentReported" &&
                    detail.status !== "Paid" && detail.status !== "Voided" && (
                     <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
                       No hay acciones administrativas disponibles para el estado actual.
@@ -1128,6 +1171,47 @@ export default function AdminCareRequestDetailPage() {
             data-testid="void-submit-button"
           >
             {isActing ? "Procesando..." : "Confirmar anulacion"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={rejectModalOpen}
+        onClose={() => setRejectModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        data-testid="reject-payment-modal"
+      >
+        <DialogTitle>Rechazar comprobante</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              La solicitud vuelve a Facturada y se le pedira al cliente reportar el pago nuevamente.
+            </Typography>
+            <TextField
+              label="Motivo del rechazo"
+              value={rejectReason}
+              onChange={(event) => setRejectReason(event.target.value)}
+              disabled={isActing}
+              fullWidth
+              multiline
+              rows={3}
+              inputProps={{ "data-testid": "reject-payment-reason-input", "aria-label": "Motivo del rechazo" }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRejectModalOpen(false)} disabled={isActing}>
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => void runRejectPayment()}
+            disabled={isActing || !rejectReason.trim()}
+            data-testid="reject-payment-submit-button"
+          >
+            {isActing ? "Procesando..." : "Rechazar comprobante"}
           </Button>
         </DialogActions>
       </Dialog>

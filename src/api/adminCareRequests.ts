@@ -14,7 +14,7 @@ export type AdminCareRequestView =
   | "overdue";
 
 export type AdminCareRequestSort = "newest" | "oldest" | "scheduled" | "status" | "value";
-export type AdminCareRequestStatus = "Pending" | "Approved" | "Rejected" | "Completed" | "Invoiced" | "Paid" | "Voided";
+export type AdminCareRequestStatus = "Pending" | "Approved" | "Rejected" | "Completed" | "Invoiced" | "PaymentReported" | "Paid" | "Voided";
 
 export interface AdminCareRequestListParams {
   view?: AdminCareRequestView;
@@ -166,6 +166,7 @@ export interface AdminCareRequestDetail {
   paidAtUtc: string | null;
   voidedAtUtc: string | null;
   voidReason: string | null;
+  paymentRejectionReason?: string | null;
   isOverdueOrStale: boolean;
   pricingBreakdown: AdminCareRequestPricingBreakdown;
   payrollCompensation: AdminPayrollCompensationSnapshot | null;
@@ -199,6 +200,15 @@ export interface PayCareRequestPayload {
 
 export interface VoidCareRequestPayload {
   voidReason: string;
+}
+
+export interface RejectPaymentPayload {
+  reason: string;
+}
+
+export interface RejectPaymentResponse {
+  id: string;
+  status: string;
 }
 
 export interface InvoicedCareRequestResponse {
@@ -396,6 +406,15 @@ export async function voidCareRequest(id: string, payload: VoidCareRequestPayloa
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible anular la solicitud."));
+  }
+}
+
+export async function rejectPayment(id: string, payload: RejectPaymentPayload): Promise<RejectPaymentResponse> {
+  try {
+    const response = await httpClient.post<RejectPaymentResponse>(`/admin/care-requests/${id}/reject-payment`, payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible rechazar el comprobante."));
   }
 }
 
