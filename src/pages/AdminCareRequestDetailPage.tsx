@@ -4,8 +4,10 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
   Dialog,
+  FormControlLabel,
   DialogActions,
   DialogContent,
   DialogTitle,
@@ -28,10 +30,12 @@ import {
   voidCareRequest,
   rejectPayment,
   issueCreditNote,
+  getPaymentClaim,
   generateReceipt,
   registerAdminCareRequestShift,
   recordAdminCareRequestShiftChange,
   type AdminCareRequestDetail,
+  type PaymentClaimReview,
 } from "../api/adminCareRequests";
 import {
   assignCareRequestNurse,
@@ -92,6 +96,8 @@ export default function AdminCareRequestDetailPage() {
   const [creditAmount, setCreditAmount] = useState("");
   const [creditReason, setCreditReason] = useState("");
   const [creditReference, setCreditReference] = useState("");
+  const [paymentClaim, setPaymentClaim] = useState<PaymentClaimReview | null>(null);
+  const [acknowledgeDuplicate, setAcknowledgeDuplicate] = useState(false);
   const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
 
   const listPath = `/admin/care-requests${location.search}`;
@@ -113,6 +119,18 @@ export default function AdminCareRequestDetailPage() {
       setDetail(detailResponse);
       setAssignedNurseId(detailResponse.assignedNurseUserId ?? "");
       setActiveNurses(nurseResponse);
+
+      // Anti-fraud: when the client has reported a payment, load the structured claim + flags so the
+      // admin can match it against the bank and see reuse/amount-mismatch warnings before confirming.
+      if (detailResponse.status === "PaymentReported") {
+        try {
+          setPaymentClaim(await getPaymentClaim(id));
+        } catch {
+          setPaymentClaim(null);
+        }
+      } else {
+        setPaymentClaim(null);
+      }
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "No fue posible cargar el detalle administrativo.");
     } finally {
@@ -262,9 +280,13 @@ export default function AdminCareRequestDetailPage() {
     setIsActing(true);
     setError(null);
     try {
-      await payCareRequest(id, { bankReference: bankReference.trim() });
+      await payCareRequest(id, {
+        bankReference: bankReference.trim(),
+        acknowledgeDuplicateReference: acknowledgeDuplicate,
+      });
       setPayModalOpen(false);
       setBankReference("");
+      setAcknowledgeDuplicate(false);
       await loadDetail();
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "No fue posible confirmar el pago.");
@@ -996,6 +1018,42 @@ export default function AdminCareRequestDetailPage() {
 
                   {detail.status === "PaymentReported" && (
                     <>
+                      {paymentClaim?.hasProof && (
+                        <Box sx={{ mb: 1.5 }} data-testid="payment-claim-review">
+                          <Typography variant="overline" sx={{ color: "secondary.main", letterSpacing: "0.12em" }}>
+                            Datos del pago reportado
+                          </Typography>
+                          <Stack spacing={0.4} sx={{ mt: 0.5 }}>
+                            {paymentClaim.claimedBankReference && (
+                              <Typography variant="body2">Referencia: {paymentClaim.claimedBankReference}</Typography>
+                            )}
+                            {paymentClaim.claimedAmount != null && (
+                              <Typography variant="body2">
+                                Monto reportado: RD$ {paymentClaim.claimedAmount.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </Typography>
+                            )}
+                            {paymentClaim.claimedPaymentDate && (
+                              <Typography variant="body2">Fecha: {paymentClaim.claimedPaymentDate}</Typography>
+                            )}
+                            {paymentClaim.payingBank && (
+                              <Typography variant="body2">Banco: {paymentClaim.payingBank}</Typography>
+                            )}
+                          </Stack>
+                          {paymentClaim.amountReported && !paymentClaim.amountMatches && (
+                            <Alert severity="warning" sx={{ mt: 1 }} data-testid="claim-amount-mismatch">
+                              El monto reportado no coincide con la factura (RD$ {paymentClaim.invoiceTotal.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}).
+                            </Alert>
+                          )}
+                          {paymentClaim.reusedReference && (
+                            <Alert severity="error" sx={{ mt: 1 }} data-testid="claim-reused-reference">
+                              Esta referencia bancaria ya fue usada para confirmar otro pago. Verifica que no sea la misma transferencia.
+                            </Alert>
+                          )}
+                          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                            El comprobante es solo una declaración. Verifica el ingreso en tu cuenta antes de confirmar.
+                          </Typography>
+                        </Box>
+                      )}
                       <Button
                         variant="outlined"
                         onClick={() => setPayModalOpen(true)}
@@ -1143,7 +1201,10 @@ export default function AdminCareRequestDetailPage() {
       {/* Payment Modal */}
       <Dialog
         open={payModalOpen}
-        onClose={() => setPayModalOpen(false)}
+        onClose={() => {
+          setPayModalOpen(false);
+          setAcknowledgeDuplicate(false);
+        }}
         maxWidth="sm"
         fullWidth
         data-testid="payment-modal"
@@ -1159,16 +1220,40 @@ export default function AdminCareRequestDetailPage() {
               fullWidth
               inputProps={{ "data-testid": "bank-reference-input", "aria-label": "Referencia bancaria" }}
             />
+            {paymentClaim?.reusedReference && (
+              <>
+                <Alert severity="error" data-testid="payment-modal-reused-reference">
+                  La referencia reportada ya se usó en otro pago. Confirma solo si verificaste que es una transferencia distinta.
+                </Alert>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={acknowledgeDuplicate}
+                      onChange={(event) => setAcknowledgeDuplicate(event.target.checked)}
+                      data-testid="acknowledge-duplicate-checkbox"
+                      inputProps={{ "aria-label": "Reconocer referencia duplicada" }}
+                    />
+                  }
+                  label="Confirmar a pesar de la referencia duplicada"
+                />
+              </>
+            )}
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setPayModalOpen(false)} disabled={isActing}>
+          <Button
+            onClick={() => {
+              setPayModalOpen(false);
+              setAcknowledgeDuplicate(false);
+            }}
+            disabled={isActing}
+          >
             Cancelar
           </Button>
           <Button
             variant="contained"
             onClick={() => void runPay()}
-            disabled={isActing || !bankReference.trim()}
+            disabled={isActing || !bankReference.trim() || (Boolean(paymentClaim?.reusedReference) && !acknowledgeDuplicate)}
             data-testid="payment-submit-button"
           >
             {isActing ? "Procesando..." : "Confirmar pago"}

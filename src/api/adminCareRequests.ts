@@ -196,6 +196,22 @@ export interface InvoiceCareRequestPayload {
 export interface PayCareRequestPayload {
   bankReference: string;
   paymentDate?: string;
+  // Anti-fraud: set true to confirm despite a bank reference already used on another request.
+  acknowledgeDuplicateReference?: boolean;
+}
+
+export interface PaymentClaimReview {
+  hasProof: boolean;
+  claimedBankReference: string | null;
+  claimedAmount: number | null;
+  claimedPaymentDate: string | null;
+  payingBank: string | null;
+  note: string | null;
+  uploadedAtUtc: string | null;
+  invoiceTotal: number;
+  amountReported: boolean;
+  amountMatches: boolean;
+  reusedReference: boolean;
 }
 
 export interface VoidCareRequestPayload {
@@ -397,6 +413,15 @@ export async function payCareRequest(id: string, payload: PayCareRequestPayload)
     return response.data;
   } catch (error) {
     throw new Error(extractApiErrorMessage(error, "No fue posible confirmar el pago."));
+  }
+}
+
+export async function getPaymentClaim(id: string): Promise<PaymentClaimReview> {
+  try {
+    const response = await httpClient.get<PaymentClaimReview>(`/admin/care-requests/${id}/payment-claim`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible cargar los datos del pago reportado."));
   }
 }
 
