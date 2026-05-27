@@ -27,6 +27,7 @@ import {
   payCareRequest,
   voidCareRequest,
   rejectPayment,
+  issueCreditNote,
   generateReceipt,
   registerAdminCareRequestShift,
   recordAdminCareRequestShiftChange,
@@ -87,6 +88,10 @@ export default function AdminCareRequestDetailPage() {
   const [voidReason, setVoidReason] = useState("");
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [creditModalOpen, setCreditModalOpen] = useState(false);
+  const [creditAmount, setCreditAmount] = useState("");
+  const [creditReason, setCreditReason] = useState("");
+  const [creditReference, setCreditReference] = useState("");
   const [isGeneratingReceipt, setIsGeneratingReceipt] = useState(false);
 
   const listPath = `/admin/care-requests${location.search}`;
@@ -295,6 +300,29 @@ export default function AdminCareRequestDetailPage() {
       await loadDetail();
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : "No fue posible rechazar el comprobante.");
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const runIssueCreditNote = async () => {
+    const amount = Number(creditAmount);
+    if (!id || !creditReason.trim() || !Number.isFinite(amount) || amount <= 0) return;
+    setIsActing(true);
+    setError(null);
+    try {
+      await issueCreditNote(id, {
+        amount,
+        reason: creditReason.trim(),
+        reference: creditReference.trim() || undefined,
+      });
+      setCreditModalOpen(false);
+      setCreditAmount("");
+      setCreditReason("");
+      setCreditReference("");
+      await loadDetail();
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : "No fue posible registrar la nota de crédito.");
     } finally {
       setIsActing(false);
     }
@@ -646,16 +674,28 @@ export default function AdminCareRequestDetailPage() {
                   </Box>
                   {detail.status === "Paid" && (
                     <Box sx={{ mt: 2.2 }} data-testid="receipt-details-section">
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => void runGenerateReceipt()}
-                        disabled={isGeneratingReceipt}
-                        data-testid="generate-receipt-button"
-                        sx={subduedActionButtonSx}
-                      >
-                        {isGeneratingReceipt ? "Generando recibo..." : "Generar / Descargar recibo"}
-                      </Button>
+                      <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => void runGenerateReceipt()}
+                          disabled={isGeneratingReceipt}
+                          data-testid="generate-receipt-button"
+                          sx={subduedActionButtonSx}
+                        >
+                          {isGeneratingReceipt ? "Generando recibo..." : "Generar / Descargar recibo"}
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => setCreditModalOpen(true)}
+                          disabled={isActing}
+                          data-testid="credit-note-button"
+                          sx={subduedActionButtonSx}
+                        >
+                          Nota de crédito / Reembolso
+                        </Button>
+                      </Stack>
                     </Box>
                   )}
                 </Paper>
@@ -1212,6 +1252,65 @@ export default function AdminCareRequestDetailPage() {
             data-testid="reject-payment-submit-button"
           >
             {isActing ? "Procesando..." : "Rechazar comprobante"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Credit Note Modal (T1.4) */}
+      <Dialog
+        open={creditModalOpen}
+        onClose={() => setCreditModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        data-testid="credit-note-modal"
+      >
+        <DialogTitle>Nota de crédito / Reembolso</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Registra un reembolso o crédito contra este pago. La solicitud sigue Pagada — esto es un
+              registro contable auditado y no puede exceder el monto pagado.
+            </Typography>
+            <TextField
+              label="Monto (RD$)"
+              type="number"
+              value={creditAmount}
+              onChange={(event) => setCreditAmount(event.target.value)}
+              disabled={isActing}
+              fullWidth
+              inputProps={{ min: 0, step: "0.01", "data-testid": "credit-note-amount-input", "aria-label": "Monto" }}
+            />
+            <TextField
+              label="Motivo"
+              value={creditReason}
+              onChange={(event) => setCreditReason(event.target.value)}
+              disabled={isActing}
+              fullWidth
+              multiline
+              rows={2}
+              inputProps={{ "data-testid": "credit-note-reason-input", "aria-label": "Motivo" }}
+            />
+            <TextField
+              label="Referencia (opcional)"
+              value={creditReference}
+              onChange={(event) => setCreditReference(event.target.value)}
+              disabled={isActing}
+              fullWidth
+              inputProps={{ "data-testid": "credit-note-reference-input", "aria-label": "Referencia" }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreditModalOpen(false)} disabled={isActing}>
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => void runIssueCreditNote()}
+            disabled={isActing || !creditReason.trim() || !(Number(creditAmount) > 0)}
+            data-testid="credit-note-submit-button"
+          >
+            {isActing ? "Procesando..." : "Registrar nota de crédito"}
           </Button>
         </DialogActions>
       </Dialog>

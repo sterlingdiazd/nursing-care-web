@@ -418,6 +418,31 @@ export async function rejectPayment(id: string, payload: RejectPaymentPayload): 
   }
 }
 
+export interface IssueCreditNotePayload {
+  amount: number;
+  reason: string;
+  reference?: string;
+}
+
+export interface IssueCreditNoteResponse {
+  id: string;
+  careRequestId: string;
+  amount: number;
+  reason: string;
+  reference: string | null;
+  issuedAtUtc: string;
+  totalCredited: number;
+}
+
+export async function issueCreditNote(id: string, payload: IssueCreditNotePayload): Promise<IssueCreditNoteResponse> {
+  try {
+    const response = await httpClient.post<IssueCreditNoteResponse>(`/admin/care-requests/${id}/credit-note`, payload);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractApiErrorMessage(error, "No fue posible registrar la nota de crédito."));
+  }
+}
+
 export async function generateReceipt(id: string): Promise<GenerateReceiptResponse> {
   try {
     const response = await httpClient.post<GenerateReceiptResponse>(`/admin/care-requests/${id}/receipt`);
